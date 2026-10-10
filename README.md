@@ -65,18 +65,24 @@ Set these in `/config`, or under `pluginConfigs.project-tracker` in settings:
 
 ## Using it
 
-For one session:
+This mod lives at `F:\development\claude-tools\mods\project-tracker`.
+**[`claude-tools/README.md`](../../README.md) has the full install steps** for
+the CLI and the desktop app. In short:
 
-```sh
-claude --plugin-dir F:\development\project-tracker
-```
+- **Every session, CLI and desktop app (recommended):** clone it into your
+  skills folder.
+  ```powershell
+  git clone F:\development\claude-tools\mods\project-tracker "$HOME\.claude\skills\project-tracker"
+  ```
+- **Every session, straight from this folder:** add it to
+  `CLAUDE_CODE_PLUGIN_DIRS` in the `env` block of `~/.claude/settings.json`.
+  ```json
+  { "env": { "CLAUDE_CODE_PLUGIN_DIRS": "F:\development\claude-tools\mods\project-tracker" } }
+  ```
+- **One CLI session:**
+  `claude --plugin-dir F:\development\claude-tools\mods\project-tracker`
 
-For every session, add the folder to `CLAUDE_CODE_PLUGIN_DIRS`, either in the
-environment or in the `env` block of `~/.claude/settings.json`:
-
-```json
-{ "env": { "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\project-tracker" } }
-```
+Use only one of the first two.
 
 It runs on Claude Code 2.1.277 and later. It doesn't use `$.state` or the
 `atom` helpers, which 2.1.277 lacks.
@@ -91,13 +97,15 @@ real terminal. It takes about two minutes.
    but a CLI that isn't signed in may stop at the sign-in screen before it
    reaches the prompt.
 2. **Use a git folder you trust.** Pick a project you already use with Claude
-   Code, or make a scratch one:
+   Code, or make a scratch one *outside* this mod's folder. A scratch project
+   inside it would make a `--plugin-dir` session reload the mod every time
+   `tasks.md` changes.
    ```powershell
-   mkdir F:\development\project-tracker\.sandbox\demo; cd F:\development\project-tracker\.sandbox\demo; git init
+   mkdir F:\development\tracker-demo; cd F:\development\tracker-demo; git init
    ```
-   (`.sandbox/` is gitignored.) The first time Claude Code opens a folder it
-   asks *"Is this a project you created or one you trust?"*. Choose **Yes, I
-   trust this folder**. Plugins don't load until you answer.
+   The first time Claude Code opens a folder it asks *"Is this a project you
+   created or one you trust?"*. Choose **Yes, I trust this folder**. Plugins
+   don't load until you answer.
 3. **Make the terminal wide.**
    - The pane docks beside the transcript only in the fullscreen layout, which
      is the default. It does not dock if `CLAUDE_CODE_NO_FLICKER=0` is set, or
@@ -107,9 +115,10 @@ real terminal. It takes about two minutes.
      more, or at 110 or more once you've opened it before and not closed it by
      hand.
    - To check the width in PowerShell: `$Host.UI.RawUI.WindowSize.Width`.
-4. **Start Claude Code with the mod loaded:**
+4. **Start Claude Code with the mod loaded.** If you installed it (method A
+   or B in `claude-tools/README.md`), just run `claude`. Otherwise:
    ```powershell
-   claude --plugin-dir F:\development\project-tracker
+   claude --plugin-dir F:\development\claude-tools\mods\project-tracker
    ```
 5. **Try it:**
    - `/tasks` should open the pane, docked if the terminal is wide enough.
@@ -119,15 +128,20 @@ real terminal. It takes about two minutes.
      to finish it. `▸ show` unfolds the Done section.
    - Edit `.claude/tasks.md` in an editor. The pane should update within about
      2 seconds.
-   - Quit, run `claude --plugin-dir …` again in the same folder, and run
+   - Quit, start Claude Code again in the same folder the same way, and run
      `/tasks`. The list should still be there.
 6. **If nothing shows,** run with `claude --debug --plugin-dir …`. Lines that
    start with `project-tracker:` say why a hook was skipped or a tree was
-   refused. `claude plugin validate F:\development\project-tracker` checks the
-   mod without starting a session.
+   refused.
+   `claude plugin validate F:\development\claude-tools\mods\project-tracker`
+   checks the mod without starting a session.
+7. **In the desktop app:** after installing with method A or B, quit the app
+   completely, reopen it, start a Code session in a trusted project and type
+   `/tasks`. The pane shows as a panel in the session view, and the terminal
+   width rules don't apply there.
 
-The documentation doesn't say which side the dock is on, and a mod can't
-choose it. Note which side it lands on.
+The documentation doesn't say which side the dock is on in the terminal, and a
+mod can't choose it. Note which side it lands on.
 
 ## Developing
 
