@@ -94,23 +94,27 @@ claude plugin install reference-doc@claude-tools
 A marketplace added from a local folder is loaded in place. Edits here take
 effect in the next session, or after `/reload-plugins`, with no reinstall.
 
-**From GitHub, once the repo is pushed.** Replace `<github-user>` with the
-account that holds the repo:
+**From GitHub** ([primelogiclabio/claude-tools](https://github.com/primelogiclabio/claude-tools)).
+Use this on any other machine:
 
 ```powershell
-claude plugin marketplace add <github-user>/claude-tools
+claude plugin marketplace add primelogiclabio/claude-tools
 claude plugin install project-tracker@claude-tools
 ```
 
 or in one step (CLI 2.1.292+):
 
 ```powershell
-claude plugin install project-tracker --marketplace <github-user>/claude-tools
+claude plugin install project-tracker --marketplace primelogiclabio/claude-tools
 ```
 
 Inside a session, the same thing is
-`/plugin install project-tracker --marketplace <github-user>/claude-tools`
+`/plugin install project-tracker --marketplace primelogiclabio/claude-tools`
 (2.1.275+), which asks for an install scope.
+
+Use the local-folder form above only on the machine where you edit the repo.
+Use the GitHub form everywhere else. Don't add both: they register under the
+same marketplace name, so only one can be added at a time.
 
 **Desktop app.** In a local Code session, click **+** next to the prompt box,
 then **Plugins › Add plugin**, and pick from your marketplaces. Plugins
@@ -244,22 +248,26 @@ To add a mod or skill:
 Bump `version` in an item's `plugin.json` when you release a change. Users who
 installed from GitHub stay on the version they have until it changes.
 
-## Publishing to GitHub (manual steps)
+## Publishing
 
-This repo isn't pushed anywhere yet. To publish it:
+The repo is published at <https://github.com/primelogiclabio/claude-tools>
+(`origin`, branch `main`). To release a change:
 
-1. Create an empty repository on GitHub, for example `claude-tools`, without
-   a README or licence so it doesn't conflict with this history.
-2. Then, in PowerShell:
+```powershell
+cd F:\development\claude-tools
+claude plugin validate .
+git push
+```
 
-   ```powershell
-   cd F:\development\claude-tools
-   git remote add origin https://github.com/<github-user>/claude-tools.git
-   git push -u origin main
-   ```
-3. Check it from another folder:
-   `claude plugin marketplace add <github-user>/claude-tools`, then
-   `claude plugin install reference-doc@claude-tools`.
+People who added the marketplace from GitHub get the change with
+`claude plugin marketplace update claude-tools` followed by
+`claude plugin update <name>@claude-tools`, or right away if they turned on
+auto-update for the marketplace.
 
-For a private repository, Claude Code clones with the git credentials already
-on your machine, such as `gh auth login` or SSH keys, and never prompts.
+If the repository is made private, Claude Code clones it with the git
+credentials already on the user's machine, such as `gh auth login` or SSH
+keys, and never prompts.
+
+## Licence
+
+[MIT](LICENSE).
