@@ -1,0 +1,38 @@
+{
+  "name": "project-tracker",
+  "version": "0.1.0",
+  "author": { "name": "prime" },
+  "description": "Per-project task list in a docked side pane, persisted in <repo>/.claude/tasks.md across sessions",
+  "userConfig": {
+    "autoOpen": {
+      "type": "boolean",
+      "title": "Open the Tasks pane at session start",
+      "description": "Open the Tasks pane when a session starts (it docks beside the transcript in the fullscreen layout on a wide enough terminal).",
+      "default": true
+    },
+    "statusLine": {
+      "type": "boolean",
+      "title": "Show task count in the status line",
+      "description": "Show the open-task count and the current in-progress task in the status line.",
+      "default": true
+    },
+    "injectContext": {
+      "type": "boolean",
+      "title": "Tell Claude about open tasks",
+      "description": "Add the project's open tasks to Claude's system prompt each turn.",
+      "default": false
+    },
+    "registerProject": {
+      "type": "boolean",
+      "title": "List this project in the project index",
+      "description": "Record projects that have a task file in ~/.claude/project-tracker/projects.json, so chats can find them by name.",
+      "default": true
+    },
+    "taskFile": {
+      "type": "string",
+      "title": "Task file",
+      "description": "Path of the task file, relative to the project root.",
+      "default": ".claude/tasks.md"
+    }
+  }
+}
