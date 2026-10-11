@@ -1,6 +1,16 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { Task, TaskStatus, TrackerView } from '../types'
+import type { ProjectIndex, Task, TaskStatus, TrackerView } from '../types'
+import {
+  INDEX_DIR,
+  INDEX_NAME,
+  INDEX_VERSION,
+  lookup,
+  parseIndex,
+  rootKey,
+  serializeIndex,
+  upsert,
+} from './registry'
 import {
   SECTION_TITLE,
   STATUS_ORDER,
@@ -15,7 +25,6 @@ import type { Change } from './tasks'
 
 const PANE = 'tasks'
 const TOOL = 'mcp__project-tracker__tasks'
-
 
 const GLYPH: Record<TaskStatus, string> = { doing: '▶', todo: '○', done: '✓' }
 const COLOR: Record<TaskStatus, 'warning' | 'text' | 'success'> = {
@@ -35,6 +44,7 @@ const HELP = [
   '/tasks up|down <n>     reorder task n within its section',
   '/tasks rm <n>          remove task n',
   '/tasks clear           remove every done task',
+  '/tasks projects [name] list the projects that use the tracker',
   '/tasks close           close the pane',
   'n is the number the pane shows, or the task id.',
 ].join('\n')
@@ -85,6 +95,9 @@ let isDoneShown = false
 let rel = '.claude/tasks.md'
 let isStatusShown = true
 let isAutoOpen = true
+let isRegistering = true
+let indexFile = ''
+let registeredRoot = ''
 let root = ''
 let file = ''
 let mtime = -1
@@ -99,6 +112,55 @@ async function findRoot($: EngineInterface, cwd: string): Promise<string> {
   }
 
   return cwd
+}
+
+// The project index sits with Claude Code's other per-user files, so the
+// chat-side skill finds it by the same rule: CLAUDE_CONFIG_DIR, else ~/.claude.
+async function findIndexFile($: EngineInterface): Promise<string> {
+  const configDir = await $.env.get('CLAUDE_CONFIG_DIR')
+  if (configDir) return join(configDir, `${INDEX_DIR}/${INDEX_NAME}`)
+  const home = (await $.env.get('USERPROFILE')) || (await $.env.get('HOME'))
+
+  return home ? join(home, `.claude/${INDEX_DIR}/${INDEX_NAME}`) : ''
+}
+
+async function readIndex($: EngineInterface): Promise<ProjectIndex> {
+  if (indexFile === '' || !(await $.fs.exists(indexFile))) return { version: INDEX_VERSION, projects: [] }
+
+  return parseIndex(await $.fs.read(indexFile))
+}
+
+// Once per session, and only for a project that has a task file, so folders
+// merely opened in Claude Code are never listed.
+async function registerProject($: EngineInterface): Promise<void> {
+  if (!isRegistering || indexFile === '' || registeredRoot === root) return
+  registeredRoot = root
+  const out = upsert(await readIndex($), { root, taskFile: rel }, today(await $.clock.now()))
+  if (out.isChanged) await $.fs.write(indexFile, serializeIndex(out.index))
+}
+
+async function listProjects($: EngineInterface, query: string): Promise<string> {
+  const index = await readIndex($)
+  if (index.projects.length === 0) {
+    return 'No projects registered yet. A project is listed once a session opens it with a task file.'
+  }
+  const found = query.trim() === '' ? index.projects : lookup(index, query)
+  if (found.length === 0) return `No registered project matches "${query.trim()}".`
+  const lines: string[] = []
+  for (const project of found) {
+    const path = join(project.root, project.taskFile)
+    let state = 'task file missing'
+    if (await $.fs.exists(path)) {
+      const tasks = parse(await $.fs.read(path)).tasks
+      const open = tasks.filter(t => t.status !== 'done').length
+      const doing = tasks.filter(t => t.status === 'doing').length
+      state = `${open} open${doing > 0 ? `, ${doing} in progress` : ''}`
+    }
+    const mark = rootKey(project.root) === rootKey(root) ? '*' : ' '
+    lines.push(`${mark} ${project.name}: ${state}\n    ${project.root}`)
+  }
+
+  return lines.join('\n')
 }
 
 function showStatus($: EngineInterface, tasks: readonly Task[]): void {
@@ -131,6 +193,7 @@ async function load($: EngineInterface): Promise<TrackerView> {
   view = next
   $.ui.invalidate('ui.render')
   showStatus($, tasks)
+  if (exists) await registerProject($).catch(() => undefined)
 
   return next
 }
@@ -243,6 +306,8 @@ async function runVerb($: EngineInterface, verb: string, rest: string): Promise<
       return (await mutate($, byRef(ref, t => ({ kind: 'remove', id: t.id })))).said
     case 'clear':
       return (await mutate($, () => ({ kind: 'clearDone' }))).said
+    case 'projects':
+      return listProjects($, rest)
     default:
       return `Unknown action "${verb}".\n${HELP}`
   }
@@ -254,16 +319,18 @@ export const register: Register = (on, options) => {
     : '.claude/tasks.md'
   isStatusShown = options.statusLine !== false
   isAutoOpen = options.autoOpen !== false
+  isRegistering = options.registerProject !== false
 
   on('session.start', async ($, e, next) => {
     root = await findRoot($, e.cwd)
     file = join(root, rel)
+    indexFile = await findIndexFile($)
     await load($)
 
     await $.command.register({
       name: 'tasks',
       description: "Show or change this project's task list (Tasks pane)",
-      argumentHint: '[list|add|start|done|todo|edit|up|down|rm|clear|close|help] [n] [text]',
+      argumentHint: '[list|add|start|done|todo|edit|up|down|rm|clear|projects|close|help] [n] [text]',
     })
     await $.tool.register({
       name: 'tasks',
@@ -271,16 +338,18 @@ export const register: Register = (on, options) => {
         "Read or change this project's persistent task list: the list the user sees in their Tasks pane, " +
         `kept in ${rel} at the project root across sessions. Use it when the user asks you to track, add, ` +
         'start, finish, reorder or review project tasks, or asked you to keep the list current. ' +
-        'Do not add tasks on your own initiative otherwise. Tasks are referred to by the number list shows or by id.',
+        'Do not add tasks on your own initiative otherwise. Tasks are referred to by the number list shows or by id. ' +
+        'projects lists the other repos that use the tracker (it reads them; every change applies to this project only).',
       inputSchema: {
         type: 'object',
         properties: {
           action: {
             type: 'string',
-            enum: ['list', 'add', 'start', 'done', 'todo', 'edit', 'up', 'down', 'remove', 'clear'],
+            enum: ['list', 'add', 'start', 'done', 'todo', 'edit', 'up', 'down', 'remove', 'clear', 'projects'],
             description:
               'list: show tasks; add: new todo (status "doing" via start after); start/done/todo: set status; ' +
-              'edit: rename; up/down: reorder; remove: delete one; clear: delete every done task',
+              'edit: rename; up/down: reorder; remove: delete one; clear: delete every done task; ' +
+              'projects: list registered projects (text: optional name filter)',
           },
           task: { type: 'string', description: 'The task number from list, or its id (start/done/todo/edit/up/down/remove)' },
           text: { type: 'string', description: 'The task text (add, edit)' },
@@ -343,9 +412,10 @@ export const register: Register = (on, options) => {
     else if (action === 'add') said = await runVerb($, 'add', input.text ?? '')
     else if (action === 'edit') said = await runVerb($, 'edit', `${ref} ${input.text ?? ''}`)
     else if (action === 'clear') said = await runVerb($, 'clear', '')
+    else if (action === 'projects') said = await runVerb($, 'projects', input.text ?? '')
     else said = await runVerb($, action, ref)
 
-    if (action !== 'list') {
+    if (action !== 'list' && action !== 'projects') {
       const v = view
       said += `\n\n${describe(v?.tasks ?? [])}`
     }

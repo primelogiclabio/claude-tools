@@ -48,7 +48,7 @@ done. Anything else between the title and the first section is kept as it is.
 | Where | How |
 | --- | --- |
 | Pane | Type in **Add a task…** and press Enter. Select a task (Enter on it) to get **Start / Pause**, **Done / Reopen**, **↑ ↓**, **Delete** (hotkeys `s d k j x`) and a **Rename** field. The **Done** section folds away; **Clear done** removes those tasks. ctrl+x tab moves focus between the pane and the prompt. |
-| Command | `/tasks` opens the pane. Also `/tasks list [all]`, `add <text>`, `add! <text>` (adds it in progress), `start <n>`, `done <n>`, `todo <n>`, `edit <n> <text>`, `up <n>`, `down <n>`, `rm <n>`, `clear`, `close` and `help`. `n` is the number the pane shows, or the task id. |
+| Command | `/tasks` opens the pane. Also `/tasks list [all]`, `add <text>`, `add! <text>` (adds it in progress), `start <n>`, `done <n>`, `todo <n>`, `edit <n> <text>`, `up <n>`, `down <n>`, `rm <n>`, `clear`, `projects [name]`, `close` and `help`. `n` is the number the pane shows, or the task id. |
 | Claude | A `tasks` tool (`mcp__project-tracker__tasks`) with the same actions. It's told to change the list only when you ask, for example "add that as a follow-up" or "mark the refresh task done". |
 | Editor | Edit `.claude/tasks.md` directly. |
 
@@ -62,6 +62,44 @@ Set these in `/config`, or under `pluginConfigs.project-tracker` in settings:
 | `statusLine` | `true` | Show `☐ 3 open · ▶ current task` in the status line. |
 | `injectContext` | `false` | Send Claude the open tasks with your prompt, only when they've changed since it was last told. |
 | `taskFile` | `.claude/tasks.md` | Where the file lives, relative to the project root. |
+| `registerProject` | `true` | Add projects that have a task file to the project index (below). |
+
+## The project index
+
+The mod keeps an index of which repos use the tracker, so a chat that only
+knows a project's name ("the oauth project") can find its `tasks.md`:
+
+```
+<CLAUDE_CONFIG_DIR, or ~/.claude>/project-tracker/projects.json
+```
+
+```json
+{
+  "version": 1,
+  "projects": [
+    {
+      "name": "oauth-connector-project",
+      "root": "F:\\development\\oauth-connector-project",
+      "taskFile": ".claude/tasks.md",
+      "firstSeen": "2026-10-10",
+      "lastSeen": "2026-10-11"
+    }
+  ]
+}
+```
+
+- **It's only a cache.** Each repo's `tasks.md` is still the source of truth.
+  Deleting the index loses only the names, and it fills back in as sessions
+  open those projects.
+- **What gets listed.** A project is added the first time a session opens it
+  with a task file present, or when its first task is added. Folders that are
+  merely opened in Claude Code are never listed. `lastSeen` is updated at
+  most once per session.
+- **`/tasks projects [name]`** (or the tool's `projects` action) lists the
+  registered projects with their open and in-progress counts. `*` marks the
+  current project, and a project whose file is gone shows `task file missing`.
+- **Editing it by hand is fine.** Fields the mod doesn't know, such as
+  `"aliases": [...]`, are kept as written. To drop a project, delete its entry.
 
 ## Using it
 
@@ -150,7 +188,10 @@ claude plugin validate .
 claude plugin test .
 ```
 
-`hooks/tasks.ts` is the file format and the list operations, with no engine
-dependency. `hooks/register.tsx` is the pane, `/tasks`, the tool and the status
-line. One test, *injectContext…*, fails under 2.1.277's test kit only, because
-that kit doesn't pass per-test plugin options.
+`hooks/tasks.ts` is the file format and the list operations, and
+`hooks/registry.ts` is the project index. Neither depends on the engine.
+`hooks/register.tsx` is the pane, `/tasks`, the tool and the status line.
+
+The tests that set plugin options (*injectContext…*, *registerProject:
+false…*) need a test kit that passes per-test options. 2.1.277's didn't;
+2.1.295 and later do.

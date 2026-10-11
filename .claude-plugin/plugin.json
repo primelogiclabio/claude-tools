@@ -22,6 +22,12 @@
       "description": "Add the project's open tasks to Claude's system prompt each turn.",
       "default": false
     },
+    "registerProject": {
+      "type": "boolean",
+      "title": "List this project in the project index",
+      "description": "Record projects that have a task file in ~/.claude/project-tracker/projects.json, so chats can find them by name.",
+      "default": true
+    },
     "taskFile": {
       "type": "string",
       "title": "Task file",

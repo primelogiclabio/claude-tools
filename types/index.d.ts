@@ -17,6 +17,22 @@ export type TaskDoc = {
   tasks: Task[]
 }
 
+/** One repo in the project index. Fields it does not know are kept as written. */
+export type ProjectEntry = {
+  name: string
+  root: string
+  /** Relative to `root`. */
+  taskFile: string
+  firstSeen: string
+  lastSeen: string
+  [extra: string]: unknown
+}
+
+export type ProjectIndex = {
+  version: number
+  projects: ProjectEntry[]
+}
+
 /** What the pane draws: where the list lives and what it holds. */
 export type TrackerView = {
   root: string

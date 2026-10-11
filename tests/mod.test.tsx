@@ -4,6 +4,7 @@ import { describe, expect, mock, test } from 'claude-code/testing'
 const PLUGIN = 'project-tracker'
 const TOOL = 'mcp__project-tracker__tasks'
 const TASKS = '/work/oauth/.claude/tasks.md'
+const INDEX = '/home/me/.claude/project-tracker/projects.json'
 
 const PANE_PROPS = {
   title: 'Tasks · oauth',
@@ -43,6 +44,7 @@ function world(on: On, files: Record<string, string> = {}): World {
   const w: World = { files, edit: write, status: [], opened: [], commands: [], tools: [] }
   const dirs = new Set(['/work', '/work/oauth', '/work/oauth/.git', '/work/oauth/src'])
   on('session.start', ($, e) => ({ cwd: e.cwd }))
+  mock.env(on, { CLAUDE_CONFIG_DIR: '/home/me/.claude' })
   on('fs.exists', ($, e) => ({ value: norm(e.path) in w.files || dirs.has(norm(e.path)) }))
   on('fs.read', ($, e) => {
     const text = w.files[norm(e.path)]
@@ -160,6 +162,62 @@ describe('project-tracker', () => {
     expect(w.status[w.status.length - 1]).toBe('☐ 2 open')
   })
 
+  test('a project with a task file is added to the project index once', async ($, on) => {
+    const w = world(on, { [TASKS]: '# Tasks\n## Todo\n- [ ] Ship v1\n' })
+    freshClock(on)
+    await $.session.start(START)
+    const index = JSON.parse(w.files[INDEX] ?? '{}')
+    expect(index.projects).toEqual([
+      { name: 'oauth', root: '/work/oauth', taskFile: '.claude/tasks.md', firstSeen: '2026-10-10', lastSeen: '2026-10-10' },
+    ])
+    const written = w.files[INDEX]
+    await $.command.run({ ...RUN, command: 'tasks', args: 'add Another' })
+    expect(w.files[INDEX]).toBe(written)
+  })
+
+  test('a project without a task file is listed only once it gets one', async ($, on) => {
+    const w = world(on)
+    freshClock(on)
+    await $.session.start(START)
+    expect(w.files[INDEX]).toBeUndefined()
+    await $.command.run({ ...RUN, command: 'tasks', args: 'add First task' })
+    expect(JSON.parse(w.files[INDEX] ?? '{}').projects[0]?.root).toBe('/work/oauth')
+  })
+
+  test('/tasks projects lists every registered project with its counts', async ($, on) => {
+    const other = {
+      name: 'golf-app', root: '/work/golf-app', taskFile: '.claude/tasks.md', firstSeen: '2026-10-01', lastSeen: '2026-10-01',
+    }
+    const gone = { ...other, name: 'old-poc', root: '/work/old-poc' }
+    world(on, {
+      [TASKS]: '# Tasks\n## In progress\n- [ ] Refresh\n## Todo\n- [ ] PKCE\n',
+      '/work/golf-app/.claude/tasks.md': '# Tasks\n## Todo\n- [ ] Scorecard\n## Done\n- [x] Login\n',
+      [INDEX]: JSON.stringify({ version: 1, projects: [other, gone] }),
+    })
+    freshClock(on)
+    await $.session.start(START)
+    const all = await $.command.run({ ...RUN, command: 'tasks', args: 'projects' })
+    expect(all.text).toBe(
+      [
+        '  golf-app: 1 open',
+        '    /work/golf-app',
+        '* oauth: 2 open, 1 in progress',
+        '    /work/oauth',
+        '  old-poc: task file missing',
+        '    /work/old-poc',
+      ].join('\n'),
+    )
+    const one = await $.tool.call({ tool: TOOL, action: 'projects', text: 'golf' })
+    expect(one.result).toBe('  golf-app: 1 open\n    /work/golf-app')
+  })
+
+  test('registerProject: false keeps the index untouched', { options: { registerProject: false } }, async ($, on) => {
+    const w = world(on, { [TASKS]: '# Tasks\n## Todo\n- [ ] Ship v1\n' })
+    freshClock(on)
+    await $.session.start(START)
+    expect(w.files[INDEX]).toBeUndefined()
+  })
+
   test('injectContext tells the model about open tasks once per change', { options: { injectContext: true } }, async ($, on) => {
     const w = world(on, { [TASKS]: '# Tasks\n## Todo\n- [ ] Ship v1\n' })
     freshClock(on)
@@ -170,8 +228,8 @@ describe('project-tracker', () => {
       return { text: e.text }
     })
     await $.session.start(START)
-    await $.prompt.submit({ text: 'hi' })
-    await $.prompt.submit({ text: 'again' })
+    await $.prompt.submit({ text: 'hi', wait: false, origin: { kind: 'composer' } })
+    await $.prompt.submit({ text: 'again', wait: false, origin: { kind: 'composer' } })
     expect(sent[0]?.[0]).toMatch(/Open tasks:\nTodo:\n {2}1\. Ship v1/)
     expect(sent[1]?.length ?? 0).toBe(0)
     expect(w.files[TASKS]).toBe('# Tasks\n## Todo\n- [ ] Ship v1\n')
