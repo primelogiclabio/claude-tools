@@ -1,0 +1,68 @@
+# reference-doc
+
+A Claude Code skill that writes a technical reference or explainer document as
+two files that share one name:
+
+- **`topic.html`**: self-contained, with inline CSS and JS and no network
+  calls, so it opens offline by double-clicking. It has a light/dark toggle and
+  a jump-to-section menu that highlights the section you're reading.
+- **`topic.md`**: the same content in plain Markdown, for git, a wiki or a
+  chat paste.
+
+The skill tells Claude to:
+
+- gather and check the real facts first, for example by reading a tool's
+  LICENSE file before calling it free;
+- use real tables, CSS-grid diagrams and "what happens when…" walkthroughs;
+- always end with a **References** section, including official links and any
+  known lookalike domains;
+- open the result in a browser before handing it over.
+
+The full instructions are in [`SKILL.md`](SKILL.md).
+
+## When it runs
+
+Claude picks it up when you ask to document, write up, explain, or make an
+overview, comparison or decision doc for a technical topic. "Write this up",
+"document this" or "create an overview of X" is enough; you don't need to name
+a format. It's aimed at architecture explainers, build-vs-buy comparisons and
+cross-project research, not quick answers in chat.
+
+To call it directly, type `/reference-doc` and choose it from the list, then
+add the topic. When it's installed as a plugin, its full name is
+`/reference-doc:reference-doc`.
+
+## Where it saves
+
+- A doc about one project goes in that project's `docs/` folder.
+- Cross-project docs go in a documentation folder you name. If you haven't
+  named one, Claude asks.
+
+## Install
+
+The main install options, including the marketplace, are in the
+[repo README](../../README.md#installing). Notes specific to this skill:
+
+- **As a plain skill, without the plugin wrapper.** Link the folder into your
+  skills directory:
+
+  ```powershell
+  New-Item -ItemType Junction -Path "$HOME\.claude\skills\reference-doc" -Target "F:\development\claude-tools\skills\reference-doc"
+  ```
+
+  Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\reference-doc"`.
+  Never use `Remove-Item -Recurse` on a junction.
+- **Avoid loading it twice.** If this skill is already saved to your claude.ai
+  account, it may already be synced into your sessions. Don't also install it
+  from here, or two copies will compete to answer the same requests.
+- **It needs a browser.** It has no runtime dependencies, but its check step
+  expects one: the desktop app's built-in browser pane, or Claude in Chrome.
+
+## Files
+
+```
+reference-doc/
+├── .claude-plugin/plugin.json   lets this folder install as a plugin
+├── SKILL.md                     the skill: frontmatter + instructions
+└── README.md                    this file
+```

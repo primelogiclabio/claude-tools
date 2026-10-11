@@ -1,0 +1,16 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Dependencies and logs
+node_modules/
+*.log
+
+# Personal Claude Code settings for working in this repo
+.claude/settings.local.json
+
+# Plugin-specific ignores live next to each plugin
+# (e.g. mods/project-tracker/.gitignore for its generated types and tsconfig)

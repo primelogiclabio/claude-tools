@@ -1,0 +1,7 @@
+{
+  "name": "reference-doc",
+  "version": "0.1.0",
+  "author": { "name": "prime" },
+  "description": "Skill: build a self-contained HTML + Markdown technical reference/explainer doc (light/dark toggle, jump-to-section menu, no network calls)",
+  "skills": ["./"]
+}

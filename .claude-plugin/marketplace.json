@@ -1,0 +1,21 @@
+{
+  "name": "claude-tools",
+  "description": "prime's home-made Claude Code mods and skills",
+  "owner": {
+    "name": "prime"
+  },
+  "plugins": [
+    {
+      "name": "project-tracker",
+      "source": "./mods/project-tracker",
+      "description": "Per-project task list in a docked side pane, persisted in <repo>/.claude/tasks.md across sessions",
+      "category": "mod"
+    },
+    {
+      "name": "reference-doc",
+      "source": "./skills/reference-doc",
+      "description": "Skill: build a self-contained HTML + Markdown technical reference/explainer doc (light/dark toggle, jump-to-section menu, offline)",
+      "category": "skill"
+    }
+  ]
+}
