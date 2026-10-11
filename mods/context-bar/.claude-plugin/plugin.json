@@ -1,19 +1,27 @@
 {
   "name": "context-bar",
-  "version": "0.1.0",
-  "author": { "name": "prime" },
-  "description": "Thin bar above the prompt: context-window fill, tokens used this session, cost and plan rate limits, with /context-bar for the breakdown",
+  "version": "0.2.0",
+  "author": {
+    "name": "prime"
+  },
+  "description": "Context card above the prompt: the window as one bar segmented by /context category (system prompt, tools, MCP, agents, memory, skills, messages, free), a legend, a fill badge coloured by threshold, plus session tokens, cost and rate limits; /context-bar for the breakdown",
   "userConfig": {
     "showBand": {
       "type": "boolean",
-      "title": "Show the bar above the prompt",
-      "description": "Draw the context bar above the prompt. /context-bar hide and /context-bar show change it for the session.",
+      "title": "Show the context card above the prompt",
+      "description": "Draw the context card above the prompt. /context-bar hide and /context-bar show change it for the session.",
+      "default": true
+    },
+    "showLegend": {
+      "type": "boolean",
+      "title": "Show the legend under the bar",
+      "description": "List each category with its tokens and share under the bar. /context-bar compact and /context-bar full change it for the session.",
       "default": true
     },
     "warnAt": {
       "type": "number",
       "title": "Yellow from (% of context)",
-      "description": "The bar turns yellow when the context window is at least this full.",
+      "description": "The fill badge turns yellow when the context window is at least this full.",
       "default": 60,
       "min": 1,
       "max": 100
@@ -21,7 +29,7 @@
     "dangerAt": {
       "type": "number",
       "title": "Red from (% of context)",
-      "description": "The bar turns red when the context window is at least this full. Rate-limit windows use the same two thresholds.",
+      "description": "The fill badge turns red when the context window is at least this full. Rate-limit figures use the same two thresholds.",
       "default": 85,
       "min": 1,
       "max": 100

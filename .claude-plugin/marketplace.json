@@ -14,7 +14,7 @@
     {
       "name": "context-bar",
       "source": "./mods/context-bar",
-      "description": "Thin bar above the prompt: context-window fill, tokens this session, cost and plan rate limits; /context-bar for the breakdown",
+      "description": "Context card above the prompt: the window as one bar split by /context category, a legend, a threshold-coloured fill badge, plus session tokens, cost and rate limits",
       "category": "mod"
     },
     {

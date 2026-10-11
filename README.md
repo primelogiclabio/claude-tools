@@ -30,7 +30,7 @@ claude-tools/
 | Name | Kind | What it does |
 | --- | --- | --- |
 | [project-tracker](mods/project-tracker/README.md) | mod | Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
-| [context-bar](mods/context-bar/README.md) | mod | Thin bar above the prompt: context-window fill, tokens this session, cost and plan rate limits, coloured as it fills; `/context-bar` for the breakdown |
+| [context-bar](mods/context-bar/README.md) | mod | Context card above the prompt: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
 | [resource-monitor](mods/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
 | [generate-docs](skills/generate-docs/README.md) | skill | Generates project or research documentation as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
 

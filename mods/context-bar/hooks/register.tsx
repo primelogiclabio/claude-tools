@@ -3,13 +3,21 @@ import type { EngineInterface, Register } from 'claude-code'
 import {
   LEVEL_COLOR,
   addUsage,
-  bandFigures,
+  allocate,
   bar,
+  barCategories,
+  categoryLabel,
   describeUsage,
   emptyTotals,
+  fmtPercent,
+  fmtTokens,
+  fmtUsd,
   level,
   limitLabel,
-  fmtPercent,
+  pctShort,
+  sessionTokens,
+  type Breakdown,
+  type Category,
   type Snapshot,
   type Totals,
 } from './usage'
@@ -17,9 +25,11 @@ import {
 const COMMAND = 'context-bar'
 
 const HELP = [
-  '/context-bar            the full breakdown: context by category, tokens this session, cost, rate limits',
-  '/context-bar hide       hide the bar above the prompt for this session',
+  '/context-bar            the full breakdown as text: context by category, tokens this session, cost, rate limits',
+  '/context-bar hide       hide the card above the prompt for this session',
   '/context-bar show       show it again',
+  '/context-bar compact    header and bar only, no legend',
+  '/context-bar full       header, bar and the legend',
 ].join('\n')
 
 // Module state. A reload of the module (a plugin update, /reload-plugins)
@@ -28,46 +38,85 @@ const HELP = [
 let snap: Snapshot = { window: 0, rateLimits: [] }
 let totals: Totals = emptyTotals()
 let isBandShown = true
+let isLegendShown = true
 let warnAt = 60
 let dangerAt = 85
 let isCostShown = true
+let isBreaking = false
 
 function num(v: unknown, fallback: number): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback
 }
 
-function take(u: {
-  context: { window: number; tokens?: number; percent?: number }
+type UsageLike = {
+  context: {
+    window: number
+    tokens?: number
+    percent?: number
+    breakdown?: {
+      categories: readonly { name: string; tokens: number; color: string; kind: Category['kind'] }[]
+      rawMaxTokens: number
+      autoCompactThreshold?: number
+      isAutoCompactEnabled: boolean
+    }
+  }
   rateLimits: readonly { kind: string; percentUsed: number; resetsAt?: string }[]
   cost?: { usd: number }
-}): void {
+}
+
+function toBreakdown(b: NonNullable<UsageLike['context']['breakdown']>): Breakdown {
+  return {
+    categories: b.categories.map(c => ({ name: c.name, tokens: c.tokens, color: c.color, kind: c.kind })),
+    maxTokens: b.rawMaxTokens,
+    compactAt: b.isAutoCompactEnabled ? b.autoCompactThreshold : undefined,
+  }
+}
+
+function take(u: UsageLike): void {
   snap = {
     window: u.context.window,
     tokens: u.context.tokens,
     percent: u.context.percent,
     rateLimits: u.rateLimits.map(r => ({ kind: r.kind, percentUsed: r.percentUsed, resetsAt: r.resetsAt })),
     costUsd: u.cost?.usd,
+    // A measurement without a breakdown keeps the last one until the next.
+    breakdown: u.context.breakdown !== undefined ? toBreakdown(u.context.breakdown) : snap.breakdown,
   }
 }
 
+// The /context categories, estimated locally ("summary": no API request).
 async function refresh($: EngineInterface): Promise<void> {
-  take(await $.session.usage())
+  if (isBreaking) return
+  isBreaking = true
+  try {
+    take(await $.session.usage({ breakdown: 'summary' }))
+  } catch {
+    take(await $.session.usage())
+  } finally {
+    isBreaking = false
+  }
   $.ui.invalidate('ui.render')
+}
+
+function pad(text: string, width: number): string {
+  return text.length >= width ? text : text + ' '.repeat(width - text.length)
 }
 
 export const register: Register = (on, options) => {
   isBandShown = options.showBand !== false
+  isLegendShown = options.showLegend !== false
   isCostShown = options.showCost !== false
   warnAt = num(options.warnAt, 60)
   dangerAt = Math.max(warnAt, num(options.dangerAt, 85))
   totals = emptyTotals()
+  snap = { window: 0, rateLimits: [] }
 
   on('session.start', async ($, e, next) => {
     const started = await next(e)
     await $.command.register({
       name: COMMAND,
-      description: 'Context window, tokens this session, cost and rate limits in full; hide or show the bar',
-      argumentHint: '[hide|show|help]',
+      description: 'Context window by category, tokens this session, cost and rate limits; hide, show or compact the card',
+      argumentHint: '[hide|show|compact|full|help]',
     })
     await refresh($).catch(() => undefined)
 
@@ -78,6 +127,7 @@ export const register: Register = (on, options) => {
   on('session.measure', async ($, e, next) => {
     take(e)
     $.ui.invalidate('ui.render')
+    if (e.changed.includes('context')) void refresh($).catch(() => undefined)
 
     return next(e)
   })
@@ -99,23 +149,23 @@ export const register: Register = (on, options) => {
   on('command.run', { command: COMMAND }, async ($, e) => {
     const verb = e.args.trim().toLowerCase()
     if (verb === 'help' || verb === '?') return { text: HELP }
-    if (verb === 'hide') {
-      isBandShown = false
-      $.ui.invalidate('ui.render')
-
-      return { text: 'Context bar hidden for this session. /context-bar show brings it back.' }
+    const toggles: Record<string, () => string> = {
+      hide: () => ((isBandShown = false), 'Context card hidden for this session. /context-bar show brings it back.'),
+      show: () => ((isBandShown = true), 'Context card shown.'),
+      compact: () => ((isLegendShown = false), 'Context card: header and bar only. /context-bar full brings the legend back.'),
+      full: () => ((isLegendShown = true), (isBandShown = true), 'Context card: header, bar and legend.'),
     }
-    if (verb === 'show') {
-      isBandShown = true
+    const toggle = toggles[verb]
+    if (toggle !== undefined) {
+      const said = toggle()
       $.ui.invalidate('ui.render')
 
-      return { text: 'Context bar shown.' }
+      return { text: said }
     }
     if (verb !== '') return { text: `Unknown option "${verb}".\n${HELP}` }
 
-    const usage = await $.session.usage({ breakdown: 'summary' })
-    take(usage)
-    const categories = usage.context.breakdown?.categories.map(c => ({ name: c.name, tokens: c.tokens, kind: c.kind }))
+    await refresh($)
+    const categories = snap.breakdown?.categories.map(c => ({ name: c.name, tokens: c.tokens, kind: c.kind }))
 
     return { text: describeUsage(snap, totals, await $.clock.now(), categories) }
   }).catch(($, e, next) => ({
@@ -126,35 +176,108 @@ export const register: Register = (on, options) => {
     if (!isBandShown || e.props.hasSurvey || snap.window <= 0) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)
-    const columns = Math.max(20, e.props.bodyColumns)
-    const figures = bandFigures(snap, totals, isCostShown)
-    const limits = figures.slice(figures.length - snap.rateLimits.length)
-    let lead = figures.slice(0, figures.length - snap.rateLimits.length)
-    let shownLimits = snap.rateLimits.slice()
-
-    // Fit the row: drop rate limits from the end, then cost and session tokens,
-    // keeping a bar of at least 8 cells and the context figure.
-    const label = 'context '
-    const width = () => label.length + 1 + [...lead, ...shownLimits.map((_, i) => limits[i] ?? '')].join(' · ').length + 3
-    while (columns - width() < 8 && shownLimits.length > 0) shownLimits = shownLimits.slice(0, -1)
-    while (columns - width() < 8 && lead.length > 1) lead = lead.slice(0, -1)
-    const barWidth = Math.min(30, Math.max(8, columns - width()))
-    const b = bar(snap.percent, barWidth)
+    const columns = Math.max(24, e.props.bodyColumns)
     const color = LEVEL_COLOR[level(snap.percent, warnAt, dangerAt)]
+    const b = snap.breakdown
+    const cats = b === undefined ? [] : barCategories(b)
+
+    // Header: "◆ context" left; "212k of 1M · compacts at 950k" and the badge right.
+    const used = snap.tokens === undefined ? '—' : fmtTokens(snap.tokens)
+    const right = `${used} of ${fmtTokens(snap.window)}${b?.compactAt !== undefined ? ` · compacts at ${fmtTokens(b.compactAt)}` : ''}`
+    const badge = ` ${snap.percent === undefined ? '—' : `${snap.percent}%`} `
+    const left = '◆ context'
+    const rightFits = left.length + 2 + right.length + 1 + badge.length <= columns
+    const gap = Math.max(1, columns - left.length - (rightFits ? right.length + 1 : 0) - badge.length)
+
+    const header = (
+      <Box key="header" flexDirection="row">
+        <Text bold>{left}</Text>
+        <Text>{' '.repeat(gap)}</Text>
+        {rightFits && <Text dimColor>{right + ' '}</Text>}
+        <Text key="badge" color={color} inverse bold>{badge}</Text>
+      </Box>
+    )
+
+    // The bar: one segment per category, proportional to its share of the window.
+    let barRow
+    if (cats.length > 0) {
+      const cells = allocate(cats.map(c => c.tokens), columns)
+      barRow = (
+        <Box key="bar" flexDirection="row">
+          {cats.map((c, i) => {
+            const n = cells[i] ?? 0
+            if (n === 0) return null
+            const glyph = c.kind === 'free' ? '░' : c.kind === 'buffer' ? '▒' : '█'
+
+            return (
+              <Text key={`seg-${i}`} color={c.kind === 'free' ? undefined : c.color} dimColor={c.kind === 'free'}>
+                {glyph.repeat(n)}
+              </Text>
+            )
+          })}
+        </Box>
+      )
+    } else {
+      // No breakdown yet (or the engine gave none): the fill alone, in the level's colour.
+      const plain = bar(snap.percent, columns)
+      barRow = (
+        <Box key="bar" flexDirection="row">
+          <Text color={color}>{plain.filled}</Text>
+          <Text dimColor>{plain.empty}</Text>
+        </Box>
+      )
+    }
+
+    // Legend: a coloured square, the label, tokens and share, in columns.
+    const items = cats.map(c => ({
+      c,
+      text: c.kind === 'free'
+        ? `${categoryLabel(c.name)} ${fmtTokens(c.tokens)}`
+        : `${categoryLabel(c.name)} ${fmtTokens(c.tokens)} ${pctShort((c.tokens / (b?.maxTokens || 1)) * 100)}`,
+    }))
+    const cellWidth = Math.max(0, ...items.map(it => it.text.length)) + 4
+    const perRow = Math.max(1, Math.floor(columns / Math.max(1, cellWidth)))
+    const legendRows: (typeof items)[] = []
+    for (let i = 0; i < items.length; i += perRow) legendRows.push(items.slice(i, i + perRow))
+
+    // Session tokens, cost and rate limits, dim, on one last line.
+    const usage: { key: string; text: string; color?: string }[] = [{ key: 'session', text: `session ${fmtTokens(sessionTokens(totals))} tok` }]
+    if (isCostShown && snap.costUsd !== undefined) usage.push({ key: 'cost', text: fmtUsd(snap.costUsd) })
+    for (const r of snap.rateLimits) {
+      usage.push({ key: `limit-${r.kind}`, text: `${limitLabel(r.kind)} ${fmtPercent(r.percentUsed)}`, color: LEVEL_COLOR[level(r.percentUsed, warnAt, dangerAt)] })
+    }
+
+    // Fit the rows the band has: drop the usage line first, then the legend.
+    const room = e.props.maxRows
+    let showLegend = isLegendShown && legendRows.length > 0
+    let showUsage = true
+    if (2 + (showLegend ? legendRows.length : 0) + 1 > room) showUsage = false
+    if (2 + (showLegend ? legendRows.length : 0) > room) showLegend = false
 
     return (
-      <Box flexDirection="row">
-        <Text dimColor>{label}</Text>
-        <Text color={color}>{b.filled}</Text>
-        <Text dimColor>{b.empty}</Text>
-        <Text> </Text>
-        <Text color={color}>{lead[0]}</Text>
-        {lead.length > 1 && <Text dimColor>{' · ' + lead.slice(1).join(' · ')}</Text>}
-        {shownLimits.map(r => (
-          <Text key={`limit-${r.kind}`} color={LEVEL_COLOR[level(r.percentUsed, warnAt, dangerAt)]}>
-            {' · ' + limitLabel(r.kind) + ' ' + fmtPercent(r.percentUsed)}
-          </Text>
-        ))}
+      <Box flexDirection="column" width={columns}>
+        {header}
+        {barRow}
+        {showLegend &&
+          legendRows.map((row, r) => (
+            <Box key={`legend-${r}`} flexDirection="row">
+              {row.map(({ c, text }, i) => (
+                <Box key={`item-${r}-${i}`} flexDirection="row">
+                  <Text color={c.kind === 'free' ? undefined : c.color} dimColor={c.kind === 'free'}>{c.kind === 'free' ? '□' : '■'}</Text>
+                  <Text dimColor={c.kind === 'free'}>{' ' + pad(text, cellWidth - 2)}</Text>
+                </Box>
+              ))}
+            </Box>
+          ))}
+        {showUsage && (
+          <Box key="usage" flexDirection="row">
+            {usage.map((u, i) => (
+              <Text key={u.key} color={u.color} dimColor={u.color === undefined}>
+                {(i === 0 ? '' : ' · ') + u.text}
+              </Text>
+            ))}
+          </Box>
+        )}
       </Box>
     )
   })

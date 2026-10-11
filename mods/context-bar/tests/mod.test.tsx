@@ -9,37 +9,58 @@ const RUN = { origin: { kind: 'composer' }, presentation: { isFullscreen: true, 
 const BAND_PROPS = {
   hasSurvey: false,
   isWorking: false,
-  maxRows: 10,
+  maxRows: 12,
   bodyColumns: 120,
-  scroll: { offset: 0, bodyRows: 10 },
+  scroll: { offset: 0, bodyRows: 12 },
   view: {},
 } as const
 
 type Usage = SessionUsage
 
-// The engine beneath the plugin: $.session.usage answers `usage`, and the
-// registered command is recorded.
-function world(on: On, usage: Usage) {
-  const w = { usage, commands: [] as string[] }
+// The /context categories of a 1M window, as the engine's local estimate
+// returns them (the figures of the reference screenshot).
+const CATEGORIES = [
+  { name: 'System prompt', tokens: 3400, color: 'promptBorder', isDeferred: false, kind: 'used' },
+  { name: 'System tools', tokens: 12000, color: 'suggestion', isDeferred: false, kind: 'used' },
+  { name: 'MCP tools', tokens: 2600, color: 'planMode', isDeferred: false, kind: 'used' },
+  { name: 'MCP tools (deferred)', tokens: 9000, color: 'inactive', isDeferred: true, kind: 'deferred' },
+  { name: 'Custom agents', tokens: 1100, color: 'permission', isDeferred: false, kind: 'used' },
+  { name: 'Memory files', tokens: 4900, color: 'remember', isDeferred: false, kind: 'used' },
+  { name: 'Skills', tokens: 2200, color: 'warning', isDeferred: false, kind: 'used' },
+  { name: 'Messages', tokens: 186000, color: 'claude', isDeferred: false, kind: 'used' },
+  { name: 'Free space', tokens: 788000, color: 'inactive', isDeferred: false, kind: 'free' },
+] as const
+
+function breakdown() {
+  return {
+    categories: CATEGORIES,
+    totalTokens: 212200,
+    maxTokens: 1000000,
+    rawMaxTokens: 1000000,
+    autocompactSource: 'model-default',
+    percentage: 21,
+    gridRows: [],
+    model: 'claude-opus-5-5',
+    memoryFiles: [],
+    mcpTools: [],
+    agents: [],
+    autoCompactThreshold: 950000,
+    isAutoCompactEnabled: true,
+    apiUsage: null,
+  } as unknown as SessionUsage['context']['breakdown']
+}
+
+// The engine beneath the plugin: $.session.usage answers `usage`, with the
+// breakdown when asked; the registered command is recorded.
+function world(on: On, usage: Usage, opts: { hasBreakdown?: boolean } = {}) {
+  const w = { usage, commands: [] as string[], breakdownCalls: 0 }
   on('session.start', ($, e) => ({ cwd: e.cwd }))
-  on('session.usage', ($, e) => ({
-    value:
-      e.breakdown === undefined
-        ? w.usage
-        : {
-            ...w.usage,
-            context: {
-              ...w.usage.context,
-              breakdown: {
-                categories: [
-                  { name: 'System prompt', tokens: 3000, color: 'promptBorder', isDeferred: false, kind: 'used' },
-                  { name: 'Messages', tokens: 120000, color: 'permission', isDeferred: false, kind: 'used' },
-                  { name: 'Free space', tokens: 77000, color: 'inactive', isDeferred: false, kind: 'free' },
-                ],
-              } as unknown as SessionUsage['context']['breakdown'],
-            },
-          },
-  }))
+  on('session.usage', ($, e) => {
+    if (e.breakdown === undefined || opts.hasBreakdown === false) return { value: w.usage }
+    w.breakdownCalls += 1
+
+    return { value: { ...w.usage, context: { ...w.usage.context, breakdown: breakdown() } } }
+  })
   on('command.register', ($, e) => {
     w.commands.push(e.name)
 
@@ -57,11 +78,11 @@ function world(on: On, usage: Usage) {
   return w
 }
 
-const FRESH: Usage = { startedAt: 1, context: { window: 200000 }, rateLimits: [] }
+const FRESH: Usage = { startedAt: 1, context: { window: 1000000 }, rateLimits: [] }
 
 const BUSY: Usage = {
   startedAt: 1,
-  context: { window: 200000, tokens: 124000, percent: 62 },
+  context: { window: 1000000, tokens: 212000, percent: 21 },
   rateLimits: [
     { kind: 'five_hour', percentUsed: 23.5, resetsAt: '2026-10-10T14:30:00Z' },
     { kind: 'seven_day', percentUsed: 91 },
@@ -71,79 +92,139 @@ const BUSY: Usage = {
 
 const USAGE_1 = { input_tokens: 1000, output_tokens: 500, cache_read_input_tokens: 20000, cache_creation_input_tokens: 3000 }
 
-function band(surface: 'terminal' | 'desktop', columns = 120) {
-  return { plugin: PLUGIN, surface, component: 'AbovePrompt', props: { ...BAND_PROPS, bodyColumns: columns } } as const
+function band(surface: 'terminal' | 'desktop', columns = 120, maxRows = 12) {
+  return { plugin: PLUGIN, surface, component: 'AbovePrompt', props: { ...BAND_PROPS, bodyColumns: columns, maxRows } } as const
+}
+
+const settle = async () => {
+  const { setTimeout: wait } = globalThis as unknown as { setTimeout: (fn: () => void, ms: number) => unknown }
+  await new Promise<void>(resolve => wait(resolve, 20))
 }
 
 describe('context-bar', () => {
-  test('registers /context-bar and reads the usage at start', async ($, on) => {
+  test('registers /context-bar and reads the breakdown at start', async ($, on) => {
     const w = world(on, BUSY)
-    mock.clock(on, { now: Date.UTC(2026, 9, 10, 12) })
+    mock.clock(on, { now: 0 })
     await $.session.start(START)
     expect(w.commands).toEqual(['context-bar'])
+    expect(w.breakdownCalls).toBe(1)
   })
 
   for (const surface of ['terminal', 'desktop'] as const) {
-    test(`the bar shows fill, tokens, cost and limits, coloured by threshold (${surface})`, async ($, on) => {
+    test(`the card: header, a bar segmented by category, a legend (${surface})`, async ($, on) => {
       world(on, BUSY)
-      mock.clock(on, { now: Date.UTC(2026, 9, 10, 12) })
+      mock.clock(on, { now: 0 })
       await $.session.start({ ...START, surface })
-      await $.turn.complete({ answer: 'ok', durationMs: 10, isAborted: false, turnId: 't1', reason: 'answer', usage: { ...USAGE_1, model: 'claude-opus-5-5' } })
       const ui = await $.ui.mount(band(surface))
-      expect(await ui.find({ type: 'Text', text: '62% 124k/200k' })).toBeDefined()
-      expect(await ui.find({ type: 'Text', text: / · session 25k tok · \$3\.41/ })).toBeDefined()
-      const fiveHour = await ui.find({ type: 'Text', text: ' · 5h 23.5%' })
-      expect(fiveHour).toBeDefined()
-      expect(fiveHour?.props.color).toBe('success')
+      expect(await ui.find({ type: 'Text', text: '◆ context' })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: '212k of 1M · compacts at 950k ' })).toBeDefined()
+      const badge = await ui.find({ type: 'Text', text: ' 21% ' })
+      expect(badge?.props.color).toBe('success')
+      expect(badge?.props.inverse).toBe(true)
+
+      // Messages is the widest used segment, in its /context colour; free space is dim.
+      expect((await ui.find({ type: 'Text', text: /^█{20,}$/ }))?.props.color).toBe('claude')
+      expect((await ui.find({ type: 'Text', text: /^░{80,}$/ }))?.props.dimColor).toBe(true)
+
+      for (const label of ['system prompt 3.4k 0.3%', 'tools 12k 1%', 'mcp tools 2.6k 0.3%', 'agents 1.1k 0.1%', 'memory files 4.9k 0.5%', 'skills 2.2k 0.2%', 'messages 186k 19%', 'free 788k']) {
+        expect(await ui.find({ type: 'Text', text: new RegExp(`^ ${label} *$`) })).toBeDefined()
+      }
+      expect(await ui.find({ type: 'Text', text: /deferred/ })).toBeUndefined()
+      expect(await ui.find({ type: 'Text', text: ' · $3.41' })).toBeDefined()
       expect((await ui.find({ type: 'Text', text: ' · 7d 91%' }))?.props.color).toBe('error')
-      expect((await ui.find({ type: 'Text', text: '62% 124k/200k' }))?.props.color).toBe('warning')
       await ui.unmount()
     })
   }
 
-  test('a fresh session shows the window with no fill yet', async ($, on) => {
-    world(on, FRESH)
+  test('every category in the window gets a segment, even a tiny one', async ($, on) => {
+    world(on, BUSY)
     mock.clock(on, { now: 0 })
     await $.session.start(START)
-    const ui = await $.ui.mount(band('terminal'))
-    expect(await ui.find({ type: 'Text', text: '—/200k' })).toBeDefined()
+    const ui = await $.ui.mount(band('terminal', 60))
+    // The 8 categories in the window each draw: 7 coloured segments and the free one.
+    const used = await ui.findAll({ type: 'Text', text: /^█+$/ })
+    expect(used.map(s => s.props.color)).toEqual(['promptBorder', 'suggestion', 'planMode', 'permission', 'remember', 'warning', 'claude'])
+    const free = await ui.findAll({ type: 'Text', text: /^░+$/ })
+    expect(free).toHaveLength(1)
+    const width = [...used, ...free].reduce((n, s) => n + (s.text ?? '').length, 0)
+    expect(width).toBe(60)
     await ui.unmount()
   })
 
-  test('session.measure updates the bar without a call', async ($, on) => {
+  test('the badge colour follows the thresholds', { options: { warnAt: 15, dangerAt: 20 } }, async ($, on) => {
+    world(on, BUSY)
+    mock.clock(on, { now: 0 })
+    await $.session.start(START)
+    const ui = await $.ui.mount(band('terminal'))
+    expect((await ui.find({ type: 'Text', text: ' 21% ' }))?.props.color).toBe('error')
+    await ui.unmount()
+  })
+
+  test('without a breakdown it falls back to a single fill bar', async ($, on) => {
+    world(on, BUSY, { hasBreakdown: false })
+    mock.clock(on, { now: 0 })
+    await $.session.start(START)
+    const ui = await $.ui.mount(band('terminal'))
+    expect(await ui.find({ type: 'Text', text: /messages/ })).toBeUndefined()
+    expect((await ui.find({ type: 'Text', text: /^█+$/ }))?.props.color).toBe('success')
+    await ui.unmount()
+  })
+
+  test('a fresh session shows the window with no fill yet', async ($, on) => {
+    world(on, FRESH, { hasBreakdown: false })
+    mock.clock(on, { now: 0 })
+    await $.session.start(START)
+    const ui = await $.ui.mount(band('terminal'))
+    expect(await ui.find({ type: 'Text', text: '— of 1M ' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: ' — ' })).toBeDefined()
+    await ui.unmount()
+  })
+
+  test('session.measure updates the badge and fetches a fresh breakdown', async ($, on) => {
     const w = world(on, FRESH)
     mock.clock(on, { now: 0 })
     await $.session.start(START)
-    w.usage = BUSY
-    await $.session.measure({ context: { window: 200000, tokens: 190000, percent: 95 }, rateLimits: [], changed: ['context'] })
+    w.usage = { ...BUSY, context: { window: 1000000, tokens: 900000, percent: 90 } }
+    await $.session.measure({ context: { window: 1000000, tokens: 900000, percent: 90 }, rateLimits: [], changed: ['context'] })
+    await settle()
+    expect(w.breakdownCalls).toBe(2)
     const ui = await $.ui.mount(band('terminal'))
-    const fill = await ui.find({ type: 'Text', text: '95% 190k/200k' })
-    expect(fill?.props.color).toBe('error')
+    expect((await ui.find({ type: 'Text', text: ' 90% ' }))?.props.color).toBe('error')
     await ui.unmount()
   })
 
-  test('a narrow band drops the rate limits before the context figure', async ($, on) => {
+  test('a short band drops the usage line, then the legend', async ($, on) => {
     world(on, BUSY)
     mock.clock(on, { now: 0 })
     await $.session.start(START)
-    const ui = await $.ui.mount(band('terminal', 40))
-    expect(await ui.find({ type: 'Text', text: '62% 124k/200k' })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: ' · 7d 91%' })).toBeUndefined()
+    let ui = await $.ui.mount(band('terminal', 120, 3))
+    expect(await ui.find({ type: 'Text', text: /^ messages 186k/ })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: /session .* tok/ })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: '◆ context' })).toBeDefined()
+    await ui.unmount()
+    ui = await $.ui.mount(band('terminal', 120, 4))
+    expect(await ui.find({ type: 'Text', text: /^ messages 186k/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /session .* tok/ })).toBeUndefined()
     await ui.unmount()
   })
 
-  test('/context-bar hide and show toggle the bar', async ($, on) => {
+  test('/context-bar hide, show, compact and full', async ($, on) => {
     world(on, BUSY)
     mock.clock(on, { now: 0 })
     await $.session.start(START)
-    const hidden = await $.command.run({ ...RUN, command: 'context-bar', args: 'hide' })
-    expect(hidden.text).toMatch(/hidden/)
+    expect((await $.command.run({ ...RUN, command: 'context-bar', args: 'hide' })).text).toMatch(/hidden/)
     let ui = await $.ui.mount(band('terminal'))
-    expect(await ui.find({ type: 'Text', text: '62% 124k/200k' })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: '◆ context' })).toBeUndefined()
     await ui.unmount()
     await $.command.run({ ...RUN, command: 'context-bar', args: 'show' })
+    await $.command.run({ ...RUN, command: 'context-bar', args: 'compact' })
     ui = await $.ui.mount(band('terminal'))
-    expect(await ui.find({ type: 'Text', text: '62% 124k/200k' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: '◆ context' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^ messages 186k/ })).toBeUndefined()
+    await ui.unmount()
+    await $.command.run({ ...RUN, command: 'context-bar', args: 'full' })
+    ui = await $.ui.mount(band('terminal'))
+    expect(await ui.find({ type: 'Text', text: /^ messages 186k/ })).toBeDefined()
     await ui.unmount()
   })
 
@@ -154,15 +235,15 @@ describe('context-bar', () => {
     await $.turn.complete({ answer: 'a', durationMs: 1, isAborted: false, turnId: 't1', reason: 'answer', usage: { ...USAGE_1, model: 'm' } })
     await $.turn.complete({ answer: 'b', durationMs: 1, isAborted: false, turnId: 't2', reason: 'answer', agentId: 'agent-1', usage: { ...USAGE_1, model: 'm' } })
     const out = await $.command.run({ ...RUN, command: 'context-bar', args: '' })
-    expect(out.text).toMatch(/124,000 of 200,000 tokens \(62%\)/)
-    expect(out.text).toMatch(/Messages: 120k/)
-    expect(out.text).toMatch(/Free space: 77k \(free\)/)
+    expect(out.text).toMatch(/212,000 of 1,000,000 tokens \(21%\)/)
+    expect(out.text).toMatch(/Auto-compaction at 950,000 tokens/)
+    expect(out.text).toMatch(/Messages: 186k/)
+    expect(out.text).toMatch(/Free space: 788k \(free\)/)
+    expect(out.text).toMatch(/MCP tools \(deferred\): 9\.0k \(loaded on demand, not in the window\)/)
     expect(out.text).toMatch(/Main conversation: 25k in 1 turn /)
     expect(out.text).toMatch(/Subagents: 25k in 1 turn /)
-    expect(out.text).toMatch(/Total: 49k/)
     expect(out.text).toMatch(/\$3\.41 this session/)
     expect(out.text).toMatch(/5h: 23\.5% used, resets in 2h 30m/)
-    expect(out.text).toMatch(/7d: 91% used/)
   })
 
   test('off a subscription the rate limits say why they are missing', async ($, on) => {
@@ -172,15 +253,5 @@ describe('context-bar', () => {
     const out = await $.command.run({ ...RUN, command: 'context-bar', args: '' })
     expect(out.text).toMatch(/None reported/)
     expect(out.text).toMatch(/no cost ledger/)
-  })
-
-  test('thresholds come from the options', { options: { warnAt: 50, dangerAt: 60, showCost: false } }, async ($, on) => {
-    world(on, BUSY)
-    mock.clock(on, { now: 0 })
-    await $.session.start(START)
-    const ui = await $.ui.mount(band('terminal'))
-    expect((await ui.find({ type: 'Text', text: '62% 124k/200k' }))?.props.color).toBe('error')
-    expect(await ui.find({ type: 'Text', text: /\$3\.41/ })).toBeUndefined()
-    await ui.unmount()
   })
 })

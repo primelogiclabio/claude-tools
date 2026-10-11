@@ -59,12 +59,11 @@ What to know:
   PowerShell's process query on Windows, and less elsewhere. That's why the
   interval can't go below 2 s.
 - **Testing so far:**
-  - The Windows and Linux sampler scripts were run directly: Windows 11, and
-    Linux under WSL.
+  - Checked live on Windows 11 in the desktop app's Code tab: the tree's root
+    is the session's own `claude.exe`, with its shells and console hosts under
+    it.
+  - The Linux sampler script was run under WSL.
   - The mod's logic is covered by its test suite.
-  - The mod has not yet been run in a live session. Still to check: in a real
-    session, the sampler's parent should be the Claude Code process. If the
-    pane shows the wrong root, open an issue.
   - **macOS** hasn't been run at all yet. It uses only `ps` and `sysctl`.
 - If the sampler can't start, the pane and the tool say why instead of
   showing numbers. For example, `powershell.exe` might be blocked by policy.

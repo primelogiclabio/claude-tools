@@ -21,6 +21,24 @@ export type Totals = {
 
 export type RateLimit = { kind: string; percentUsed: number; resetsAt?: string }
 
+/** One row of the engine's /context breakdown, as the bar draws it. */
+export type Category = {
+  name: string
+  tokens: number
+  /** A theme key (`promptBorder`, `permission`, …), the colour /context draws it in. */
+  color: string
+  kind: 'used' | 'free' | 'buffer' | 'deferred'
+}
+
+/** The window by category: the engine's local estimate, as /context counts it. */
+export type Breakdown = {
+  categories: Category[]
+  /** The window the categories are measured against (may be a compaction window). */
+  maxTokens: number
+  /** Where auto-compaction runs; absent when it's off. */
+  compactAt?: number
+}
+
 /** What the bar draws, as the engine last measured it. */
 export type Snapshot = {
   window: number
@@ -28,6 +46,66 @@ export type Snapshot = {
   percent?: number
   rateLimits: RateLimit[]
   costUsd?: number
+  breakdown?: Breakdown
+}
+
+const LABEL: Record<string, string> = {
+  'system tools': 'tools',
+  'custom agents': 'agents',
+  'free space': 'free',
+  'autocompact buffer': 'compact buffer',
+}
+
+/** /context's row name, lower-cased and shortened as the bar's legend shows it. */
+export function categoryLabel(name: string): string {
+  const lower = name.toLowerCase()
+
+  return LABEL[lower] ?? lower
+}
+
+/** 0.3%, 1%, 19%: one decimal under 1%, whole numbers above. */
+export function pctShort(p: number): string {
+  if (p > 0 && p < 1) return `${p.toFixed(1)}%`
+
+  return `${Math.round(p)}%`
+}
+
+/** The categories the bar draws: in the window (not deferred), with tokens, in /context's order. */
+export function barCategories(b: Breakdown): Category[] {
+  return b.categories.filter(c => c.kind !== 'deferred' && c.tokens > 0)
+}
+
+/**
+ * Cells per category for a bar `width` wide, proportional to tokens: largest
+ * remainders first, and every category that has tokens gets at least one cell
+ * while the bar has room, taken from the widest segment.
+ */
+export function allocate(tokens: readonly number[], width: number): number[] {
+  const total = tokens.reduce((a, b) => a + b, 0)
+  if (total <= 0 || width <= 0) return tokens.map(() => 0)
+  const exact = tokens.map(t => (t / total) * width)
+  const cells = exact.map(Math.floor)
+  let left = width - cells.reduce((a, b) => a + b, 0)
+  const order = exact.map((x, i) => ({ i, r: x - Math.floor(x) })).sort((a, b) => b.r - a.r)
+  for (const { i } of order) {
+    if (left <= 0) break
+    cells[i] = (cells[i] ?? 0) + 1
+    left -= 1
+  }
+  const nonzero = tokens.filter(t => t > 0).length
+  if (nonzero <= width) {
+    for (let i = 0; i < tokens.length; i++) {
+      if ((tokens[i] ?? 0) > 0 && cells[i] === 0) {
+        let widest = 0
+        for (let j = 1; j < cells.length; j++) if ((cells[j] ?? 0) > (cells[widest] ?? 0)) widest = j
+        if ((cells[widest] ?? 0) <= 1) break
+        cells[widest] = (cells[widest] ?? 0) - 1
+        cells[i] = 1
+      }
+    }
+  }
+
+  return cells
 }
 
 export const NO_TOKENS: Tokens = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
@@ -72,9 +150,9 @@ export function fmtTokens(n: number): string {
   if (n < 1000) return String(Math.round(n))
   if (n < 10_000) return `${(n / 1000).toFixed(1)}k`
   if (n < 1_000_000) return `${Math.round(n / 1000)}k`
-  if (n < 10_000_000) return `${(n / 1_000_000).toFixed(2)}M`
+  const m = (n / 1_000_000).toFixed(n < 10_000_000 ? 2 : 1).replace(/\.?0+$/, '')
 
-  return `${(n / 1_000_000).toFixed(1)}M`
+  return `${m}M`
 }
 
 export function fmtUsd(usd: number): string {
@@ -141,6 +219,9 @@ export function describeUsage(
     lines.push(`  ${fmtTokens(s.window)} tokens; no response in this window yet (a new session, or just compacted).`)
   } else {
     lines.push(`  ${s.tokens.toLocaleString('en-US')} of ${s.window.toLocaleString('en-US')} tokens (${fmtPercent(s.percent ?? 0)})`)
+  }
+  if (s.breakdown?.compactAt !== undefined) {
+    lines.push(`  Auto-compaction at ${s.breakdown.compactAt.toLocaleString('en-US')} tokens`)
   }
   if (categories !== undefined && categories.length > 0) {
     lines.push('  By category (local estimate):')
