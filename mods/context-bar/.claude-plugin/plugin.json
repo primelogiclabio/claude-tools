@@ -1,0 +1,36 @@
+{
+  "name": "context-bar",
+  "version": "0.1.0",
+  "author": { "name": "prime" },
+  "description": "Thin bar above the prompt: context-window fill, tokens used this session, cost and plan rate limits, with /context-bar for the breakdown",
+  "userConfig": {
+    "showBand": {
+      "type": "boolean",
+      "title": "Show the bar above the prompt",
+      "description": "Draw the context bar above the prompt. /context-bar hide and /context-bar show change it for the session.",
+      "default": true
+    },
+    "warnAt": {
+      "type": "number",
+      "title": "Yellow from (% of context)",
+      "description": "The bar turns yellow when the context window is at least this full.",
+      "default": 60,
+      "min": 1,
+      "max": 100
+    },
+    "dangerAt": {
+      "type": "number",
+      "title": "Red from (% of context)",
+      "description": "The bar turns red when the context window is at least this full. Rate-limit windows use the same two thresholds.",
+      "default": 85,
+      "min": 1,
+      "max": 100
+    },
+    "showCost": {
+      "type": "boolean",
+      "title": "Show session cost",
+      "description": "Show the session's cost in US dollars, as /cost totals it (on a subscription this is an API-price estimate, not a bill).",
+      "default": true
+    }
+  }
+}

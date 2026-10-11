@@ -12,6 +12,18 @@
       "category": "mod"
     },
     {
+      "name": "context-bar",
+      "source": "./mods/context-bar",
+      "description": "Thin bar above the prompt: context-window fill, tokens this session, cost and plan rate limits; /context-bar for the breakdown",
+      "category": "mod"
+    },
+    {
+      "name": "resource-monitor",
+      "source": "./mods/resource-monitor",
+      "description": "CPU and memory of Claude Code and the processes it started: Resources pane, status line, warning colours, and a tool for Claude",
+      "category": "mod"
+    },
+    {
       "name": "reference-doc",
       "source": "./skills/reference-doc",
       "description": "Skill: build a self-contained HTML + Markdown technical reference/explainer doc (light/dark toggle, jump-to-section menu, offline)",

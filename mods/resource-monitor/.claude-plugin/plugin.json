@@ -1,0 +1,50 @@
+{
+  "name": "resource-monitor",
+  "version": "0.1.0",
+  "author": { "name": "prime" },
+  "description": "CPU and memory of Claude Code and the processes it starts: a Resources pane with sparklines, a status-line readout, warning colours, and a tool so Claude can answer about it",
+  "userConfig": {
+    "cpuWarn": {
+      "type": "number",
+      "title": "CPU warning (% of the machine)",
+      "description": "Figures turn red at this share of the whole machine's CPU (yellow from 80% of it).",
+      "default": 85,
+      "min": 1,
+      "max": 100
+    },
+    "memWarn": {
+      "type": "number",
+      "title": "Memory warning (% of RAM)",
+      "description": "Figures turn red when Claude Code's processes use this share of RAM (yellow from 80% of it).",
+      "default": 85,
+      "min": 1,
+      "max": 100
+    },
+    "intervalSeconds": {
+      "type": "number",
+      "title": "Sample every (seconds)",
+      "description": "How often to sample. Each sample runs the system's process listing, so very short intervals cost CPU themselves.",
+      "default": 5,
+      "min": 2,
+      "max": 120
+    },
+    "statusLine": {
+      "type": "boolean",
+      "title": "Show CPU and memory in the status line",
+      "description": "Show a compact CPU and memory readout in the status line.",
+      "default": true
+    },
+    "autoOpen": {
+      "type": "boolean",
+      "title": "Open the Resources pane at session start",
+      "description": "Open the Resources pane when a session starts. /resources opens it any time.",
+      "default": false
+    },
+    "injectContext": {
+      "type": "boolean",
+      "title": "Tell Claude what's running",
+      "description": "Beside your prompt, tell Claude which processes it has running and any warning, only when that changes.",
+      "default": true
+    }
+  }
+}

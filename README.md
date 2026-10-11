@@ -9,7 +9,9 @@ claude-tools/
 ├── .claude-plugin/
 │   └── marketplace.json      the marketplace catalog (lists every installable item)
 ├── mods/                     mods: plugins that change Claude Code's interface or behaviour
-│   └── project-tracker/
+│   ├── project-tracker/
+│   ├── context-bar/
+│   └── resource-monitor/
 └── skills/                   skills: instructions Claude loads when a request matches
     └── reference-doc/
 ```
@@ -28,6 +30,8 @@ claude-tools/
 | Name | Kind | What it does |
 | --- | --- | --- |
 | [project-tracker](mods/project-tracker/README.md) | mod | Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
+| [context-bar](mods/context-bar/README.md) | mod | Thin bar above the prompt: context-window fill, tokens this session, cost and plan rate limits, coloured as it fills; `/context-bar` for the breakdown |
+| [resource-monitor](mods/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
 | [reference-doc](skills/reference-doc/README.md) | skill | Writes a self-contained HTML + Markdown technical reference/explainer doc (light/dark toggle, jump-to-section menu, works offline) |
 
 ---
@@ -62,11 +66,11 @@ three modes, and each behaves differently:
 - **Desktop Code tab**: Claude Code with a graphical interface. Behaves like the
   CLI.
 
-| Where you use Claude | reference-doc (skill) | project-tracker (mod) |
+| Where you use Claude | reference-doc (skill) | Mods: project-tracker, context-bar, resource-monitor |
 | --- | --- | --- |
-| **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ | ✔ pane, `/tasks`, `tasks` tool and status line |
-| **Desktop app, Code tab** (local or SSH session) | ✔ | ✔ the pane shows as a panel. Not in a **WSL** session, where plugins aren't available. |
-| **VS Code extension** chat panel | ✔ | ⚠ partly. Its hooks run, so `/tasks` and the `tasks` tool work, but **the pane isn't drawn**. |
+| **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
+| **Desktop app, Code tab** (local or SSH session) | ✔ | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
+| **VS Code extension** chat panel | ✔ | ⚠ partly. Hooks run, so the commands (`/tasks`, `/context-bar`, `/resources text`) and the tools work, but **panes and the bar aren't drawn**. |
 | **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below) | ✘ mods are Claude Code only |
 | **Desktop app, Chat** | ✔ from your claude.ai account (path 2) | ✘ |
 | **claude.ai on the web** | ✔ from your claude.ai account (path 2) | ✘ claude.ai doesn't run mods |
@@ -78,13 +82,13 @@ Skills on claude.ai, the desktop app's Chat and Cowork, and mobile need a
 execution and file creation** turned on
 ([Skills overview](https://claude.com/docs/skills/overview)).
 
-**Why project-tracker is Claude Code only.** A mod is code that runs *inside*
+**Why the mods are Claude Code only.** A mod is code that runs *inside*
 Claude Code and draws into its interface. Anthropic's own docs say mods work
 in the Claude Code CLI and the desktop app's Code tab. Chat, Cowork and the
 web load a plugin's skills, commands and connectors, and skip the rest
 ([Mods overview: where mods run](https://code.claude.com/docs/en/plugins/mods/overview#where-mods-run),
 [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support)).
-Adding project-tracker to your claude.ai account therefore does nothing in
+Adding a mod to your claude.ai account therefore does nothing in
 Chat, Cowork, the web or mobile. That's a platform limit, not something to
 fix here.
 
@@ -149,7 +153,7 @@ path-1 copy and skips the synced one. A standalone account skill and the
 plugin version have different names (`reference-doc` and
 `reference-doc:reference-doc`), so **both** load. Pick one.
 
-**project-tracker on path 2:** don't bother. Chat, Cowork, the web and mobile
+**The mods on path 2:** don't bother. Chat, Cowork, the web and mobile
 skip a mod, so it would only reach Claude Code through sync, which path 1
 already covers more directly.
 
@@ -188,12 +192,14 @@ update one and nothing changes
 
 #### M. From the marketplace (recommended)
 
-**From this folder, before it's on GitHub.** In PowerShell:
+**From this folder** (the machine where you edit the repo). In PowerShell:
 
 ```powershell
 claude plugin marketplace add F:\development\claude-tools
 claude plugin install project-tracker@claude-tools
 claude plugin install reference-doc@claude-tools
+claude plugin install context-bar@claude-tools
+claude plugin install resource-monitor@claude-tools
 ```
 
 A marketplace added from a local folder is loaded in place. Edits here take
