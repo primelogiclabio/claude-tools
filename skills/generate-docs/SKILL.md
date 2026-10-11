@@ -1,9 +1,9 @@
 ---
-name: reference-doc
-description: Build a standalone technical reference/explainer document — architecture overviews, stack comparisons, "how does X work" write-ups, decision docs, research summaries — as a self-contained HTML file (light/dark toggle, jump-to-section nav menu, no external network calls) plus a matching plain Markdown file. Use this whenever the user asks to document, write up, explain, or create an overview/comparison/decision doc for a technical topic, system, or architecture choice, even if they just say "write this up," "document this," or "create an overview of X" without naming a format. Especially relevant for cross-project research, architecture explainers, build-vs-buy comparisons, and anything meant to be read later by the user or a colleague rather than just answered in chat.
+name: generate-docs
+description: Generate project documentation or research documentation as a self-contained HTML file (light/dark toggle, jump-to-section nav menu, no external network calls) plus a matching plain Markdown file. Use this whenever the user asks to document, write up, explain, or create project documentation, research documentation, an overview/comparison/decision doc for a technical topic, system, or architecture choice — even if they just say "write this up," "document this," or "create an overview of X" without naming a format. Especially relevant for cross-project research, architecture explainers, build-vs-buy comparisons, and anything meant to be read later by the user or a colleague rather than just answered in chat.
 ---
 
-# Reference doc
+# Generate docs
 
 Produces a two-file deliverable for a technical topic: one self-contained `.html` file people can just double-click open, and one `.md` file with the same content in plain Markdown (for pasting into a wiki, diffing in git, or reading in a terminal). Both come from the same source material — write the content once, then render it twice.
 
@@ -53,8 +53,8 @@ Mirror the HTML's content and heading structure in plain Markdown: same sections
 
 ## Where to save and how to deliver
 
-- If the topic is scoped to one project, save both files into that project's `docs/` folder (create it if it doesn't exist).
-- If it's cross-project research with no obvious home, ask the user, or use a general documentation folder if one is already established in the conversation.
+- **Project documentation** (about one project: its architecture, setup, stack, a decision made for it): save both files into that project's `docs/` folder, creating it if it doesn't exist.
+- **Research documentation** (cross-project research, tool or vendor comparisons, build-vs-buy studies with no single project as its home): ask the user where it goes, or use a general documentation folder if one is already established in the conversation.
 - Name both files the same way aside from extension (`topic-name.html`, `topic-name.md`).
 - Deliver as files — most sessions can present files directly (`present_files` or similar); use that. If an Artifact-creation tool happens to be available and works in the current session, that's a fine alternative to offer, but don't depend on it — file delivery via the project folder is the dependable path and should be the default plan going in.
 

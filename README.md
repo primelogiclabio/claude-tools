@@ -13,7 +13,7 @@ claude-tools/
 │   ├── context-bar/
 │   └── resource-monitor/
 └── skills/                   skills: instructions Claude loads when a request matches
-    └── reference-doc/
+    └── generate-docs/
 ```
 
 **Mods vs skills.**
@@ -32,7 +32,7 @@ claude-tools/
 | [project-tracker](mods/project-tracker/README.md) | mod | Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
 | [context-bar](mods/context-bar/README.md) | mod | Thin bar above the prompt: context-window fill, tokens this session, cost and plan rate limits, coloured as it fills; `/context-bar` for the breakdown |
 | [resource-monitor](mods/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
-| [reference-doc](skills/reference-doc/README.md) | skill | Writes a self-contained HTML + Markdown technical reference/explainer doc (light/dark toggle, jump-to-section menu, works offline) |
+| [generate-docs](skills/generate-docs/README.md) | skill | Generates project or research documentation as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
 
 ---
 
@@ -66,7 +66,7 @@ three modes, and each behaves differently:
 - **Desktop Code tab**: Claude Code with a graphical interface. Behaves like the
   CLI.
 
-| Where you use Claude | reference-doc (skill) | Mods: project-tracker, context-bar, resource-monitor |
+| Where you use Claude | generate-docs (skill) | Mods: project-tracker, context-bar, resource-monitor |
 | --- | --- | --- |
 | **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
 | **Desktop app, Code tab** (local or SSH session) | ✔ | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
@@ -92,7 +92,7 @@ Adding a mod to your claude.ai account therefore does nothing in
 Chat, Cowork, the web or mobile. That's a platform limit, not something to
 fix here.
 
-**What reference-doc can't do outside Claude Code.** In Chat or on the web,
+**What generate-docs can't do outside Claude Code.** In Chat or on the web,
 Claude still writes both files and offers them as downloads. It can't open
 them in a browser pane to check them, and it can't save them into a
 project's `docs/` folder, so those steps of the skill are skipped.
@@ -106,7 +106,7 @@ There are **two separate install paths**, and they reach different places:
 | Where you install | `claude plugin …` in a terminal, `/plugin` in a session, or **+ › Plugins** in the desktop Code tab | **Customize › Plugins** (or **Customize › Skills**) on claude.ai or in the desktop app |
 | Install is tied to | this computer | your account |
 | Reaches | the CLI, the desktop Code tab and VS Code on this computer | Chat (web, desktop, mobile) and Cowork. It also syncs into Claude Code terminal sessions where you're signed in with that account (CLI 2.1.273+). |
-| Use it for | project-tracker, and reference-doc inside Claude Code | reference-doc everywhere |
+| Use it for | project-tracker, and generate-docs inside Claude Code | generate-docs everywhere |
 
 Installs don't travel the other way. A plugin you install from the Claude Code
 command line stays on that computer and is never added to your account
@@ -117,26 +117,28 @@ details.
 
 ### Path 2: on your claude.ai account (web, desktop Chat and Cowork, mobile)
 
-This is the only way to get reference-doc outside Claude Code. Choose one of:
+This is the only way to get generate-docs outside Claude Code. Choose one of:
 
 - **Add the whole marketplace (recommended).**
   1. Open [Customize › Plugins](https://claude.ai/customize/plugins).
   2. Choose **Add › Add marketplace** and enter `primelogiclabio/claude-tools`.
-  3. Find **reference-doc** in the list and choose **Add**.
+  3. Find **generate-docs** in the list and choose **Add**.
 
   Updates come from GitHub. Use **Check for updates**, or turn on **Sync
   automatically** for the marketplace
   ([Plugins on claude.ai](https://claude.com/docs/plugins/overview)).
 - **Upload just the skill.**
-  1. Zip the `skills/reference-doc` folder. It already contains
+  1. Zip the `skills/generate-docs` folder. It already contains
      `.claude-plugin/plugin.json`.
   2. Use **Customize › Plugins › Add › Upload plugin**.
 
   Updates are manual: re-upload after each change.
-- **Account skill, without a plugin.** If you already saved reference-doc
-  under **Customize › Skills** (as it was originally), it's already on your
-  account. You don't need either of the above. Don't add it twice, or two
-  copies will answer the same requests.
+- **Account skill, without a plugin.** If you already saved generate-docs
+  under **Customize › Skills**, it's already on your account and you don't
+  need either of the above. Don't add it twice, or two copies will answer the
+  same requests. The skill used to be called `reference-doc`. If an old
+  `reference-doc` account skill is still listed there, turn it off or delete
+  it.
 
 Then use it in a chat by asking for a write-up, or by typing `/` and choosing
 it. It shows up in **Customize › Skills**, labeled with the plugin's name.
@@ -150,8 +152,8 @@ Claude Code terminal sessions signed in with that account:
 
 If the same plugin is also installed from path 1, Claude Code loads the
 path-1 copy and skips the synced one. A standalone account skill and the
-plugin version have different names (`reference-doc` and
-`reference-doc:reference-doc`), so **both** load. Pick one.
+plugin version have different names (`generate-docs` and
+`generate-docs:generate-docs`), so **both** load. Pick one.
 
 **The mods on path 2:** don't bother. Chat, Cowork, the web and mobile
 skip a mod, so it would only reach Claude Code through sync, which path 1
@@ -197,7 +199,7 @@ update one and nothing changes
 ```powershell
 claude plugin marketplace add F:\development\claude-tools
 claude plugin install project-tracker@claude-tools
-claude plugin install reference-doc@claude-tools
+claude plugin install generate-docs@claude-tools
 claude plugin install context-bar@claude-tools
 claude plugin install resource-monitor@claude-tools
 ```
@@ -265,7 +267,7 @@ or update.
    ```json
    {
      "env": {
-       "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker;F:\\development\\claude-tools\\skills\\reference-doc"
+       "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker;F:\\development\\claude-tools\\skills\\generate-docs"
      }
    }
    ```
@@ -311,8 +313,8 @@ Nothing is installed. Repeat the flag to load more than one plugin.
 2. **project-tracker:** type `/tasks`. Where the pane appears depends on
    terminal width and layout; see its [README](mods/project-tracker/README.md).
    `/tasks add Try the tracker` creates `<project>/.claude/tasks.md`.
-3. **reference-doc:** ask for a write-up, for example "write up an overview
-   of how this repo is laid out", or type `/reference-doc` and pick it.
+3. **generate-docs:** ask for a write-up, for example "write up an overview
+   of how this repo is laid out", or type `/generate-docs` and pick it.
 
 #### Changing plugin options
 
@@ -331,7 +333,7 @@ Start a new session after any change.
 
 | Symptom | Fix |
 | --- | --- |
-| `/tasks` or `/reference-doc` isn't in the command list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
+| `/tasks` or `/generate-docs` isn't in the command list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
 | `Plugin "…" not found in marketplace "claude-tools"` | Use the name from the table above, with `@claude-tools`. Run `claude plugin marketplace update claude-tools` to refresh the catalog. |
 | `Source path does not exist` on install | The catalog points at a folder that isn't in the copy you added. Make sure your clone or push includes `mods/` and `skills/`. |
 | Duplicate `/tasks`, or changes that seem to come from an old copy | Two install methods are active. Keep only one, and check `~/.claude/skills/` for an old copy. |

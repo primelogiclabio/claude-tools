@@ -4,7 +4,7 @@ Claude Code skills. Each one sits in its own folder:
 
 | Skill | What it does |
 | --- | --- |
-| [reference-doc](reference-doc/README.md) | Writes a self-contained HTML + Markdown technical reference/explainer doc |
+| [generate-docs](generate-docs/README.md) | Generates project or research documentation as self-contained HTML + Markdown |
 
 ## Layout
 

@@ -24,9 +24,9 @@
       "category": "mod"
     },
     {
-      "name": "reference-doc",
-      "source": "./skills/reference-doc",
-      "description": "Skill: build a self-contained HTML + Markdown technical reference/explainer doc (light/dark toggle, jump-to-section menu, offline)",
+      "name": "generate-docs",
+      "source": "./skills/generate-docs",
+      "description": "Skill: generate project or research documentation as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, offline)",
       "category": "skill"
     }
   ]

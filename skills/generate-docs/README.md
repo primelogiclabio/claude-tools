@@ -1,7 +1,9 @@
-# reference-doc
+# generate-docs
 
-A Claude Code skill that writes a technical reference or explainer document as
-two files that share one name:
+A skill that generates **project documentation** and **research
+documentation**, such as architecture overviews, stack and tool comparisons,
+decision docs and research write-ups. Each doc is two files that share one
+name:
 
 - **`topic.html`**: self-contained, with inline CSS and JS and no network
   calls, so it opens offline by double-clicking. It has a light/dark toggle and
@@ -22,21 +24,24 @@ The full instructions are in [`SKILL.md`](SKILL.md).
 
 ## When it runs
 
-Claude picks it up when you ask to document, write up, explain, or make an
-overview, comparison or decision doc for a technical topic. "Write this up",
+Claude picks it up when you ask to document, write up or explain something,
+or to create project documentation, research documentation, or an overview,
+comparison or decision doc for a technical topic. "Write this up",
 "document this" or "create an overview of X" is enough; you don't need to name
 a format. It's aimed at architecture explainers, build-vs-buy comparisons and
 cross-project research, not quick answers in chat.
 
-To call it directly, type `/reference-doc` and choose it from the list, then
+To call it directly, type `/generate-docs` and choose it from the list, then
 add the topic. When it's installed as a plugin, its full name is
-`/reference-doc:reference-doc`.
+`/generate-docs:generate-docs`.
 
 ## Where it saves
 
-- A doc about one project goes in that project's `docs/` folder.
-- Cross-project docs go in a documentation folder you name. If you haven't
-  named one, Claude asks.
+- **Project documentation** (about one project) goes in that project's
+  `docs/` folder, which is created if needed.
+- **Research documentation** (cross-project research, tool comparisons,
+  build-vs-buy studies) goes in a documentation folder you name. If you
+  haven't named one, Claude asks.
 
 ## Where it works
 
@@ -58,23 +63,30 @@ The step-by-step instructions for both paths are in the
   skills directory:
 
   ```powershell
-  New-Item -ItemType Junction -Path "$HOME\.claude\skills\reference-doc" -Target "F:\development\claude-tools\skills\reference-doc"
+  New-Item -ItemType Junction -Path "$HOME\.claude\skills\generate-docs" -Target "F:\development\claude-tools\skills\generate-docs"
   ```
 
-  Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\reference-doc"`.
+  Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\generate-docs"`.
   Never use `Remove-Item -Recurse` on a junction.
 - **Avoid loading it twice.** If this skill is already saved to your claude.ai
   account under **Customize › Skills**, it already reaches Chat, Cowork and
-  mobile, and it syncs into signed-in Claude Code sessions as `reference-doc`.
-  Installing the plugin as well adds a second copy, `reference-doc:reference-doc`,
+  mobile, and it syncs into signed-in Claude Code sessions as `generate-docs`.
+  Installing the plugin as well adds a second copy, `generate-docs:generate-docs`,
   and the two then compete to answer the same requests. Keep one.
+- **Renamed from `reference-doc`.** Earlier copies used that name. Remove any
+  old one so it doesn't compete with this one:
+  - an old `~/.claude/skills/reference-doc` junction: remove it with
+    `cmd /c rmdir`;
+  - an old `reference-doc@claude-tools` install: run
+    `claude plugin uninstall reference-doc@claude-tools`;
+  - an old `reference-doc` account skill: turn it off.
 - **It needs a browser.** It has no runtime dependencies, but its check step
   expects one: the desktop app's built-in browser pane, or Claude in Chrome.
 
 ## Files
 
 ```
-reference-doc/
+generate-docs/
 ├── .claude-plugin/plugin.json   lets this folder install as a plugin
 ├── SKILL.md                     the skill: frontmatter + instructions
 └── README.md                    this file
