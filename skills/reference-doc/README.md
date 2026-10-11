@@ -38,9 +38,20 @@ add the topic. When it's installed as a plugin, its full name is
 - Cross-project docs go in a documentation folder you name. If you haven't
   named one, Claude asks.
 
+## Where it works
+
+| Where | Works? | How to get it there |
+| --- | --- | --- |
+| Claude Code CLI, desktop Code tab, VS Code | ✔ full skill | Install from the marketplace on this computer (path 1), or sync it from your claude.ai account |
+| claude.ai web, desktop Chat, Cowork, mobile | ✔ but the browser check and saving to `docs/` are skipped; the files come back as downloads | On your claude.ai account (path 2): add the `primelogiclabio/claude-tools` marketplace under **Customize › Plugins**, upload the folder as a zip, or keep it as an account skill |
+| Claude Code cloud sessions (claude.ai/code) | ✔ only if it's on your claude.ai account | Path 2 |
+
+Outside Claude Code, skills need a Pro, Max, Team or Enterprise plan, with
+**Code execution and file creation** turned on in **Settings › Capabilities**.
+
 ## Install
 
-The main install options, including the marketplace, are in the
+The step-by-step instructions for both paths are in the
 [repo README](../../README.md#installing). Notes specific to this skill:
 
 - **As a plain skill, without the plugin wrapper.** Link the folder into your
@@ -53,8 +64,10 @@ The main install options, including the marketplace, are in the
   Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\reference-doc"`.
   Never use `Remove-Item -Recurse` on a junction.
 - **Avoid loading it twice.** If this skill is already saved to your claude.ai
-  account, it may already be synced into your sessions. Don't also install it
-  from here, or two copies will compete to answer the same requests.
+  account under **Customize › Skills**, it already reaches Chat, Cowork and
+  mobile, and it syncs into signed-in Claude Code sessions as `reference-doc`.
+  Installing the plugin as well adds a second copy, `reference-doc:reference-doc`,
+  and the two then compete to answer the same requests. Keep one.
 - **It needs a browser.** It has no runtime dependencies, but its check step
   expects one: the desktop app's built-in browser pane, or Claude in Chrome.
 

@@ -103,6 +103,15 @@ knows a project's name ("the oauth project") can find its `tasks.md`:
 
 ## Using it
 
+**Where it works: Claude Code only.**
+
+| Where | What works |
+| --- | --- |
+| Claude Code CLI | Everything |
+| Desktop app, Code tab | Everything; the pane shows as a panel. Not in WSL sessions, where plugins aren't available. |
+| VS Code extension chat panel | `/tasks` and the `tasks` tool. The pane isn't drawn. |
+| claude.ai web, desktop Chat, Cowork, mobile, cloud sessions | Nothing. Mods run only inside Claude Code ([where mods run](https://code.claude.com/docs/en/plugins/mods/overview#where-mods-run)). |
+
 This mod lives at `F:\development\claude-tools\mods\project-tracker`, and it is
 listed in the `claude-tools` marketplace.
 **[`claude-tools/README.md`](../../README.md#installing) has the full install

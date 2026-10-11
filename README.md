@@ -52,9 +52,110 @@ Docs: [Create a marketplace](https://code.claude.com/docs/en/plugins/create-mark
 [Marketplace reference](https://code.claude.com/docs/en/plugins/marketplace-reference),
 [Install and manage plugins](https://code.claude.com/docs/en/plugins/install).
 
+## Where each item works
+
+"Claude Desktop" can mean three different things, because the desktop app has
+three modes, and each behaves differently:
+
+- **Desktop Chat**: ordinary conversations. Behaves like claude.ai on the web.
+- **Desktop Cowork**: Cowork tasks.
+- **Desktop Code tab**: Claude Code with a graphical interface. Behaves like the
+  CLI.
+
+| Where you use Claude | reference-doc (skill) | project-tracker (mod) |
+| --- | --- | --- |
+| **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ | ✔ pane, `/tasks`, `tasks` tool and status line |
+| **Desktop app, Code tab** (local or SSH session) | ✔ | ✔ the pane shows as a panel. Not in a **WSL** session, where plugins aren't available. |
+| **VS Code extension** chat panel | ✔ | ⚠ partly. Its hooks run, so `/tasks` and the `tasks` tool work, but **the pane isn't drawn**. |
+| **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below) | ✘ mods are Claude Code only |
+| **Desktop app, Chat** | ✔ from your claude.ai account (path 2) | ✘ |
+| **claude.ai on the web** | ✔ from your claude.ai account (path 2) | ✘ claude.ai doesn't run mods |
+| **Claude mobile apps** | ✔ from your claude.ai account (path 2) | ✘ |
+| **Claude Code cloud sessions** (claude.ai/code, routines) | ✔ only if it's on your claude.ai account. Locally installed plugins don't reach the cloud. | ✘ nothing a mod draws appears in a cloud session |
+
+Skills on claude.ai, the desktop app's Chat and Cowork, and mobile need a
+**Pro, Max, Team or Enterprise** plan, with **Settings › Capabilities › Code
+execution and file creation** turned on
+([Skills overview](https://claude.com/docs/skills/overview)).
+
+**Why project-tracker is Claude Code only.** A mod is code that runs *inside*
+Claude Code and draws into its interface. Anthropic's own docs say mods work
+in the Claude Code CLI and the desktop app's Code tab. Chat, Cowork and the
+web load a plugin's skills, commands and connectors, and skip the rest
+([Mods overview: where mods run](https://code.claude.com/docs/en/plugins/mods/overview#where-mods-run),
+[Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support)).
+Adding project-tracker to your claude.ai account therefore does nothing in
+Chat, Cowork, the web or mobile. That's a platform limit, not something to
+fix here.
+
+**What reference-doc can't do outside Claude Code.** In Chat or on the web,
+Claude still writes both files and offers them as downloads. It can't open
+them in a browser pane to check them, and it can't save them into a
+project's `docs/` folder, so those steps of the skill are skipped.
+
 ## Installing
 
-### Before you start
+There are **two separate install paths**, and they reach different places:
+
+| | Path 1: Claude Code on this machine | Path 2: your claude.ai account |
+| --- | --- | --- |
+| Where you install | `claude plugin …` in a terminal, `/plugin` in a session, or **+ › Plugins** in the desktop Code tab | **Customize › Plugins** (or **Customize › Skills**) on claude.ai or in the desktop app |
+| Install is tied to | this computer | your account |
+| Reaches | the CLI, the desktop Code tab and VS Code on this computer | Chat (web, desktop, mobile) and Cowork. It also syncs into Claude Code terminal sessions where you're signed in with that account (CLI 2.1.273+). |
+| Use it for | project-tracker, and reference-doc inside Claude Code | reference-doc everywhere |
+
+Installs don't travel the other way. A plugin you install from the Claude Code
+command line stays on that computer and is never added to your account
+([Install and manage plugins](https://code.claude.com/docs/en/plugins/install#plugins-from-your-claude-ai-account)).
+
+Path 2 is covered first because it's short. Path 1 has the full Claude Code
+details.
+
+### Path 2: on your claude.ai account (web, desktop Chat and Cowork, mobile)
+
+This is the only way to get reference-doc outside Claude Code. Choose one of:
+
+- **Add the whole marketplace (recommended).**
+  1. Open [Customize › Plugins](https://claude.ai/customize/plugins).
+  2. Choose **Add › Add marketplace** and enter `primelogiclabio/claude-tools`.
+  3. Find **reference-doc** in the list and choose **Add**.
+
+  Updates come from GitHub. Use **Check for updates**, or turn on **Sync
+  automatically** for the marketplace
+  ([Plugins on claude.ai](https://claude.com/docs/plugins/overview)).
+- **Upload just the skill.**
+  1. Zip the `skills/reference-doc` folder. It already contains
+     `.claude-plugin/plugin.json`.
+  2. Use **Customize › Plugins › Add › Upload plugin**.
+
+  Updates are manual: re-upload after each change.
+- **Account skill, without a plugin.** If you already saved reference-doc
+  under **Customize › Skills** (as it was originally), it's already on your
+  account. You don't need either of the above. Don't add it twice, or two
+  copies will answer the same requests.
+
+Then use it in a chat by asking for a write-up, or by typing `/` and choosing
+it. It shows up in **Customize › Skills**, labeled with the plugin's name.
+
+**How it reaches Claude Code.** Anything on your account also shows up in
+Claude Code terminal sessions signed in with that account:
+
+- plugins as `<name>@synced`;
+- standalone account skills under `~/.claude/skills/synced/`, listed in
+  `/skills` under `claude.ai sync`.
+
+If the same plugin is also installed from path 1, Claude Code loads the
+path-1 copy and skips the synced one. A standalone account skill and the
+plugin version have different names (`reference-doc` and
+`reference-doc:reference-doc`), so **both** load. Pick one.
+
+**project-tracker on path 2:** don't bother. Chat, Cowork, the web and mobile
+skip a mod, so it would only reach Claude Code through sync, which path 1
+already covers more directly.
+
+### Path 1: Claude Code on this machine
+
+#### Before you start
 
 | Check | How |
 | --- | --- |
@@ -68,20 +169,24 @@ terminal, the desktop app's local sessions and VS Code all read the **same
 settings files**, so a plugin installed at user scope in one appears in the
 others.
 
-### Pick one install method
+#### Pick one install method
 
 | | M. Marketplace (recommended) | B. `CLAUDE_CODE_PLUGIN_DIRS` | C. `--plugin-dir` |
 | --- | --- | --- | --- |
 | CLI | ✔ every session | ✔ every session | ✔ that one session |
-| Desktop app | ✔ every session | ✔ every session | ✘ (the app can't pass flags) |
+| Desktop app, Code tab | ✔ every session | ✔ every session | ✘ (the app can't pass flags) |
 | Picks what to load | per plugin | per folder | per folder |
 | Best for | everyday use, sharing | working on a plugin | a quick try |
 
-**Use only one method per plugin.** If you use two, it loads twice.
+**Use only one method per plugin.** If you use two, the copy loaded from the
+folder (B or C) silently replaces the installed one. `claude plugin list` then
+still shows the installed copy as enabled, which is confusing when you
+update one and nothing changes
+([name conflicts](https://code.claude.com/docs/en/plugins/loading#name-conflicts)).
 
 ---
 
-### M. From the marketplace (recommended)
+#### M. From the marketplace (recommended)
 
 **From this folder, before it's on GitHub.** In PowerShell:
 
@@ -140,7 +245,7 @@ plugin you installed from it.
 
 ---
 
-### B. `CLAUDE_CODE_PLUGIN_DIRS` (load from this folder, every session)
+#### B. `CLAUDE_CODE_PLUGIN_DIRS` (load from this folder, every session)
 
 This loads plugins straight from their folders, so there's nothing to install
 or update.
@@ -179,7 +284,7 @@ session.
 
 ---
 
-### C. `--plugin-dir` (CLI, one session)
+#### C. `--plugin-dir` (CLI, one session)
 
 ```powershell
 claude --plugin-dir F:\development\claude-tools\mods\project-tracker
@@ -190,7 +295,7 @@ Nothing is installed. Repeat the flag to load more than one plugin.
 
 ---
 
-### First run: what to expect
+#### First run: what to expect
 
 1. **Trust prompt.** The first time Claude Code opens a folder it asks *"Is
    this a project you created or one you trust?"*. Choose **Yes, I trust this
@@ -203,7 +308,7 @@ Nothing is installed. Repeat the flag to load more than one plugin.
 3. **reference-doc:** ask for a write-up, for example "write up an overview
    of how this repo is laid out", or type `/reference-doc` and pick it.
 
-### Changing plugin options
+#### Changing plugin options
 
 project-tracker has options (`autoOpen`, `statusLine`, `injectContext`,
 `taskFile`, `registerProject`), described in its README. Set them in `/config`
@@ -216,7 +321,7 @@ claude plugin configure project-tracker@claude-tools
 For a plugin loaded with method B or C, use `project-tracker` with no `@…`.
 Start a new session after any change.
 
-### Troubleshooting
+#### Troubleshooting
 
 | Symptom | Fix |
 | --- | --- |
