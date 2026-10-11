@@ -103,24 +103,36 @@ knows a project's name ("the oauth project") can find its `tasks.md`:
 
 ## Using it
 
-This mod lives at `F:\development\claude-tools\mods\project-tracker`.
-**[`claude-tools/README.md`](../../README.md) has the full install steps** for
-the CLI and the desktop app. In short:
+This mod lives at `F:\development\claude-tools\mods\project-tracker`, and it is
+listed in the `claude-tools` marketplace.
+**[`claude-tools/README.md`](../../README.md#installing) has the full install
+steps** for the CLI and the desktop app. In short:
 
-- **Every session, CLI and desktop app (recommended):** clone it into your
-  skills folder.
+- **Every session, CLI and desktop app (recommended):** install it from the
+  marketplace.
   ```powershell
-  git clone F:\development\claude-tools\mods\project-tracker "$HOME\.claude\skills\project-tracker"
+  claude plugin marketplace add F:\development\claude-tools
+  claude plugin install project-tracker@claude-tools
   ```
+  Once the repo is on GitHub, replace the path with `<github-user>/claude-tools`,
+  or use one step:
+  `/plugin install project-tracker --marketplace <github-user>/claude-tools`.
 - **Every session, straight from this folder:** add it to
   `CLAUDE_CODE_PLUGIN_DIRS` in the `env` block of `~/.claude/settings.json`.
   ```json
-  { "env": { "CLAUDE_CODE_PLUGIN_DIRS": "F:\development\claude-tools\mods\project-tracker" } }
+  { "env": { "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker" } }
   ```
 - **One CLI session:**
   `claude --plugin-dir F:\development\claude-tools\mods\project-tracker`
 
-Use only one of the first two.
+Use only one of the first two. If you installed it earlier by cloning or
+linking it into `~/.claude/skills/project-tracker`, remove that copy first.
+The [repo README](../../README.md#m-from-the-marketplace-recommended) has the
+safe commands for that.
+
+Options set through `/config` or `claude plugin configure` are stored per
+install id: `project-tracker@claude-tools` from the marketplace, and
+`project-tracker` with methods B and C.
 
 It runs on Claude Code 2.1.277 and later. It doesn't use `$.state` or the
 `atom` helpers, which 2.1.277 lacks.
@@ -153,7 +165,7 @@ real terminal. It takes about two minutes.
      more, or at 110 or more once you've opened it before and not closed it by
      hand.
    - To check the width in PowerShell: `$Host.UI.RawUI.WindowSize.Width`.
-4. **Start Claude Code with the mod loaded.** If you installed it (method A
+4. **Start Claude Code with the mod loaded.** If you installed it (method M
    or B in `claude-tools/README.md`), just run `claude`. Otherwise:
    ```powershell
    claude --plugin-dir F:\development\claude-tools\mods\project-tracker
@@ -173,7 +185,7 @@ real terminal. It takes about two minutes.
    refused.
    `claude plugin validate F:\development\claude-tools\mods\project-tracker`
    checks the mod without starting a session.
-7. **In the desktop app:** after installing with method A or B, quit the app
+7. **In the desktop app:** after installing with method M or B, quit the app
    completely, reopen it, start a Code session in a trusted project and type
    `/tasks`. The pane shows as a panel in the session view, and the terminal
    width rules don't apply there.
