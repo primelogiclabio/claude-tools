@@ -202,6 +202,7 @@ update one and nothing changes
 claude plugin marketplace add F:\development\claude-tools
 claude plugin install project-tracker@claude-tools
 claude plugin install generate-docs@claude-tools
+claude plugin install workday-tracker@claude-tools
 claude plugin install context-bar@claude-tools
 claude plugin install resource-monitor@claude-tools
 ```
@@ -210,22 +211,26 @@ A marketplace added from a local folder is loaded in place. Edits here take
 effect in the next session, or after `/reload-plugins`, with no reinstall.
 
 **From GitHub** ([primelogiclabio/claude-tools](https://github.com/primelogiclabio/claude-tools)).
-Use this on any other machine:
+Use this on any other machine. One line installs a plugin and adds the
+marketplace first if needed, in either of two places:
+
+- **Inside a Claude Code session** (CLI or desktop Code tab, 2.1.275+), type
+  the command below. It asks for an install scope.
+  ```
+  /plugin install project-tracker --marketplace primelogiclabio/claude-tools
+  ```
+- **From a terminal** (PowerShell, bash; CLI 2.1.292+), run:
+  ```
+  claude plugin install project-tracker --marketplace primelogiclabio/claude-tools
+  ```
+
+Swap `project-tracker` for any name in the [Contents](#contents) table. On an
+older CLI, add the marketplace first, then install by id:
 
 ```powershell
 claude plugin marketplace add primelogiclabio/claude-tools
 claude plugin install project-tracker@claude-tools
 ```
-
-or in one step (CLI 2.1.292+):
-
-```powershell
-claude plugin install project-tracker --marketplace primelogiclabio/claude-tools
-```
-
-Inside a session, the same thing is
-`/plugin install project-tracker --marketplace primelogiclabio/claude-tools`
-(2.1.275+), which asks for an install scope.
 
 Use the local-folder form above only on the machine where you edit the repo.
 Use the GitHub form everywhere else. Don't add both: they register under the

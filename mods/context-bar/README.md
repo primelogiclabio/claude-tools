@@ -88,11 +88,11 @@ Set these in `/config`, or with
 
 One line installs it, in either of two places:
 
-- **Inside a Claude Code session** (CLI or desktop Code tab), type:
+- **Inside a Claude Code session** (CLI or desktop Code tab, 2.1.275+), type:
   ```
   /plugin install context-bar --marketplace primelogiclabio/claude-tools
   ```
-- **From a terminal** (PowerShell, bash), run:
+- **From a terminal** (PowerShell, bash; CLI 2.1.292+), run:
   ```
   claude plugin install context-bar --marketplace primelogiclabio/claude-tools
   ```

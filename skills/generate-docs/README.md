@@ -56,13 +56,13 @@ Outside Claude Code, skills need a Pro, Max, Team or Enterprise plan, with
 
 ## Install
 
-One line installs it (Claude Code 2.1.275 or later), in either of two places:
+One line installs it, in either of two places:
 
-- **Inside a Claude Code session** (CLI or desktop Code tab), type:
+- **Inside a Claude Code session** (CLI or desktop Code tab, 2.1.275+), type:
   ```
   /plugin install generate-docs --marketplace primelogiclabio/claude-tools
   ```
-- **From a terminal** (PowerShell, bash), run:
+- **From a terminal** (PowerShell, bash; CLI 2.1.292+), run:
   ```
   claude plugin install generate-docs --marketplace primelogiclabio/claude-tools
   ```
