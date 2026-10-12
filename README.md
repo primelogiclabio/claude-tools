@@ -68,7 +68,7 @@ three modes, and each behaves differently:
 - **Desktop Code tab**: Claude Code with a graphical interface. Behaves like the
   CLI.
 
-| Where you use Claude | generate-docs (skill) | Mods: project-tracker, context-bar, resource-monitor |
+| Where you use Claude | Skills: generate-docs, workday-tracker | Mods: project-tracker, context-bar, resource-monitor |
 | --- | --- | --- |
 | **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
 | **Desktop app, Code tab** (local or SSH session) | ✔ | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
@@ -108,7 +108,7 @@ There are **two separate install paths**, and they reach different places:
 | Where you install | `claude plugin …` in a terminal, `/plugin` in a session, or **+ › Plugins** in the desktop Code tab | **Customize › Plugins** (or **Customize › Skills**) on claude.ai or in the desktop app |
 | Install is tied to | this computer | your account |
 | Reaches | the CLI, the desktop Code tab and VS Code on this computer | Chat (web, desktop, mobile) and Cowork. It also syncs into Claude Code terminal sessions where you're signed in with that account (CLI 2.1.273+). |
-| Use it for | project-tracker, and generate-docs inside Claude Code | generate-docs everywhere |
+| Use it for | the mods, and the skills inside Claude Code | the skills (generate-docs, workday-tracker) everywhere |
 
 Installs don't travel the other way. A plugin you install from the Claude Code
 command line stays on that computer and is never added to your account
@@ -119,31 +119,38 @@ details.
 
 ### Path 2: on your claude.ai account (web, desktop Chat and Cowork, mobile)
 
-This is the only way to get generate-docs outside Claude Code. Choose one of:
+This is the only way to get the skills, **generate-docs** and
+**workday-tracker**, outside Claude Code. workday-tracker belongs here most of
+all, since the task-tracker artifact it works on lives on claude.ai. Choose
+one of:
 
 - **Add the whole marketplace (recommended).**
   1. Open [Customize › Plugins](https://claude.ai/customize/plugins).
   2. Choose **Add › Add marketplace** and enter `primelogiclabio/claude-tools`.
-  3. Find **generate-docs** in the list and choose **Add**.
+  3. Find **generate-docs** or **workday-tracker** in the list and choose
+     **Add**. Add each one you want.
 
   Updates come from GitHub. Use **Check for updates**, or turn on **Sync
   automatically** for the marketplace
   ([Plugins on claude.ai](https://claude.com/docs/plugins/overview)).
 - **Upload just the skill.**
-  1. Zip the `skills/generate-docs` folder. It already contains
+  1. Zip the skill's folder, `skills/generate-docs` or
+     `skills/workday-tracker`. Each already contains
      `.claude-plugin/plugin.json`.
   2. Use **Customize › Plugins › Add › Upload plugin**.
 
   Updates are manual: re-upload after each change.
-- **Account skill, without a plugin.** If you already saved generate-docs
-  under **Customize › Skills**, it's already on your account and you don't
-  need either of the above. Don't add it twice, or two copies will answer the
-  same requests. The skill used to be called `reference-doc`. If an old
+- **Account skill, without a plugin.** If you already saved the skill under
+  **Customize › Skills**, it's already on your account and you don't need
+  either of the above. Don't add it twice, or two copies will answer the
+  same requests. generate-docs used to be called `reference-doc`. If an old
   `reference-doc` account skill is still listed there, turn it off or delete
   it.
 
-Then use it in a chat by asking for a write-up, or by typing `/` and choosing
-it. It shows up in **Customize › Skills**, labeled with the plugin's name.
+Then use it in a chat by typing `/` and choosing it, or just by asking: a
+write-up for generate-docs; adding, finishing or reviewing tasks in your
+tracker for workday-tracker. It shows up in **Customize › Skills**, labeled
+with the plugin's name.
 
 **How it reaches Claude Code.** Anything on your account also shows up in
 Claude Code terminal sessions signed in with that account:
@@ -154,8 +161,8 @@ Claude Code terminal sessions signed in with that account:
 
 If the same plugin is also installed from path 1, Claude Code loads the
 path-1 copy and skips the synced one. A standalone account skill and the
-plugin version have different names (`generate-docs` and
-`generate-docs:generate-docs`), so **both** load. Pick one.
+plugin version have different names (for example `workday-tracker` and
+`workday-tracker:workday-tracker`), so **both** load. Pick one.
 
 **The mods on path 2:** don't bother. Chat, Cowork, the web and mobile
 skip a mod, so it would only reach Claude Code through sync, which path 1
