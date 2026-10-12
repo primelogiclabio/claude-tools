@@ -14,7 +14,10 @@ session 1.24M tok · $3.41 · 5h 23.5% · 7d 41%
 ```
 
 Each segment and its legend square use the colour `/context` uses for that
-category, so they follow your theme.
+category, so they follow your theme. The segments are painted boxes sized by
+flex layout, not runs of block characters, so the bar stays on one row in the
+desktop app's proportional font as well as in a terminal. Free space is the
+theme's faint grey.
 
 ## Where each figure comes from
 
@@ -25,7 +28,7 @@ Everything comes from Claude Code's own mods API. Nothing is invented.
 | Header `212k of 1M` and the badge `21%` | `$.session.usage()`, pushed after each turn by `session.measure` | The live window as the status line reads it: the last response's input against the model's window. It reads `—` until the first response in a new or just-compacted window. |
 | `compacts at 950k` | The breakdown's `autoCompactThreshold` | Shown only when auto-compaction is on |
 | Segments and legend | `$.session.usage({ breakdown: 'summary' })`: the categories `/context` shows, each with its tokens and colour | A **local estimate** that makes no API request. It's fetched again whenever the context changes. Because it's an estimate measured against the compaction window, the categories can add up to a little more or less than the header figure, as in `/context` itself. Tool schemas loaded on demand ("deferred") take no room in the window, so the bar leaves them out. `/context-bar` lists them. |
-| `session 1.24M tok` | Summed by this mod from each turn's usage (`turn.complete`), main conversation and subagents | **Counted from when the mod loaded**, so `/reload-plugins` or a resumed session starts it over |
+| `session 1.24M tok` | Summed by this mod from each turn's usage (`turn.complete`), main conversation and subagents | Kept in the session's `$.state`, so `/reload-plugins` and plugin updates don't reset it. It's **counted from when the mod first loaded in the session**: turns before that, such as those of a resumed session, aren't included. |
 | `$3.41` | `$.session.usage().cost`, the figure `/cost` totals | On a subscription this is an API-price estimate, not a bill |
 | `5h 23.5%`, `7d 41%` | `$.session.usage().rateLimits` | **Subscription only.** They appear after the first response; with an API key there are none. |
 

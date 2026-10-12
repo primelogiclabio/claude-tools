@@ -5,6 +5,7 @@
     "name": "prime"
   },
   "description": "Context card above the prompt: the window as one bar segmented by /context category (system prompt, tools, MCP, agents, memory, skills, messages, free), a legend, a fill badge coloured by threshold, plus session tokens, cost and rate limits; /context-bar for the breakdown",
+  "types": "./types/index.d.ts",
   "userConfig": {
     "showBand": {
       "type": "boolean",

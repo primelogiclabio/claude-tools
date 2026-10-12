@@ -1,10 +1,10 @@
+import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import {
   LEVEL_COLOR,
   addUsage,
   allocate,
-  bar,
   barCategories,
   categoryLabel,
   describeUsage,
@@ -24,6 +24,9 @@ import {
 
 const COMMAND = 'context-bar'
 
+// The session's token totals live in $.state, so a plugin reload keeps them.
+const totalsAtom = atom({ plugin: 'context-bar', key: 'totals' } as const, emptyTotals())
+
 const HELP = [
   '/context-bar            the full breakdown as text: context by category, tokens this session, cost, rate limits',
   '/context-bar hide       hide the card above the prompt for this session',
@@ -32,11 +35,8 @@ const HELP = [
   '/context-bar full       header, bar and the legend',
 ].join('\n')
 
-// Module state. A reload of the module (a plugin update, /reload-plugins)
-// starts the token totals over; the context, cost and rate-limit figures come
-// from the engine each time and are always whole.
+// Module state: the engine's latest figures, fetched again after a reload.
 let snap: Snapshot = { window: 0, rateLimits: [] }
-let totals: Totals = emptyTotals()
 let isBandShown = true
 let isLegendShown = true
 let warnAt = 60
@@ -98,6 +98,9 @@ async function refresh($: EngineInterface): Promise<void> {
   $.ui.invalidate('ui.render')
 }
 
+// The free part of the bar: the theme's faint grey.
+const FREE_FILL = 'subtle'
+
 function pad(text: string, width: number): string {
   return text.length >= width ? text : text + ' '.repeat(width - text.length)
 }
@@ -108,7 +111,6 @@ export const register: Register = (on, options) => {
   isCostShown = options.showCost !== false
   warnAt = num(options.warnAt, 60)
   dangerAt = Math.max(warnAt, num(options.dangerAt, 85))
-  totals = emptyTotals()
   snap = { window: 0, rateLimits: [] }
 
   on('session.start', async ($, e, next) => {
@@ -134,13 +136,14 @@ export const register: Register = (on, options) => {
 
   on('turn.complete', async ($, e, next) => {
     const result = await next(e)
-    if (e.usage !== undefined) {
-      if (e.agentId === undefined) {
-        totals = { ...totals, turns: totals.turns + 1, main: addUsage(totals.main, e.usage) }
-      } else {
-        totals = { ...totals, agentTurns: totals.agentTurns + 1, agents: addUsage(totals.agents, e.usage) }
-      }
-      $.ui.invalidate('ui.render')
+    const usage = e.usage
+    if (usage !== undefined) {
+      const isMain = e.agentId === undefined
+      await update($, totalsAtom, (t: Totals) =>
+        isMain
+          ? { ...t, turns: t.turns + 1, main: addUsage(t.main, usage) }
+          : { ...t, agentTurns: t.agentTurns + 1, agents: addUsage(t.agents, usage) },
+      )
     }
 
     return result
@@ -167,7 +170,7 @@ export const register: Register = (on, options) => {
     await refresh($)
     const categories = snap.breakdown?.categories.map(c => ({ name: c.name, tokens: c.tokens, kind: c.kind }))
 
-    return { text: describeUsage(snap, totals, await $.clock.now(), categories) }
+    return { text: describeUsage(snap, await read($, totalsAtom), await $.clock.now(), categories) }
   }).catch(($, e, next) => ({
     text: `context-bar: /context-bar failed${next.error ? `: ${next.error.message}` : ''}.`,
   }))
@@ -181,49 +184,55 @@ export const register: Register = (on, options) => {
     const b = snap.breakdown
     const cats = b === undefined ? [] : barCategories(b)
 
-    // Header: "◆ context" left; "212k of 1M · compacts at 950k" and the badge right.
+    const totals = await read($, totalsAtom)
+
+    // Header: "◆ context" left; "212k of 1M · compacts at 950k" and the badge
+    // right, placed by flex so it lines up on any surface's font.
     const used = snap.tokens === undefined ? '—' : fmtTokens(snap.tokens)
     const right = `${used} of ${fmtTokens(snap.window)}${b?.compactAt !== undefined ? ` · compacts at ${fmtTokens(b.compactAt)}` : ''}`
     const badge = ` ${snap.percent === undefined ? '—' : `${snap.percent}%`} `
     const left = '◆ context'
     const rightFits = left.length + 2 + right.length + 1 + badge.length <= columns
-    const gap = Math.max(1, columns - left.length - (rightFits ? right.length + 1 : 0) - badge.length)
 
     const header = (
-      <Box key="header" flexDirection="row">
+      <Box key="header" flexDirection="row" justifyContent="space-between" width={columns}>
         <Text bold>{left}</Text>
-        <Text>{' '.repeat(gap)}</Text>
-        {rightFits && <Text dimColor>{right + ' '}</Text>}
-        <Text key="badge" color={color} inverse bold>{badge}</Text>
+        <Box flexDirection="row">
+          {rightFits && <Text dimColor>{right + ' '}</Text>}
+          <Text key="badge" color={color} inverse bold>{badge}</Text>
+        </Box>
       </Box>
     )
 
     // The bar: one segment per category, proportional to its share of the window.
+    // Each segment is a Box painted with its category's colour and sized by
+    // flex, never a run of block characters: a proportional font (the desktop
+    // app) would make those overflow the row and wrap.
+    const segment = (key: string, cells: number, fill: string) => (
+      <Box key={key} flexGrow={cells} flexShrink={1} minWidth={1} height={1} backgroundColor={fill}>
+        <Text> </Text>
+      </Box>
+    )
     let barRow
     if (cats.length > 0) {
       const cells = allocate(cats.map(c => c.tokens), columns)
       barRow = (
-        <Box key="bar" flexDirection="row">
+        <Box key="bar" flexDirection="row" width={columns} height={1} overflow="hidden">
           {cats.map((c, i) => {
             const n = cells[i] ?? 0
             if (n === 0) return null
-            const glyph = c.kind === 'free' ? '░' : c.kind === 'buffer' ? '▒' : '█'
 
-            return (
-              <Text key={`seg-${i}`} color={c.kind === 'free' ? undefined : c.color} dimColor={c.kind === 'free'}>
-                {glyph.repeat(n)}
-              </Text>
-            )
+            return segment(`seg-${i}`, n, c.kind === 'free' ? FREE_FILL : c.color)
           })}
         </Box>
       )
     } else {
       // No breakdown yet (or the engine gave none): the fill alone, in the level's colour.
-      const plain = bar(snap.percent, columns)
+      const n = Math.round(((snap.percent ?? 0) / 100) * columns)
       barRow = (
-        <Box key="bar" flexDirection="row">
-          <Text color={color}>{plain.filled}</Text>
-          <Text dimColor>{plain.empty}</Text>
+        <Box key="bar" flexDirection="row" width={columns} height={1} overflow="hidden">
+          {n > 0 && segment('seg-fill', n, color)}
+          {columns - n > 0 && segment('seg-free', columns - n, FREE_FILL)}
         </Box>
       )
     }
@@ -263,7 +272,7 @@ export const register: Register = (on, options) => {
             <Box key={`legend-${r}`} flexDirection="row">
               {row.map(({ c, text }, i) => (
                 <Box key={`item-${r}-${i}`} flexDirection="row">
-                  <Text color={c.kind === 'free' ? undefined : c.color} dimColor={c.kind === 'free'}>{c.kind === 'free' ? '□' : '■'}</Text>
+                  <Text color={c.kind === 'free' ? FREE_FILL : c.color}>■</Text>
                   <Text dimColor={c.kind === 'free'}>{' ' + pad(text, cellWidth - 2)}</Text>
                 </Box>
               ))}

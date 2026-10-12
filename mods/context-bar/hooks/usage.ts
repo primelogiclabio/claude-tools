@@ -3,21 +3,9 @@
 
 export type Level = 'ok' | 'warn' | 'danger'
 
-export type Tokens = {
-  input: number
-  output: number
-  cacheRead: number
-  cacheWrite: number
-}
+import type { Tokens, Totals } from '../types'
 
-export type Totals = {
-  /** Turns of the main loop counted. */
-  turns: number
-  /** Subagent turns counted. */
-  agentTurns: number
-  main: Tokens
-  agents: Tokens
-}
+export type { Tokens, Totals }
 
 export type RateLimit = { kind: string; percentUsed: number; resetsAt?: string }
 
@@ -65,6 +53,7 @@ export function categoryLabel(name: string): string {
 
 /** 0.3%, 1%, 19%: one decimal under 1%, whole numbers above. */
 export function pctShort(p: number): string {
+  if (p > 0 && p < 0.1) return '<0.1%'
   if (p > 0 && p < 1) return `${p.toFixed(1)}%`
 
   return `${Math.round(p)}%`

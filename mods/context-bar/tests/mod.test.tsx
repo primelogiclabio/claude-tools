@@ -122,9 +122,12 @@ describe('context-bar', () => {
       expect(badge?.props.color).toBe('success')
       expect(badge?.props.inverse).toBe(true)
 
-      // Messages is the widest used segment, in its /context colour; free space is dim.
-      expect((await ui.find({ type: 'Text', text: /^█{20,}$/ }))?.props.color).toBe('claude')
-      expect((await ui.find({ type: 'Text', text: /^░{80,}$/ }))?.props.dimColor).toBe(true)
+      // Segments are painted Boxes in /context's colours: messages is index 6
+      // (deferred tools are left out), free space last, in the faint grey.
+      const messages = await ui.find({ type: 'Box', key: 'seg-6' })
+      expect(messages?.props.backgroundColor).toBe('claude')
+      expect((await ui.find({ type: 'Box', key: 'seg-7' }))?.props.backgroundColor).toBe('subtle')
+      expect(await ui.find({ type: 'Text', text: /█|░/ })).toBeUndefined()
 
       for (const label of ['system prompt 3.4k 0.3%', 'tools 12k 1%', 'mcp tools 2.6k 0.3%', 'agents 1.1k 0.1%', 'memory files 4.9k 0.5%', 'skills 2.2k 0.2%', 'messages 186k 19%', 'free 788k']) {
         expect(await ui.find({ type: 'Text', text: new RegExp(`^ ${label} *$`) })).toBeDefined()
@@ -142,12 +145,15 @@ describe('context-bar', () => {
     await $.session.start(START)
     const ui = await $.ui.mount(band('terminal', 60))
     // The 8 categories in the window each draw: 7 coloured segments and the free one.
-    const used = await ui.findAll({ type: 'Text', text: /^█+$/ })
-    expect(used.map(s => s.props.color)).toEqual(['promptBorder', 'suggestion', 'planMode', 'permission', 'remember', 'warning', 'claude'])
-    const free = await ui.findAll({ type: 'Text', text: /^░+$/ })
-    expect(free).toHaveLength(1)
-    const width = [...used, ...free].reduce((n, s) => n + (s.text ?? '').length, 0)
-    expect(width).toBe(60)
+    const segs = []
+    for (let i = 0; i < 8; i++) {
+      const seg = await ui.find({ type: 'Box', key: `seg-${i}` })
+      expect(seg).toBeDefined()
+      segs.push(seg)
+    }
+    expect(segs.map(s => s?.props.backgroundColor)).toEqual(['promptBorder', 'suggestion', 'planMode', 'permission', 'remember', 'warning', 'claude', 'subtle'])
+    // Their flex weights are the cells each would take, adding up to the row.
+    expect(segs.reduce((n, s) => n + Number(s?.props.flexGrow ?? 0), 0)).toBe(60)
     await ui.unmount()
   })
 
@@ -166,7 +172,8 @@ describe('context-bar', () => {
     await $.session.start(START)
     const ui = await $.ui.mount(band('terminal'))
     expect(await ui.find({ type: 'Text', text: /messages/ })).toBeUndefined()
-    expect((await ui.find({ type: 'Text', text: /^█+$/ }))?.props.color).toBe('success')
+    expect((await ui.find({ type: 'Box', key: 'seg-fill' }))?.props.backgroundColor).toBe('success')
+    expect((await ui.find({ type: 'Box', key: 'seg-free' }))?.props.flexGrow).toBe(95)
     await ui.unmount()
   })
 
