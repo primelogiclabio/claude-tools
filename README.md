@@ -281,7 +281,7 @@ or update.
    ```json
    {
      "env": {
-       "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker;F:\\development\\claude-tools\\skills\\generate-docs"
+       "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker;F:\\development\\claude-tools\\skills\\generate-docs;F:\\development\\claude-tools\\skills\\workday-tracker"
      }
    }
    ```
@@ -329,6 +329,11 @@ Nothing is installed. Repeat the flag to load more than one plugin.
    `/tasks add Try the tracker` creates `<project>/.claude/tasks.md`.
 3. **generate-docs:** ask for a write-up, for example "write up an overview
    of how this repo is laid out", or type `/generate-docs` and pick it.
+4. **workday-tracker:** share the link to your task-tracker artifact (or ask
+   to start one) and say "add a follow-up to check the DNS change", or type
+   `/workday-tracker` and pick it. It edits the artifact itself, so the
+   session needs the Artifact tool; without it, use the skill on claude.ai
+   (path 2).
 
 #### Changing plugin options
 
@@ -347,7 +352,7 @@ Start a new session after any change.
 
 | Symptom | Fix |
 | --- | --- |
-| `/tasks` or `/generate-docs` isn't in the command list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
+| `/tasks`, `/generate-docs` or `/workday-tracker` isn't in the command list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
 | `Plugin "…" not found in marketplace "claude-tools"` | Use the name from the table above, with `@claude-tools`. Run `claude plugin marketplace update claude-tools` to refresh the catalog. |
 | `Source path does not exist` on install | The catalog points at a folder that isn't in the copy you added. Make sure your clone or push includes `mods/` and `skills/`. |
 | Duplicate `/tasks`, or changes that seem to come from an old copy | Two install methods are active. Keep only one, and check `~/.claude/skills/` for an old copy. |
