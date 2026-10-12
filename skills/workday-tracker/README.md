@@ -46,11 +46,18 @@ Outside Claude Code, skills need a Pro, Max, Team or Enterprise plan, with
 
 ## Install
 
-In Claude Code 2.1.275 or later, one line installs it:
+One line installs it (Claude Code 2.1.275 or later), in either of two places:
 
-```
-/plugin install workday-tracker --marketplace primelogiclabio/claude-tools
-```
+- **Inside a Claude Code session** (CLI or desktop Code tab), type:
+  ```
+  /plugin install workday-tracker --marketplace primelogiclabio/claude-tools
+  ```
+- **From a terminal** (PowerShell, bash), run:
+  ```
+  claude plugin install workday-tracker --marketplace primelogiclabio/claude-tools
+  ```
+
+Both add the `claude-tools` marketplace first if you haven't added it yet.
 
 The step-by-step instructions for both paths are in the
 [repo README](../../README.md#installing). Notes specific to this skill:

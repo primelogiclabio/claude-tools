@@ -106,11 +106,19 @@ Set these in `/config`, or with
 
 ## Install
 
-See the [repo README](../../README.md#installing). In short:
+One line installs it, in either of two places:
 
-```powershell
-claude plugin install resource-monitor --marketplace primelogiclabio/claude-tools
-```
+- **Inside a Claude Code session** (CLI or desktop Code tab), type:
+  ```
+  /plugin install resource-monitor --marketplace primelogiclabio/claude-tools
+  ```
+- **From a terminal** (PowerShell, bash), run:
+  ```
+  claude plugin install resource-monitor --marketplace primelogiclabio/claude-tools
+  ```
+
+Both add the `claude-tools` marketplace first if you haven't added it yet.
+The [repo README](../../README.md#installing) has the full steps.
 
 ## Developing
 

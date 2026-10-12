@@ -123,9 +123,15 @@ steps** for the CLI and the desktop app. In short:
   claude plugin marketplace add F:\development\claude-tools
   claude plugin install project-tracker@claude-tools
   ```
-  On any other machine, add it from GitHub with
-  `claude plugin marketplace add primelogiclabio/claude-tools`, or use one step:
-  `/plugin install project-tracker --marketplace primelogiclabio/claude-tools`.
+  On any other machine, one line installs it from GitHub and adds the
+  marketplace first if needed. Inside a Claude Code session, type:
+  ```
+  /plugin install project-tracker --marketplace primelogiclabio/claude-tools
+  ```
+  Or from a terminal (PowerShell, bash), run:
+  ```
+  claude plugin install project-tracker --marketplace primelogiclabio/claude-tools
+  ```
 - **Every session, straight from this folder:** add it to
   `CLAUDE_CODE_PLUGIN_DIRS` in the `env` block of `~/.claude/settings.json`.
   ```json
