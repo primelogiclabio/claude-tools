@@ -143,7 +143,8 @@ one of:
 
   Updates come from GitHub. Use **Check for updates**, or turn on **Sync
   automatically** for the marketplace
-  ([Plugins on claude.ai](https://claude.com/docs/plugins/overview)).- **Upload just the skill.**
+  ([Plugins on claude.ai](https://claude.com/docs/plugins/overview)).
+- **Upload just the skill.**
   1. Zip the skill's folder, `skills/generate-docs` or
      `skills/workday-tracker`. Each already contains
      `.claude-plugin/plugin.json`.
