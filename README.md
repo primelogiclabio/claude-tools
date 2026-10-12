@@ -375,6 +375,7 @@ Start a new session after any change.
 claude plugin validate .                         # checks marketplace.json and every listed plugin
 claude plugin validate .\mods\project-tracker
 claude plugin test .\mods\project-tracker        # project-tracker's test suite
+claude plugin validate .\skills\workday-tracker  # one skill on its own (skills have no tests)
 ```
 
 To add a mod or skill:
