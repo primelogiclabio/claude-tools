@@ -144,6 +144,11 @@ one of:
   Updates come from GitHub. Use **Check for updates**, or turn on **Sync
   automatically** for the marketplace
   ([Plugins on claude.ai](https://claude.com/docs/plugins/overview)).
+  **Sync automatically needs the Claude GitHub App.** Until that app has
+  access to the repository, claude.ai doesn't pick up new pushes on its own
+  and shows a **Grant access** notice after the marketplace is added. Grant
+  it there, which gives the app access to the repository, or skip it and use
+  **Check for updates** by hand.
 - **Upload just the skill.**
   1. Zip the skill's folder, `skills/generate-docs` or
      `skills/workday-tracker`. Each already contains
