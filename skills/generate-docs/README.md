@@ -96,6 +96,17 @@ The step-by-step instructions for both paths are in the
 - **It needs a browser.** It has no runtime dependencies, but its check step
   expects one: the desktop app's built-in browser pane, or Claude in Chrome.
 
+## Developing
+
+From this folder:
+
+```sh
+claude plugin validate .
+```
+
+It's a skill with no code, so there are no tests. To try a change, ask for a
+write-up in a new session.
+
 ## Files
 
 ```

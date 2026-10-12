@@ -9,10 +9,12 @@ claude-tools/
 ├── .claude-plugin/
 │   └── marketplace.json      the marketplace catalog (lists every installable item)
 ├── mods/                     mods: plugins that change Claude Code's interface or behaviour
+│   ├── README.md             index of the mods and their layout
 │   ├── project-tracker/
 │   ├── context-bar/
 │   └── resource-monitor/
 └── skills/                   skills: instructions Claude loads when a request matches
+    ├── README.md             index of the skills and their layout
     ├── generate-docs/
     └── workday-tracker/
 ```
@@ -257,10 +259,10 @@ then **Plugins › Add plugin**, and pick from your marketplaces. Plugins
 installed from the CLI at user scope are already there. Start a new session
 after installing.
 
-**Check it:** `claude plugin list` should show `project-tracker@claude-tools`
-with `Status: ✔ enabled`.
+**Check it:** `claude plugin list` should show each one you installed, for
+example `project-tracker@claude-tools`, with `Status: ✔ enabled`.
 
-**Uninstall:** `claude plugin uninstall project-tracker@claude-tools`.
+**Uninstall:** `claude plugin uninstall <name>@claude-tools`.
 To remove the whole marketplace, run
 `claude plugin marketplace remove claude-tools`. That also uninstalls every
 plugin you installed from it.
@@ -290,10 +292,14 @@ or update.
    ```json
    {
      "env": {
-       "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker;F:\\development\\claude-tools\\skills\\generate-docs;F:\\development\\claude-tools\\skills\\workday-tracker"
+       "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker;F:\\development\\claude-tools\\skills\\generate-docs"
      }
    }
    ```
+
+   List only the folders you want, from `mods\project-tracker`,
+   `mods\context-bar`, `mods\resource-monitor`, `skills\generate-docs` and
+   `skills\workday-tracker`.
 3. **CLI:** start a new `claude` session.
    **Desktop app:** quit it completely (right-click the tray icon and choose
    Quit), reopen it, and start a new session in the Code tab.
@@ -336,9 +342,14 @@ Nothing is installed. Repeat the flag to load more than one plugin.
 2. **project-tracker:** type `/tasks`. Where the pane appears depends on
    terminal width and layout; see its [README](mods/project-tracker/README.md).
    `/tasks add Try the tracker` creates `<project>/.claude/tasks.md`.
-3. **generate-docs:** ask for a write-up, for example "write up an overview
+3. **context-bar:** the card appears above the prompt. The header and badge
+   fill in after the first response; `/context-bar` prints the full
+   breakdown.
+4. **resource-monitor:** the status line shows a readout such as
+   `⚙ CPU 12% · 2.1 GB`; CPU appears after the second sample (5 s apart); `/resources` opens the pane.
+5. **generate-docs:** ask for a write-up, for example "write up an overview
    of how this repo is laid out", or type `/generate-docs` and pick it.
-4. **workday-tracker:** share the link to your task-tracker artifact (or ask
+6. **workday-tracker:** share the link to your task-tracker artifact (or ask
    to start one) and say "add a follow-up to check the DNS change", or type
    `/workday-tracker` and pick it. It edits the artifact itself, so the
    session needs the Artifact tool; without it, use the skill on claude.ai
@@ -346,45 +357,70 @@ Nothing is installed. Repeat the flag to load more than one plugin.
 
 #### Changing plugin options
 
-project-tracker has options (`autoOpen`, `statusLine`, `injectContext`,
-`taskFile`, `registerProject`), described in its README. Set them in `/config`
-inside a session, or from the shell:
+The three mods have options, listed in each one's README:
+
+| Mod | Options |
+| --- | --- |
+| project-tracker | `autoOpen`, `statusLine`, `injectContext`, `taskFile`, `registerProject` |
+| context-bar | `showBand`, `showLegend`, `warnAt`, `dangerAt`, `showCost` |
+| resource-monitor | `cpuWarn`, `memWarn`, `intervalSeconds`, `statusLine`, `autoOpen`, `injectContext` |
+
+Set them in `/config` inside a session, or from the shell:
 
 ```powershell
-claude plugin configure project-tracker@claude-tools
+claude plugin configure <name>@claude-tools
 ```
 
-For a plugin loaded with method B or C, use `project-tracker` with no `@…`.
-Start a new session after any change.
+For a plugin loaded with method B or C, use the bare name with no `@…`.
+Start a new session after any change. The skills have no options.
 
 #### Troubleshooting
 
 | Symptom | Fix |
 | --- | --- |
-| `/tasks`, `/generate-docs` or `/workday-tracker` isn't in the command list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
+| A command (`/tasks`, `/context-bar`, `/resources`, `/generate-docs`, `/workday-tracker`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
 | `Plugin "…" not found in marketplace "claude-tools"` | Use the name from the table above, with `@claude-tools`. Run `claude plugin marketplace update claude-tools` to refresh the catalog. |
 | `Source path does not exist` on install | The catalog points at a folder that isn't in the copy you added. Make sure your clone or push includes `mods/` and `skills/`. |
-| Duplicate `/tasks`, or changes that seem to come from an old copy | Two install methods are active. Keep only one, and check `~/.claude/skills/` for an old copy. |
-| You need to see what went wrong | Run `claude --debug …`. Lines starting `project-tracker:` say why a hook was skipped. |
+| A duplicate command or skill, or changes that seem to come from an old copy | Two install methods are active, or the plugin and an account skill are both on. Keep only one, and check `~/.claude/skills/` for an old copy. |
+| You need to see what went wrong | Run `claude --debug …`. Look for lines that start with the mod's name, such as `project-tracker:`; they say why a hook was skipped. |
 
 ---
 
 ## Working on this repo
 
+Run these from the repo root. Each item's README has the same commands, run
+from its own folder.
+
 ```powershell
-claude plugin validate .                         # checks marketplace.json and every listed plugin
+# Everything: marketplace.json and every plugin it lists
+claude plugin validate .
+
+# One item on its own
 claude plugin validate .\mods\project-tracker
-claude plugin test .\mods\project-tracker        # project-tracker's test suite
-claude plugin validate .\skills\workday-tracker  # one skill on its own (skills have no tests)
+claude plugin validate .\mods\context-bar
+claude plugin validate .\mods\resource-monitor
+claude plugin validate .\skills\generate-docs
+claude plugin validate .\skills\workday-tracker
+
+# Test suites (mods only; skills have no code to test)
+claude plugin test .\mods\project-tracker
+claude plugin test .\mods\context-bar
+claude plugin test .\mods\resource-monitor
 ```
 
 To add a mod or skill:
 
-1. Create its folder under `mods/` or `skills/`, with a `README.md`.
+1. Create its folder under `mods/` or `skills/`, with a
+   `.claude-plugin/plugin.json` and a `README.md`. The READMEs share one
+   layout: what it does, when it runs, **Where it works**, **Options** (mods),
+   **Install** with both one-line commands, and **Developing** with the
+   commands above.
 2. Add an entry to `.claude-plugin/marketplace.json`. Keep the entry `name`
    the same as the `name` in the item's own `plugin.json`, and write `source`
    as `./mods/<name>` or `./skills/<name>`.
-3. Add a row to the Contents table above.
+3. Add it to the folder tree and the Contents table above, to the table in
+   [`mods/README.md`](mods/README.md) or [`skills/README.md`](skills/README.md),
+   and to the validate (and, for a mod, test) lines above.
 4. Run `claude plugin validate .`.
 
 Bump `version` in an item's `plugin.json` when you release a change. Users who

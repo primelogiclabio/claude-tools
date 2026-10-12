@@ -122,6 +122,8 @@ The [repo README](../../README.md#installing) has the full steps.
 
 ## Developing
 
+From this folder:
+
 ```sh
 claude plugin validate .
 claude plugin test .

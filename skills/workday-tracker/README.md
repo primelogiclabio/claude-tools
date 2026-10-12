@@ -79,6 +79,17 @@ The step-by-step instructions for both paths are in the
 - **Your tracker stays yours.** The skill holds no artifact link or data; each
   person's tracker is their own private artifact.
 
+## Developing
+
+From this folder:
+
+```sh
+claude plugin validate .
+```
+
+It's a skill with no code, so there are no tests. To try a change, ask Claude
+to add or finish a task in a tracker artifact in a new session.
+
 ## Files
 
 ```

@@ -1,6 +1,9 @@
 # skills
 
-Claude Code skills. Each one sits in its own folder:
+Skills: instructions Claude loads when a request matches. They work in
+Claude Code and, from your claude.ai account, in Chat, Cowork and mobile (see
+[where each item works](../README.md#where-each-item-works)). Each one sits in
+its own folder:
 
 | Skill | What it does |
 | --- | --- |
@@ -24,12 +27,14 @@ skills/
     └── README.md
 ```
 
-To add a new skill:
+To add a new skill, follow the steps in the
+[repo README](../README.md#working-on-this-repo), then check it:
 
-1. Create the folder like the one above.
-2. Add an entry for it to [`../.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json).
-3. Add a row to the table above.
-4. Run `claude plugin validate .` from the repo root.
+```powershell
+claude plugin validate .\skills\my-skill
+```
+
+Skills have no code, so there are no tests to run.
 
 ## Using a skill without the marketplace
 

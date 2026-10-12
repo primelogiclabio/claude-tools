@@ -101,9 +101,7 @@ knows a project's name ("the oauth project") can find its `tasks.md`:
 - **Editing it by hand is fine.** Fields the mod doesn't know, such as
   `"aliases": [...]`, are kept as written. To drop a project, delete its entry.
 
-## Using it
-
-**Where it works: Claude Code only.**
+## Where it works
 
 | Where | What works |
 | --- | --- |
@@ -112,27 +110,32 @@ knows a project's name ("the oauth project") can find its `tasks.md`:
 | VS Code extension chat panel | `/tasks` and the `tasks` tool. The pane isn't drawn. |
 | claude.ai web, desktop Chat, Cowork, mobile, cloud sessions | Nothing. Mods run only inside Claude Code ([where mods run](https://code.claude.com/docs/en/plugins/mods/overview#where-mods-run)). |
 
-This mod lives at `F:\development\claude-tools\mods\project-tracker`, and it is
-listed in the `claude-tools` marketplace.
-**[`claude-tools/README.md`](../../README.md#installing) has the full install
-steps** for the CLI and the desktop app. In short:
+It runs on Claude Code 2.1.277 and later. It doesn't use `$.state` or the
+`atom` helpers, which 2.1.277 lacks.
 
-- **Every session, CLI and desktop app (recommended):** install it from the
-  marketplace.
+## Install
+
+One line installs it, in either of two places:
+
+- **Inside a Claude Code session** (CLI or desktop Code tab, 2.1.275+), type:
+  ```
+  /plugin install project-tracker --marketplace primelogiclabio/claude-tools
+  ```
+- **From a terminal** (PowerShell, bash; CLI 2.1.292+), run:
+  ```
+  claude plugin install project-tracker --marketplace primelogiclabio/claude-tools
+  ```
+
+Both add the `claude-tools` marketplace first if you haven't added it yet.
+The [repo README](../../README.md#installing) has the full steps. Other ways,
+for the machine where you edit the repo:
+
+- **From the local folder, every session:**
   ```powershell
   claude plugin marketplace add F:\development\claude-tools
   claude plugin install project-tracker@claude-tools
   ```
-  On any other machine, one line installs it from GitHub and adds the
-  marketplace first if needed. Inside a Claude Code session (2.1.275+), type:
-  ```
-  /plugin install project-tracker --marketplace primelogiclabio/claude-tools
-  ```
-  Or from a terminal (PowerShell, bash; CLI 2.1.292+), run:
-  ```
-  claude plugin install project-tracker --marketplace primelogiclabio/claude-tools
-  ```
-- **Every session, straight from this folder:** add it to
+- **Straight from this folder, every session:** add it to
   `CLAUDE_CODE_PLUGIN_DIRS` in the `env` block of `~/.claude/settings.json`.
   ```json
   { "env": { "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker" } }
@@ -140,17 +143,14 @@ steps** for the CLI and the desktop app. In short:
 - **One CLI session:**
   `claude --plugin-dir F:\development\claude-tools\mods\project-tracker`
 
-Use only one of the first two. If you installed it earlier by cloning or
-linking it into `~/.claude/skills/project-tracker`, remove that copy first.
-The [repo README](../../README.md#m-from-the-marketplace-recommended) has the
-safe commands for that.
+Use only one of these. If you installed it earlier by cloning or linking it
+into `~/.claude/skills/project-tracker`, remove that copy first. The
+[repo README](../../README.md#m-from-the-marketplace-recommended) has the safe
+commands for that.
 
 Options set through `/config` or `claude plugin configure` are stored per
 install id: `project-tracker@claude-tools` from the marketplace, and
-`project-tracker` with methods B and C.
-
-It runs on Claude Code 2.1.277 and later. It doesn't use `$.state` or the
-`atom` helpers, which 2.1.277 lacks.
+`project-tracker` when loaded from the folder.
 
 ## Checking the docked pane yourself
 
@@ -209,6 +209,8 @@ The documentation doesn't say which side the dock is on in the terminal, and a
 mod can't choose it. Note which side it lands on.
 
 ## Developing
+
+From this folder:
 
 ```sh
 claude plugin validate .
