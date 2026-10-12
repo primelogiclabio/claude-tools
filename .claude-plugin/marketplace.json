@@ -28,6 +28,12 @@
       "source": "./skills/generate-docs",
       "description": "Skill: generate project or research documentation as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, offline)",
       "category": "skill"
+    },
+    {
+      "name": "workday-tracker",
+      "source": "./skills/workday-tracker",
+      "description": "Skill: house rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai (task types, required completion comments, optional ticket refs and status notes)",
+      "category": "skill"
     }
   ]
 }

@@ -5,6 +5,7 @@ Claude Code skills. Each one sits in its own folder:
 | Skill | What it does |
 | --- | --- |
 | [generate-docs](generate-docs/README.md) | Generates project or research documentation as self-contained HTML + Markdown |
+| [workday-tracker](workday-tracker/README.md) | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai |
 
 ## Layout
 

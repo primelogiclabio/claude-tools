@@ -1,0 +1,7 @@
+{
+  "name": "workday-tracker",
+  "version": "0.1.0",
+  "author": { "name": "prime" },
+  "description": "Skill: house rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai (task types, completion comments, ticket refs, status notes)",
+  "skills": ["./"]
+}

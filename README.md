@@ -13,7 +13,8 @@ claude-tools/
 │   ├── context-bar/
 │   └── resource-monitor/
 └── skills/                   skills: instructions Claude loads when a request matches
-    └── generate-docs/
+    ├── generate-docs/
+    └── workday-tracker/
 ```
 
 **Mods vs skills.**
@@ -33,6 +34,7 @@ claude-tools/
 | [context-bar](mods/context-bar/README.md) | mod | Context card above the prompt: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
 | [resource-monitor](mods/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
 | [generate-docs](skills/generate-docs/README.md) | skill | Generates project or research documentation as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
+| [workday-tracker](skills/workday-tracker/README.md) | skill | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai: task types, required completion comments, optional ticket refs and status notes |
 
 ---
 
