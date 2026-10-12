@@ -70,9 +70,9 @@ three modes, and each behaves differently:
 
 | Where you use Claude | Skills: generate-docs, workday-tracker | Mods: project-tracker, context-bar, resource-monitor |
 | --- | --- | --- |
-| **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
-| **Desktop app, Code tab** (local or SSH session) | ✔ | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
-| **VS Code extension** chat panel | ✔ | ⚠ partly. Hooks run, so the commands (`/tasks`, `/context-bar`, `/resources text`) and the tools work, but **panes and the bar aren't drawn**. |
+| **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ (workday-tracker: needs the Artifact tool, see below) | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
+| **Desktop app, Code tab** (local or SSH session) | ✔ (workday-tracker: needs the Artifact tool) | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
+| **VS Code extension** chat panel | ✔ (workday-tracker: needs the Artifact tool) | ⚠ partly. Hooks run, so the commands (`/tasks`, `/context-bar`, `/resources text`) and the tools work, but **panes and the bar aren't drawn**. |
 | **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below) | ✘ mods are Claude Code only |
 | **Desktop app, Chat** | ✔ from your claude.ai account (path 2) | ✘ |
 | **claude.ai on the web** | ✔ from your claude.ai account (path 2) | ✘ claude.ai doesn't run mods |
@@ -98,6 +98,15 @@ fix here.
 Claude still writes both files and offers them as downloads. It can't open
 them in a browser pane to check them, and it can't save them into a
 project's `docs/` folder, so those steps of the skill are skipped.
+
+**What workday-tracker needs.** It works on a task-tracker artifact on
+claude.ai, and it edits the artifact's own code, so it runs only where Claude
+can create and update artifacts. That's the usual case on claude.ai, desktop
+Chat, Cowork and mobile, where it fits best. In Claude Code (CLI, desktop Code
+tab, VS Code, cloud sessions) it needs a session that has the Artifact tool;
+without it, Claude can't change the tracker, so use the skill from claude.ai
+instead. It holds no artifact link or data, so everyone who installs it works
+on their own tracker.
 
 ## Installing
 
