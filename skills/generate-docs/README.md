@@ -56,6 +56,12 @@ Outside Claude Code, skills need a Pro, Max, Team or Enterprise plan, with
 
 ## Install
 
+In Claude Code 2.1.275 or later, one line installs it:
+
+```
+/plugin install generate-docs --marketplace primelogiclabio/claude-tools
+```
+
 The step-by-step instructions for both paths are in the
 [repo README](../../README.md#installing). Notes specific to this skill:
 
