@@ -34,6 +34,12 @@
       "source": "./skills/workday-tracker",
       "description": "Skill: house rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai (task types, required completion comments, optional ticket refs and status notes)",
       "category": "skill"
+    },
+    {
+      "name": "git-repo-creator",
+      "source": "./skills/git-repo-creator",
+      "description": "Skill: put a project on git and GitHub, or audit and fix an existing repo: name, description, visibility, license, .gitignore, README, CI workflow, and lockdown for public repos",
+      "category": "skill"
     }
   ]
 }
