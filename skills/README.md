@@ -10,6 +10,7 @@ its own folder:
 | [generate-docs](generate-docs/README.md) | Generates project or research documentation as self-contained HTML + Markdown |
 | [workday-tracker](workday-tracker/README.md) | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai |
 | [git-repo-creator](git-repo-creator/README.md) | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, visibility, license, workflow, lockdown for public repos |
+| [project-progress](project-progress/README.md) | Tracks long project work in `PROGRESS.md`: one item at a time with a plan, side ideas parked, a checkpoint before each `/clear` |
 
 ## Layout
 
