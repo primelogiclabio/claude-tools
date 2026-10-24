@@ -17,7 +17,8 @@ claude-tools/
     ├── README.md             index of the skills and their layout
     ├── generate-docs/
     ├── workday-tracker/
-    └── git-repo-creator/
+    ├── git-repo-creator/
+    └── project-progress/
 ```
 
 **Mods vs skills.**
@@ -39,6 +40,7 @@ claude-tools/
 | [generate-docs](skills/generate-docs/README.md) | skill | Generates project or research documentation as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
 | [workday-tracker](skills/workday-tracker/README.md) | skill | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai: task types, required completion comments, optional ticket refs and status notes |
 | [git-repo-creator](skills/git-repo-creator/README.md) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, public or private, license, CI workflow, and a lockdown against outside contributors for public repos |
+| [project-progress](skills/project-progress/README.md) | skill | Tracks long project work in `PROGRESS.md` so context holds only the current task: one item at a time with a plan, side ideas parked instead of chased, a checkpoint before each `/clear` |
 
 ---
 
@@ -72,15 +74,15 @@ three modes, and each behaves differently:
 - **Desktop Code tab**: Claude Code with a graphical interface. Behaves like the
   CLI.
 
-| Where you use Claude | Skills: generate-docs, workday-tracker, git-repo-creator | Mods: project-tracker, context-bar, resource-monitor |
+| Where you use Claude | Skills: generate-docs, workday-tracker, git-repo-creator, project-progress | Mods: project-tracker, context-bar, resource-monitor |
 | --- | --- | --- |
 | **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ (workday-tracker: needs the Artifact tool, see below; git-repo-creator: needs `git` and `gh`) | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
 | **Desktop app, Code tab** (local or SSH session) | ✔ (workday-tracker: needs the Artifact tool; git-repo-creator: needs `git` and `gh`) | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
 | **VS Code extension** chat panel | ✔ (workday-tracker: needs the Artifact tool; git-repo-creator: needs `git` and `gh`) | ⚠ partly. Hooks run, so the commands (`/tasks`, `/context-bar`, `/resources text`) and the tools work, but **panes and the bar aren't drawn**. |
-| **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below), except git-repo-creator | ✘ mods are Claude Code only |
-| **Desktop app, Chat** | ✔ from your claude.ai account (path 2), except git-repo-creator | ✘ |
-| **claude.ai on the web** | ✔ from your claude.ai account (path 2), except git-repo-creator | ✘ claude.ai doesn't run mods |
-| **Claude mobile apps** | ✔ from your claude.ai account (path 2), except git-repo-creator | ✘ |
+| **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below), except git-repo-creator and project-progress | ✘ mods are Claude Code only |
+| **Desktop app, Chat** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ |
+| **claude.ai on the web** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ claude.ai doesn't run mods |
+| **Claude mobile apps** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ |
 | **Claude Code cloud sessions** (claude.ai/code, routines) | ✔ only if it's on your claude.ai account. Locally installed plugins don't reach the cloud. git-repo-creator also needs `gh` signed in there. | ✘ nothing a mod draws appears in a cloud session |
 
 Skills on claude.ai, the desktop app's Chat and Cowork, and mobile need a
@@ -117,6 +119,12 @@ signed in with `gh auth login`, so it works only in Claude Code (or a cloud
 session that has `gh` signed in). Chat, Cowork, the web and mobile have no
 shell for it, so don't add it to your claude.ai account.
 
+**What project-progress needs.** It writes `PROGRESS.md` in your repo, imports
+it from `CLAUDE.md`, and works with plan mode and `/clear`. Those are Claude
+Code features, so it works only in Claude Code. Chat, Cowork, the web and
+mobile have no repo or `CLAUDE.md` for it, so don't add it to your claude.ai
+account. Run `/project-progress init` once in each repo you want to track.
+
 ## Installing
 
 There are **two separate install paths**, and they reach different places:
@@ -126,7 +134,7 @@ There are **two separate install paths**, and they reach different places:
 | Where you install | `claude plugin …` in a terminal, `/plugin` in a session, or **+ › Plugins** in the desktop Code tab | **Customize › Plugins** (or **Customize › Skills**) on claude.ai or in the desktop app |
 | Install is tied to | this computer | your account |
 | Reaches | the CLI, the desktop Code tab and VS Code on this computer | Chat (web, desktop, mobile) and Cowork. It also syncs into Claude Code terminal sessions where you're signed in with that account (CLI 2.1.273+). |
-| Use it for | the mods, and the skills inside Claude Code | generate-docs and workday-tracker everywhere (git-repo-creator needs a shell, so Claude Code only) |
+| Use it for | the mods, and the skills inside Claude Code | generate-docs and workday-tracker everywhere (git-repo-creator and project-progress are Claude Code only) |
 
 Installs don't travel the other way. A plugin you install from the Claude Code
 command line stays on that computer and is never added to your account
@@ -230,6 +238,7 @@ claude plugin install project-tracker@claude-tools
 claude plugin install generate-docs@claude-tools
 claude plugin install workday-tracker@claude-tools
 claude plugin install git-repo-creator@claude-tools
+claude plugin install project-progress@claude-tools
 claude plugin install context-bar@claude-tools
 claude plugin install resource-monitor@claude-tools
 ```
@@ -308,7 +317,8 @@ or update.
 
    List only the folders you want, from `mods\project-tracker`,
    `mods\context-bar`, `mods\resource-monitor`, `skills\generate-docs`,
-   `skills\workday-tracker` and `skills\git-repo-creator`.
+   `skills\workday-tracker`, `skills\git-repo-creator` and
+   `skills\project-progress`.
 3. **CLI:** start a new `claude` session.
    **Desktop app:** quit it completely (right-click the tray icon and choose
    Quit), reopen it, and start a new session in the Code tab.
@@ -367,6 +377,10 @@ Nothing is installed. Repeat the flag to load more than one plugin.
    repo's setup", or type `/git-repo-creator` and pick it. `gh auth status`
    must show a signed-in account. It asks before it creates a repository,
    pushes or changes a setting.
+8. **project-progress:** in a repo you want to track, type
+   `/project-progress init` and pick it. It asks for your current goal and
+   first few items, and whether to commit `PROGRESS.md` or keep it personal.
+   Then use `/project-progress next` to start an item.
 
 #### Changing plugin options
 
@@ -391,7 +405,7 @@ Start a new session after any change. The skills have no options.
 
 | Symptom | Fix |
 | --- | --- |
-| A command (`/tasks`, `/context-bar`, `/resources`, `/generate-docs`, `/workday-tracker`, `/git-repo-creator`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
+| A command (`/tasks`, `/context-bar`, `/resources`, `/generate-docs`, `/workday-tracker`, `/git-repo-creator`, `/project-progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
 | `Plugin "…" not found in marketplace "claude-tools"` | Use the name from the table above, with `@claude-tools`. Run `claude plugin marketplace update claude-tools` to refresh the catalog. |
 | `Source path does not exist` on install | The catalog points at a folder that isn't in the copy you added. Make sure your clone or push includes `mods/` and `skills/`. |
 | A duplicate command or skill, or changes that seem to come from an old copy | Two install methods are active, or the plugin and an account skill are both on. Keep only one, and check `~/.claude/skills/` for an old copy. |
@@ -415,6 +429,7 @@ claude plugin validate .\mods\resource-monitor
 claude plugin validate .\skills\generate-docs
 claude plugin validate .\skills\workday-tracker
 claude plugin validate .\skills\git-repo-creator
+claude plugin validate .\skills\project-progress
 
 # Test suites (mods only; skills have no code to test)
 claude plugin test .\mods\project-tracker

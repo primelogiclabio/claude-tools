@@ -40,6 +40,12 @@
       "source": "./skills/git-repo-creator",
       "description": "Skill: put a project on git and GitHub, or audit and fix an existing repo: name, description, visibility, license, .gitignore, README, CI workflow, and lockdown for public repos",
       "category": "skill"
+    },
+    {
+      "name": "project-progress",
+      "source": "./skills/project-progress",
+      "description": "Skill: track long project work in PROGRESS.md: one item at a time with a plan, park side ideas instead of chasing them, checkpoint before /clear",
+      "category": "skill"
     }
   ]
 }
