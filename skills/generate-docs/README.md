@@ -7,7 +7,8 @@ name:
 
 - **`topic.html`**: self-contained, with inline CSS and JS and no network
   calls, so it opens offline by double-clicking. It has a light/dark toggle and
-  a jump-to-section menu that highlights the section you're reading.
+  a section menu that highlights the section you're reading: a left pane on
+  wide screens, a drop-down from a top bar on narrow ones.
 - **`topic.md`**: the same content in plain Markdown, for git, a wiki or a
   chat paste.
 
