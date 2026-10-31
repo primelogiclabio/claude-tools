@@ -7,29 +7,32 @@ instead of chasing them.
 
 `PROGRESS.md` has six short sections: **Current focus**, **Next**, **Done**
 (last 10), **Decisions**, **Parking lot** and **Gotchas**. It's current state,
-not a log, and stays under about 60 lines. `init` imports it from `CLAUDE.md`
-(or `CLAUDE.local.md`), so it loads in every session and comes back after
-`/compact`.
+not a log, and stays under about 60 lines: when it grows past that, Claude
+proposes cuts and makes only the ones you approve. `init` imports it from
+`CLAUDE.md` (or `CLAUDE.local.md`), so it loads in every session and comes back
+after `/compact`.
 
-The skill has five modes:
+The skill has six modes:
 
 | Command | What it does |
 | --- | --- |
-| `/project-progress init` | Creates `PROGRESS.md` and adds the import and workflow rules to `CLAUDE.md`. Asks whether to commit the file or keep it personal (gitignored, through `CLAUDE.local.md`). Never overwrites an existing file. |
-| `/project-progress next` | Moves the next item into Current focus and starts a plan for just that item. Nothing is built until you approve the plan. |
+| `/project-progress init` | Creates `PROGRESS.md` and adds the import and workflow rules to `CLAUDE.md`. Asks whether to commit the file or keep it personal (through `CLAUDE.local.md`, with both files listed in the repo's local `.git/info/exclude` so your `.gitignore` stays untouched). Never overwrites an existing file. |
+| `/project-progress add <item>` | Adds an item to Next, at the bottom unless you say where. Also reorders or drops Next items when you ask. |
+| `/project-progress next` | Moves the next item into Current focus and starts a plan for just that item. Nothing is built until you approve the plan. If Next is empty, offers the parked ideas or asks what to work on. |
 | `/project-progress park <idea>` | Writes a side idea to the Parking lot and goes back to the current item. Claude also parks unrelated bugs or refactors it notices on its own. |
-| `/project-progress done` | Records the item in Done, adds decisions and gotchas, asks which parked items to promote, then tells you to `/clear` and start the next one. |
-| `/project-progress` | Shows the current focus, the next three items and how many are parked. |
+| `/project-progress done` | Records the item in Done, adds decisions and gotchas, proposes cuts if the file is too long, asks which parked items to promote, then tells you to `/clear` and start the next one. |
+| `/project-progress` | Shows the current focus, the next three items and how many are parked, and flags a file that's grown too long. |
 
-The loop it supports: **next** (plan) → build → **park** anything that comes
-up → **done** → `/clear` → **next**.
+The loop it supports: **add** work as you plan it, **next** (plan) → build →
+**park** anything that comes up → **done** → `/clear` → **next**.
 
 The full instructions are in [`SKILL.md`](SKILL.md).
 
 ## When it runs
 
-Claude picks it up when you ask to set up progress tracking, ask what's next or
-where you are, say "park this", or say an item is done or ask to checkpoint.
+Claude picks it up when you ask to set up progress tracking, ask to add an item
+to `PROGRESS.md`, ask what's next or where you are, say "park this", or say an
+item is done or ask to checkpoint.
 To call it directly, type `/project-progress` and choose it from the list. When
 it's installed as a plugin, its full name is
 `/project-progress:project-progress`.
@@ -95,7 +98,7 @@ claude plugin validate .
 
 It's a skill with no code, so there are no tests. To try a change, run
 `/project-progress init` in a scratch repo in a new session, then go through
-`next`, `park` and `done`.
+`add`, `next`, `park` and `done`.
 
 ## Files
 
