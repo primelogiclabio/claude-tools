@@ -1,6 +1,6 @@
 ---
 name: daily-organizer
-description: House rules for a personal daily organizer artifact on claude.ai (Today, Up Next, Waiting On, Done, plus a log of past days), with tasks kept in the artifact's database: task types, completion comments, ticket refs, status notes, a morning plan and an end-of-day summary. Use whenever the user asks to start, add to, update, complete or review their personal organizer, task tracker or task list (including one they call their workday tracker), asks to plan their day or what to work on today, asks to wrap up or summarize their day, or asks to change the organizer page itself.
+description: House rules for a personal daily organizer artifact on claude.ai (Today, Up Next, Waiting On, Done, plus a log of past days), with tasks kept in the artifact's database: task types, completion comments, ticket refs, status notes, progress comments, a morning plan and an end-of-day summary. Use whenever the user asks to start, add to, update, complete or review their personal organizer, task tracker or task list (including one they call their workday tracker), asks to plan their day or what to work on today, asks to wrap up or summarize their day, or asks to change the organizer page itself.
 ---
 
 # Daily organizer
@@ -22,6 +22,7 @@ The organizer is the artifact the user points at: by a link, by name ("my daily 
   - `created`: ISO timestamp
   - `ticket`, optional: a ticket key or URL
   - `note`, optional: the current status note
+  - `log`, optional: comments, as a list of `{at, text}` entries (ISO timestamp, free text), oldest first
   - `comment`: the completion comment, set when `status` becomes `done`
   - `doneAt`: ISO timestamp, set with `comment`
   - `today`, optional: the `YYYY-MM-DD` date the task is planned for
@@ -51,6 +52,7 @@ Dates are the user's local date. New task ids are letters, digits and dashes, su
 2. **Completing needs a comment.** A task is done only with a short comment saying what was done or decided. If the user says "mark X done" without one, ask for it first. The page enforces the same rule.
 3. **Ticket, optional.** A Jira or Linear key or a URL, at creation or later. Never required.
 4. **Status note, optional.** A short, changing note such as "blocked on DNS change", separate from the completion comment. Useful for anything that sits more than a day.
+5. **Comments, optional.** Dated entries with more detail on progress: what was tried, what was found, what's next. They build up over time, while the status note stays the one-line current state. When the user shares progress on a task, add it as a comment. Change the status note only when they say where the task stands now.
 
 A plain "add a task" with nothing else is a `task` in Up Next, with no ticket or note.
 
@@ -68,6 +70,8 @@ Never republish the page to change tasks. Its code changes only when the user as
 
 To finish a task, `update` `status: "done"`, `comment` and `doneAt` together. To reopen one, `update` `status: "next"` and remove the other two by writing each as `{"__delete__": true}`. Remove a status note or a `today` date the same way.
 
+To add a comment, `update` `log` with the task's existing entries plus the new one at the end: an `update` replaces the whole list, so leaving the old entries out deletes them.
+
 ## Plan my day
 
 When the user asks to plan the day, or what to work on today:
@@ -75,7 +79,7 @@ When the user asks to plan the day, or what to work on today:
 2. Pick out:
    - tasks planned for an earlier day and not done (carry-overs);
    - follow-ups and Waiting On tasks added 3 or more days ago, which may need chasing;
-   - anything with a ticket or status note that suggests urgency.
+   - anything whose ticket, status note or latest comment suggests urgency.
 3. Propose 3 to 5 tasks for today, with one line each on why. Ask the user to confirm or change the list. Don't write anything yet.
 4. On a yes, one `batch`:
    - `update` `today` to today's date on each chosen task;
@@ -90,6 +94,7 @@ When the user asks to wrap up, close or summarize the day:
 1. Read `tasks` and `days/<today>`.
 2. Draft a short summary of:
    - what got done today, with each completion comment;
+   - progress on open tasks, from comments added today;
    - which of today's planned tasks are still open, so they carry over;
    - what's waiting on others;
    - status notes that look stale.
@@ -102,7 +107,7 @@ A tracker made before this skill used a database keeps its tasks inside the page
 - **A published artifact they can edit** (a claude.ai/artifact link):
   1. Read it with `Artifact` `read`.
   2. Publish `template.html` to the same `url` with the capabilities above, so the link stays.
-  3. Write its tasks as rows in one `batch`. Map Up Next to `next`, Waiting On to `waiting` and Done to `done`, and keep any type, ticket, status note and completion comment. Old done tasks stay done even without a comment; the comment rule applies from now on.
+  3. Write its tasks as rows in one `batch`. Map Up Next to `next`, Waiting On to `waiting` and Done to `done`, and keep any type, ticket, status note, comments and completion comment. Old done tasks stay done even without a comment; the comment rule applies from now on.
   4. `list` the rows back and say how many moved.
 - **A chat artifact** (made inside a claude.ai chat, with no artifact link): start a new organizer and copy the tasks into it the same way. Tell the user the new link replaces the old artifact.
 
@@ -110,7 +115,7 @@ A tracker made before this skill used a database keeps its tasks inside the page
 
 Making or writing the organizer needs the `Artifact` tool with `capabilities` and the `ArtifactData` tool. Claude Code sessions have both. Chat artifacts on claude.ai have no database. When this session lacks them:
 - **For an organizer that already exists:** say you can't change its rows from here. The user can add, complete and plan tasks on the page itself, wherever they open it, or ask from a Claude Code session.
-- **For a chat-artifact tracker:** keep working the older way. Tasks stay in the artifact's code, the same four task rules apply, and missing fields (type, ticket, status note, completion comment) get added to the artifact's code rather than tracked in chat. Keep its plain look.
+- **For a chat-artifact tracker:** keep working the older way. Tasks stay in the artifact's code, the same task rules apply, and missing fields (type, ticket, status note, comments, completion comment) get added to the artifact's code rather than tracked in chat. Keep its plain look.
 
 ## Changing the page itself
 

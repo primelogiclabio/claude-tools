@@ -14,7 +14,7 @@ The tasks aren't written into the page. They're records stored with the
 artifact on claude.ai, in the artifact's own database:
 
 - The page shows them live and saves what you do there straight away: add a
-  task, star it for today, tick it off, add a status note.
+  task, star it for today, tick it off, add a status note or a comment.
 - Claude reads and changes the same records when you ask, without rewriting
   the page, so asking for "add a follow-up to chase the DNS change" is quick
   and can't drop other tasks.
@@ -31,6 +31,10 @@ artifact on claude.ai, in the artifact's own database:
 - A task can have a **ticket**, such as a Jira or Linear key or a URL.
 - A task can have a **status note** that changes over time, such as "blocked
   on DNS change".
+- A task can collect **comments**: dated entries with more detail on progress,
+  such as what you tried and what's next. The status note says where a task
+  stands now; the comments keep the history. Say "add a comment to the DNS
+  task: …" or use **Add comment** under the task on the page.
 
 ## Planning your day
 

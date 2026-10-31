@@ -40,7 +40,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-button, input, select { font: inherit; color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .day { display: grid; gap: 2px; }
@@ -95,6 +95,16 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 500; }
 .btn-danger { border-color: var(--danger); color: var(--danger); }
 .btn:disabled { opacity: .5; cursor: default; }
+
+.log { grid-column: 2 / -1; display: grid; gap: 8px; padding: 4px 0 2px; }
+.log ol { list-style: none; margin: 0; padding: 0 0 0 10px; border-left: 2px solid var(--line); display: grid; gap: 10px; }
+.log li { display: grid; gap: 2px; }
+.log .when { display: flex; flex-wrap: wrap; gap: 0 6px; align-items: baseline; font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.log .when .link-btn { font-family: var(--font-body); font-size: 12px; padding: 0 4px; }
+.log .text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
+.log textarea { width: 100%; min-height: 64px; resize: vertical; padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); box-sizing: border-box; }
+.log .log-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.meta .link-btn { padding: 0 4px; margin-left: -4px; }
 
 .add { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .add #add-title { grid-column: 1 / -1; font-size: 16px; }
@@ -186,7 +196,7 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
 (() => {
   const $ = (id) => document.getElementById(id);
   const state = { tasks: [], days: [], confirmed: false, slow: false, error: '', note: '', readOnly: false, closed: false };
-  const ui = { completing: null, noting: null, removing: null, clearing: false, drafts: {} };
+  const ui = { completing: null, noting: null, removing: null, clearing: false, drafts: {}, logOpen: new Set(), logRemoving: null };
   const chains = new Map();
   let db = null;
 
@@ -280,6 +290,39 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     else render();
   }
 
+  // Comments: a dated progress log on each task, oldest first.
+  const logOf = (t) => (Array.isArray(t.log) ? t.log : []);
+
+  function stamp(iso) {
+    const d = iso ? new Date(iso) : null;
+    if (!d || isNaN(d)) return '';
+    const day = dayKey(d) === dayKey() ? 'Today' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    return day + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function toggleLog(id) {
+    if (ui.logOpen.has(id)) ui.logOpen.delete(id);
+    else ui.logOpen.add(id);
+    ui.logRemoving = null;
+    render();
+    const f = $('log-' + id);
+    if (ui.logOpen.has(id) && f) f.focus();
+  }
+
+  function addLog(t) {
+    const key = 'log-' + t.id;
+    const text = (ui.drafts[key] || '').trim();
+    if (!text) return;
+    delete ui.drafts[key];
+    patch(t.id, { log: [...logOf(t), { at: new Date().toISOString(), text }] });
+    render();
+  }
+
+  function removeLog(t, entry) {
+    ui.logRemoving = null;
+    patch(t.id, { log: logOf(t).filter((e) => !(e.at === entry.at && e.text === entry.text)) });
+  }
+
   function draftInput(key, attrs, onEnter) {
     return el('input', {
       type: 'text', id: key, value: ui.drafts[key] ?? '', ...attrs,
@@ -308,6 +351,8 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     const typeName = t.type === 'idea' || t.type === 'follow-up' ? t.type : 'task';
     const added = daysSince(t.created);
     const waitingLong = t.status === 'waiting' && added !== null && added >= 3;
+    const log = logOf(t);
+    const logOpen = ui.logOpen.has(t.id);
 
     const check = el('input', {
       type: 'checkbox', id: 'chk-' + t.id, checked: done, disabled: !editable,
@@ -325,6 +370,10 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
       el('span', {}, ago(added, 'added')),
       waitingLong ? el('span', { class: 'stale' }, 'waiting ' + added + ' days') : null,
       done && t.doneAt ? el('span', {}, ago(daysSince(t.doneAt), 'done')) : null,
+      log.length || editable ? el('button', {
+        type: 'button', class: 'link-btn', 'aria-expanded': String(logOpen), 'aria-controls': 'logbox-' + t.id,
+        onclick: () => toggleLog(t.id),
+      }, log.length ? log.length + (log.length === 1 ? ' comment' : ' comments') : 'Add comment') : null,
     );
 
     const tools = editable ? el('div', { class: 'row-tools' },
@@ -380,6 +429,31 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
         el('span', {}, 'Remove this task for good?'),
         el('button', { type: 'button', class: 'btn btn-danger', onclick: () => { ui.removing = null; remove(t.id); } }, 'Remove'),
         el('button', { type: 'button', class: 'btn', onclick: () => { ui.removing = null; render(); } }, 'Keep'),
+      ));
+    }
+    if (logOpen) {
+      const key = 'log-' + t.id;
+      li.append(el('div', { class: 'log', id: 'logbox-' + t.id },
+        log.length ? el('ol', {}, log.map((entry, i) => {
+          const rk = t.id + ':' + i;
+          const tools = !editable ? null : ui.logRemoving === rk
+            ? [el('button', { type: 'button', class: 'link-btn danger', onclick: () => removeLog(t, entry) }, 'Remove'),
+               el('button', { type: 'button', class: 'link-btn', onclick: () => { ui.logRemoving = null; render(); } }, 'Keep')]
+            : el('button', { type: 'button', class: 'link-btn', 'aria-label': 'Remove this comment', onclick: () => { ui.logRemoving = rk; render(); } }, 'Remove');
+          return el('li', {},
+            el('div', { class: 'when' }, el('span', {}, stamp(entry.at)), tools),
+            el('div', { class: 'text' }, String(entry.text || '')),
+          );
+        })) : null,
+        editable ? el('textarea', {
+          id: key, maxlength: 2000, 'aria-label': 'New comment', placeholder: 'Progress, findings, next steps…',
+          oninput: (e) => { ui.drafts[key] = e.target.value; },
+          onkeydown: (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); addLog(t); } },
+        }, ui.drafts[key] ?? '') : null,
+        editable ? el('div', { class: 'log-actions' },
+          el('button', { type: 'button', class: 'btn', onclick: () => toggleLog(t.id) }, 'Close'),
+          el('button', { type: 'button', class: 'btn btn-primary', onclick: () => addLog(t) }, 'Add comment'),
+        ) : null,
       ));
     }
     return li;
