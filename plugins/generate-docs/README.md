@@ -87,7 +87,7 @@ The step-by-step instructions for both paths are in the
   skills directory:
 
   ```powershell
-  New-Item -ItemType Junction -Path "$HOME\.claude\skills\generate-docs" -Target "F:\development\claude-tools\skills\generate-docs"
+  New-Item -ItemType Junction -Path "$HOME\.claude\skills\generate-docs" -Target "F:\development\claude-tools\plugins\generate-docs"
   ```
 
   Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\generate-docs"`.

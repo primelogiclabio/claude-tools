@@ -138,10 +138,10 @@ for the machine where you edit the repo:
 - **Straight from this folder, every session:** add it to
   `CLAUDE_CODE_PLUGIN_DIRS` in the `env` block of `~/.claude/settings.json`.
   ```json
-  { "env": { "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker" } }
+  { "env": { "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\plugins\\project-tracker" } }
   ```
 - **One CLI session:**
-  `claude --plugin-dir F:\development\claude-tools\mods\project-tracker`
+  `claude --plugin-dir F:\development\claude-tools\plugins\project-tracker`
 
 Use only one of these. If you installed it earlier by cloning or linking it
 into `~/.claude/skills/project-tracker`, remove that copy first. The
@@ -183,7 +183,7 @@ real terminal. It takes about two minutes.
 4. **Start Claude Code with the mod loaded.** If you installed it (method M
    or B in `claude-tools/README.md`), just run `claude`. Otherwise:
    ```powershell
-   claude --plugin-dir F:\development\claude-tools\mods\project-tracker
+   claude --plugin-dir F:\development\claude-tools\plugins\project-tracker
    ```
 5. **Try it:**
    - `/tasks` should open the pane, docked if the terminal is wide enough.
@@ -198,7 +198,7 @@ real terminal. It takes about two minutes.
 6. **If nothing shows,** run with `claude --debug --plugin-dir …`. Lines that
    start with `project-tracker:` say why a hook was skipped or a tree was
    refused.
-   `claude plugin validate F:\development\claude-tools\mods\project-tracker`
+   `claude plugin validate F:\development\claude-tools\plugins\project-tracker`
    checks the mod without starting a session.
 7. **In the desktop app:** after installing with method M or B, quit the app
    completely, reopen it, start a Code session in a trusted project and type

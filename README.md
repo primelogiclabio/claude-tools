@@ -8,17 +8,15 @@ anything listed in it.
 claude-tools/
 ├── .claude-plugin/
 │   └── marketplace.json      the marketplace catalog (lists every installable item)
-├── mods/                     mods: plugins that change Claude Code's interface or behaviour
-│   ├── README.md             index of the mods and their layout
-│   ├── project-tracker/
-│   ├── context-bar/
-│   └── resource-monitor/
-└── skills/                   skills: instructions Claude loads when a request matches
-    ├── README.md             index of the skills and their layout
-    ├── generate-docs/
-    ├── workday-tracker/
-    ├── git-repo-creator/
-    └── project-progress/
+└── plugins/                  one folder per installable item, mods and skills alike
+    ├── README.md             index of the plugins and their layouts
+    ├── project-tracker/      mod
+    ├── context-bar/          mod
+    ├── resource-monitor/     mod
+    ├── generate-docs/        skill
+    ├── workday-tracker/      skill
+    ├── git-repo-creator/     skill
+    └── project-progress/     skill
 ```
 
 **Mods vs skills.**
@@ -34,13 +32,13 @@ claude-tools/
 
 | Name | Kind | What it does |
 | --- | --- | --- |
-| [project-tracker](mods/project-tracker/README.md) | mod | Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
-| [context-bar](mods/context-bar/README.md) | mod | Context card above the prompt: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
-| [resource-monitor](mods/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
-| [generate-docs](skills/generate-docs/README.md) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
-| [workday-tracker](skills/workday-tracker/README.md) | skill | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai: task types, required completion comments, optional ticket refs and status notes |
-| [git-repo-creator](skills/git-repo-creator/README.md) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, public or private, license, CI workflow, and a lockdown against outside contributors for public repos |
-| [project-progress](skills/project-progress/README.md) | skill | Tracks long project work in `PROGRESS.md` so context holds only the current task: one item at a time with a plan, side ideas parked instead of chased, a checkpoint before each `/clear` |
+| [project-tracker](plugins/project-tracker/README.md) | mod | Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
+| [context-bar](plugins/context-bar/README.md) | mod | Context card above the prompt: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
+| [resource-monitor](plugins/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
+| [generate-docs](plugins/generate-docs/README.md) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
+| [workday-tracker](plugins/workday-tracker/README.md) | skill | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai: task types, required completion comments, optional ticket refs and status notes |
+| [git-repo-creator](plugins/git-repo-creator/README.md) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, public or private, license, CI workflow, and a lockdown against outside contributors for public repos |
+| [project-progress](plugins/project-progress/README.md) | skill | Tracks long project work in `PROGRESS.md` so context holds only the current task: one item at a time with a plan, side ideas parked instead of chased, a checkpoint before each `/clear` |
 
 ---
 
@@ -160,8 +158,8 @@ one of:
   automatically** for the marketplace
   ([Plugins on claude.ai](https://claude.com/docs/plugins/overview)).
 - **Upload just the skill.**
-  1. Zip the skill's folder, `skills/generate-docs` or
-     `skills/workday-tracker`. Each already contains
+  1. Zip the skill's folder, `plugins/generate-docs` or
+     `plugins/workday-tracker`. Each already contains
      `.claude-plugin/plugin.json`.
   2. Use **Customize › Plugins › Add › Upload plugin**.
 
@@ -310,15 +308,15 @@ or update.
    ```json
    {
      "env": {
-       "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\mods\\project-tracker;F:\\development\\claude-tools\\skills\\generate-docs"
+       "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\plugins\\project-tracker;F:\\development\\claude-tools\\plugins\\generate-docs"
      }
    }
    ```
 
-   List only the folders you want, from `mods\project-tracker`,
-   `mods\context-bar`, `mods\resource-monitor`, `skills\generate-docs`,
-   `skills\workday-tracker`, `skills\git-repo-creator` and
-   `skills\project-progress`.
+   List only the folders you want, from `plugins\project-tracker`,
+   `plugins\context-bar`, `plugins\resource-monitor`, `plugins\generate-docs`,
+   `plugins\workday-tracker`, `plugins\git-repo-creator` and
+   `plugins\project-progress`.
 3. **CLI:** start a new `claude` session.
    **Desktop app:** quit it completely (right-click the tray icon and choose
    Quit), reopen it, and start a new session in the Code tab.
@@ -343,7 +341,7 @@ session.
 #### C. `--plugin-dir` (CLI, one session)
 
 ```powershell
-claude --plugin-dir F:\development\claude-tools\mods\project-tracker
+claude --plugin-dir F:\development\claude-tools\plugins\project-tracker
 ```
 
 The plugin is loaded for that session only, and edits reload while it runs.
@@ -359,7 +357,7 @@ Nothing is installed. Repeat the flag to load more than one plugin.
    project folder for a Code session. Plugins don't run until the folder is
    trusted.
 2. **project-tracker:** type `/tasks`. Where the pane appears depends on
-   terminal width and layout; see its [README](mods/project-tracker/README.md).
+   terminal width and layout; see its [README](plugins/project-tracker/README.md).
    `/tasks add Try the tracker` creates `<project>/.claude/tasks.md`.
 3. **context-bar:** the card appears above the prompt. The header and badge
    fill in after the first response; `/context-bar` prints the full
@@ -407,7 +405,7 @@ Start a new session after any change. The skills have no options.
 | --- | --- |
 | A command (`/tasks`, `/context-bar`, `/resources`, `/generate-docs`, `/workday-tracker`, `/git-repo-creator`, `/project-progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
 | `Plugin "…" not found in marketplace "claude-tools"` | Use the name from the table above, with `@claude-tools`. Run `claude plugin marketplace update claude-tools` to refresh the catalog. |
-| `Source path does not exist` on install | The catalog points at a folder that isn't in the copy you added. Make sure your clone or push includes `mods/` and `skills/`. |
+| `Source path does not exist` on install | The catalog points at a folder that isn't in the copy you added. Make sure your clone or push includes `plugins/`. |
 | A duplicate command or skill, or changes that seem to come from an old copy | Two install methods are active, or the plugin and an account skill are both on. Keep only one, and check `~/.claude/skills/` for an old copy. |
 | You need to see what went wrong | Run `claude --debug …`. Look for lines that start with the mod's name, such as `project-tracker:`; they say why a hook was skipped. |
 
@@ -423,33 +421,33 @@ from its own folder.
 claude plugin validate .
 
 # One item on its own
-claude plugin validate .\mods\project-tracker
-claude plugin validate .\mods\context-bar
-claude plugin validate .\mods\resource-monitor
-claude plugin validate .\skills\generate-docs
-claude plugin validate .\skills\workday-tracker
-claude plugin validate .\skills\git-repo-creator
-claude plugin validate .\skills\project-progress
+claude plugin validate .\plugins\project-tracker
+claude plugin validate .\plugins\context-bar
+claude plugin validate .\plugins\resource-monitor
+claude plugin validate .\plugins\generate-docs
+claude plugin validate .\plugins\workday-tracker
+claude plugin validate .\plugins\git-repo-creator
+claude plugin validate .\plugins\project-progress
 
 # Test suites (mods only; skills have no code to test)
-claude plugin test .\mods\project-tracker
-claude plugin test .\mods\context-bar
-claude plugin test .\mods\resource-monitor
+claude plugin test .\plugins\project-tracker
+claude plugin test .\plugins\context-bar
+claude plugin test .\plugins\resource-monitor
 ```
 
 To add a mod or skill:
 
-1. Create its folder under `mods/` or `skills/`, with a
+1. Create its folder under `plugins/`, with a
    `.claude-plugin/plugin.json` and a `README.md`. The READMEs share one
    layout: what it does, when it runs, **Where it works**, **Options** (mods),
    **Install** with both one-line commands, and **Developing** with the
    commands above.
 2. Add an entry to `.claude-plugin/marketplace.json`. Keep the entry `name`
    the same as the `name` in the item's own `plugin.json`, and write `source`
-   as `./mods/<name>` or `./skills/<name>`.
+   as `./plugins/<name>`.
 3. Add it to the folder tree and the Contents table above, to the table in
-   [`mods/README.md`](mods/README.md) or [`skills/README.md`](skills/README.md),
-   and to the validate (and, for a mod, test) lines above.
+   [`plugins/README.md`](plugins/README.md), and to the validate (and, for a
+   mod, test) lines above.
 4. Run `claude plugin validate .`.
 
 Bump `version` in an item's `plugin.json` when you release a change. Users who
