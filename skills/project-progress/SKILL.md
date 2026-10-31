@@ -7,7 +7,7 @@ description: Track long project work in PROGRESS.md so the context window only h
 
 Keeps long-running project work organized in `PROGRESS.md` at the repo root, so the context window only has to hold the current task. The core rules: one item at a time, and side ideas get parked, not chased.
 
-The commands below are written as `/project-progress <mode>`. When the skill is installed as a plugin its full name is `/project-progress:project-progress`; use whichever name the session lists when you tell the user what to type.
+The commands below are written as `/project-progress <mode>`. When the skill is installed as a plugin its full name is `/project-progress:project-progress`. When you tell the user what to type, use the form they typed, or whichever name the session lists if they haven't typed one.
 
 ## Modes
 
@@ -24,12 +24,16 @@ Pick the mode from the argument. Also apply the matching mode when the user says
 
 If PROGRESS.md doesn't exist and the mode isn't `init`, say so and offer `init`.
 
+Direct edits the user asks for in plain words, such as reordering Next, dropping a Next item or a parked idea, or rewording an entry, don't need a mode: make exactly that change and confirm in one line.
+
 ## PROGRESS.md format
 
 Use exactly these sections:
 
 ```markdown
 # Progress
+
+Goal: ...
 
 ## Current focus
 - (none)
@@ -57,15 +61,16 @@ Rules for the file:
 - Done keeps only the last 10 items. Drop older ones; git history has them.
 - One line per entry. No code snippets, file dumps or stack traces.
 - Decisions are one line each, with the reason.
+- An empty section holds `- (none)`.
 
-Trimming: Done is trimmed automatically, but the other sections only grow. When the file is still over about 60 lines, propose specific cuts in one message: merge related Decisions into one line, drop Gotchas that no longer apply, and point out Parking lot entries that look stale or already handled. Apply only the cuts the user approves. `done` and `status` both check for this.
+Trimming: Done is trimmed automatically, but the other sections only grow. When the file is still over about 60 lines, propose specific cuts in one message: merge related Decisions into one line, drop Gotchas that no longer apply, and point out Parking lot entries that look stale or already handled. Apply only the cuts the user approves. Next isn't trimmed: if it's what makes the file long, say so and leave it to the user. `done` and `status` both check for this.
 
 ## init
 
 1. If PROGRESS.md already exists, show its Current focus and Next, and stop. Never overwrite it.
 2. Ask the user two things in one message: the current goal plus the first few Next items, and whether PROGRESS.md should be committed or kept personal.
 3. Create PROGRESS.md from the template with their answers.
-4. Wire it in. If committed, edit the project-root `CLAUDE.md`. If personal, use `CLAUDE.local.md` and add both `PROGRESS.md` and `CLAUDE.local.md` to the repo's local exclude file (its path comes from `git rev-parse --git-path info/exclude`), skipping lines already there. Don't use `.gitignore` for this: it is committed, so the personal choice would end up in everyone's copy. If the folder isn't a git repo, skip the exclude. Create `CLAUDE.md` or `CLAUDE.local.md` if it is missing. Add this block once, skipping it if the `@PROGRESS.md` import is already there:
+4. Wire it in. If committed, edit the project-root `CLAUDE.md`. If personal, use `CLAUDE.local.md` and add `/PROGRESS.md` and `/CLAUDE.local.md` to the repo's local exclude file (its path comes from `git rev-parse --git-path info/exclude`), skipping either one if the file already lists it. Don't use `.gitignore` for this: it is committed, so the personal choice would end up in everyone's copy. If the folder isn't a git repo, skip the exclude. Create `CLAUDE.md` or `CLAUDE.local.md` if it is missing. Add this block once, skipping it if the `@PROGRESS.md` import is already there:
 
    ```markdown
    @PROGRESS.md
@@ -82,8 +87,7 @@ Trimming: Done is trimmed automatically, but the other sections only grow. When 
 ## add
 
 1. Add the item to Next as one unchecked line, at the bottom unless the user says where ("at the top", "after X").
-2. If the user asks to reorder Next or drop items from it, do exactly that.
-3. Confirm in one line. Don't start the item; that is `next`.
+2. Confirm in one line. Don't start the item; that is `next`.
 
 `add` is for planned work. An idea that comes up mid-task and isn't planned yet goes to `park` instead.
 
@@ -91,7 +95,7 @@ Trimming: Done is trimmed automatically, but the other sections only grow. When 
 
 1. Read PROGRESS.md.
 2. If Current focus already has an item, ask whether to keep going with it or switch. On a switch, move the current item back to the top of Next with a short note on where it stopped.
-3. Take the named item, or the top unchecked item in Next, and move it to Current focus. If Next has no unchecked items, say so: list any Parking lot entries and ask which to promote, or ask what to work on next if the Parking lot is empty too. Add the answer to Next and continue from here.
+3. Take the named item, or the top unchecked item in Next, and move it to Current focus. If Next has no unchecked items, say so: list any Parking lot entries and ask which to promote, or ask what to work on next if the Parking lot is empty too. Move a promoted entry out of the Parking lot, put the answer in Current focus, and continue from here.
 4. Enter plan mode and write a plan scoped to that item only. If you can't enter plan mode yourself, ask the user to switch to it.
 5. Don't implement anything until the user approves the plan.
 
@@ -112,8 +116,8 @@ Also do this unprompted during any work: when you notice an unrelated bug, refac
    - Add anything surprising that would trip up future work to Gotchas.
    - Trim Done to 10 entries.
    - If the file is still over about 60 lines, propose cuts (see Trimming).
-3. If Parking lot has entries, list them briefly and ask which, if any, to promote to Next. Move only what the user picks.
-4. Suggest committing (don't commit unless asked). Then tell the user to run `/clear` and `/project-progress next` to start the next item with a fresh context. You can't run `/clear` yourself.
+3. If Parking lot has entries, list them briefly and ask which, if any, to promote to Next, leaving out any you just proposed cutting. Move only what the user picks.
+4. Once any questions from steps 2 and 3 are answered, suggest committing (don't commit unless asked). Then tell the user to run `/clear` and `/project-progress next` to start the next item with a fresh context. You can't run `/clear` yourself.
 
 ## status
 

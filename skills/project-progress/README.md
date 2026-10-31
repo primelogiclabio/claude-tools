@@ -5,7 +5,7 @@ repo root, so the context window only has to hold the current task. It's built
 for one habit: working on one item at a time, and writing side ideas down
 instead of chasing them.
 
-`PROGRESS.md` has six short sections: **Current focus**, **Next**, **Done**
+`PROGRESS.md` has a one-line goal and six short sections: **Current focus**, **Next**, **Done**
 (last 10), **Decisions**, **Parking lot** and **Gotchas**. It's current state,
 not a log, and stays under about 60 lines: when it grows past that, Claude
 proposes cuts and makes only the ones you approve. `init` imports it from
