@@ -79,13 +79,17 @@ h2 .n { font-family: var(--font-mono); font-weight: 400; margin-left: 6px; font-
 .comment::before { content: "Done: "; color: var(--muted); }
 
 .actions { display: flex; gap: 2px; align-items: center; }
-.icon-btn, .link-btn { background: none; border: 0; padding: 4px 6px; border-radius: 4px; cursor: pointer; color: var(--muted); }
-.icon-btn:hover, .link-btn:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.icon-btn, .link-btn { background: none; border: 0; padding: 4px 6px; border-radius: 4px; cursor: pointer; }
+.icon-btn { color: var(--muted); }
+.icon-btn:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.link-btn { color: var(--accent); font-weight: 500; }
+.link-btn:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .star[aria-pressed="true"] { color: var(--today); }
 .star { font-size: 17px; line-height: 1; }
 .row-tools { display: flex; flex-wrap: wrap; gap: 0 2px; margin-left: -6px; }
 .link-btn { font-size: 13px; }
 .link-btn.danger { color: var(--danger); }
+.link-btn.danger:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
 
 .inline { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .inline label { width: 100%; font-size: 13px; color: var(--muted); }
