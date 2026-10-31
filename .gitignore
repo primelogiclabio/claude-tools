@@ -13,4 +13,4 @@ node_modules/
 .claude/settings.local.json
 
 # Plugin-specific ignores live next to each plugin
-# (e.g. mods/project-tracker/.gitignore for its generated types and tsconfig)
+# (e.g. plugins/project-tracker/.gitignore for its generated types and tsconfig)
