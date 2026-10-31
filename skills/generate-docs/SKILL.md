@@ -1,6 +1,6 @@
 ---
 name: generate-docs
-description: Generate project documentation or research documentation as a self-contained HTML file (light/dark toggle, jump-to-section nav menu, no external network calls) plus a matching plain Markdown file. Use this whenever the user asks to document, write up, explain, or create project documentation, research documentation, an overview/comparison/decision doc for a technical topic, system, or architecture choice — even if they just say "write this up," "document this," or "create an overview of X" without naming a format. Especially relevant for cross-project research, architecture explainers, build-vs-buy comparisons, and anything meant to be read later by the user or a colleague rather than just answered in chat.
+description: Generate project documentation or research documentation as a self-contained HTML file (light/dark toggle, jump-to-section nav menu, no external network calls) plus a matching plain Markdown file. Use this whenever the user asks to document, write up, explain, or create project documentation, research documentation, an overview/comparison/decision doc for a technical topic, system, or architecture choice, or a step-by-step guide (how-to, setup or install steps, runbook, with fill-in fields for values the reader supplies) — even if they just say "write this up," "document this," or "create an overview of X" without naming a format. Especially relevant for cross-project research, architecture explainers, build-vs-buy comparisons, and anything meant to be read later by the user or a colleague rather than just answered in chat.
 ---
 
 # Generate docs
@@ -17,7 +17,7 @@ Don't start from the template. Start from the actual facts, numbers, trade-offs,
 
 ## HTML structure
 
-Build one `<html>` file, inline `<style>` and `<script>`, nothing loaded from a CDN or network — it has to open and work offline, forever, with no dependency rot. Rough shape, adapt section count/order to the topic:
+Build one `<html>` file, inline `<style>` and `<script>`, nothing loaded from a CDN or network — it has to open and work offline, forever, with no dependency rot. Rough shape for explainers and comparisons, adapt section count/order to the topic (step-by-step guides use the outline under **Guides and fill-in fields** instead):
 
 1. **Header** — title, one-line description, maybe a short stats row if there are a few headline numbers worth surfacing immediately.
 2. **Why this / the problem** — a short plain-language framing before diving into mechanics. If there's a real-world analogy that helps (e.g. "think of the broker as the front desk for a building with many tenant companies"), use it.
@@ -143,12 +143,37 @@ window.addEventListener('resize', update);
 update();
 ```
 
+### Guides and fill-in fields
+
+A guide is a doc the reader follows step by step: a how-to, a setup or install procedure, a runbook, a migration checklist. It uses this outline instead of the explainer one:
+
+1. **Header** — title, one line on what the reader ends up with, and the remember/reset control if the guide has fields.
+2. **Prerequisites** — what must already be installed, running or known, with versions.
+3. **Steps** — one `<h3>` per step, numbered in the heading ("3. Start Valkey"), each with what to do, the exact command, and what success looks like. Steps are destinations, so they get nested links in the nav.
+4. **Verify** — how to confirm the whole thing worked.
+5. **Troubleshooting** — the likely failures, each with its symptom and its fix.
+6. **References** — same rules as any doc.
+
+A short background section before Prerequisites is fine when the reader needs context, but keep it brief; the steps are the point.
+
+**Fill-in fields.** When a value the reader supplies (a version, host name, port, path, project name, ticket number) appears in two or more places, or a step has the reader gather details to paste somewhere else, make it a field instead of telling the reader to edit each command. Fields work in any doc, not just guides. Read [guide-fields.md](guide-fields.md) for the markup, CSS and JS before writing one, and follow these rules:
+
+- **One field per value, at first use.** The input sits inline in the step where the value is first needed, with a label and a realistic example as its placeholder. Every later use is a highlighted token that shows the value (or `<name>` until it's filled in) and jumps back to the field when clicked.
+- **Copy buttons on every code block** copy the filled-in text. If a block uses a value that's missing or fails its format check, the button sends the reader to that field instead of copying.
+- **Format checks** where a value has a known shape (a version like 1.2.3, a port, a ticket key like OPS-123): a `pattern` plus a one-line hint, shown next to the field when the entry doesn't match.
+- **Choice fields** when commands differ by platform or option (OS, shell, package manager): a `<select>` placed before the first step it affects, preset to the likeliest option for this reader, with each variant block marked `data-when`. A difference one sentence can cover doesn't need a choice field.
+- **Output blocks** when the reader has to hand details to someone or something else (a ticket note, a config file, a message to ops): one block that assembles the values into paste-ready text, with its own Copy button.
+- **Remembering is the reader's choice.** Values are saved in the browser for that doc by default. A "Remember my values on this device" checkbox turns that off (and deletes what was saved), and a Reset button clears everything.
+- **Never make a field for a secret.** Passwords, tokens, API keys and private keys must not be typed into the page, saved, or copied by it. Have the command read an environment variable the reader sets in their own shell (`$env:PGPASSWORD`, `"$PGPASSWORD"`), or leave a plain placeholder they replace after pasting, and say which.
+- **No field for a value the author already knows.** Just write it.
+
 ### Verify before delivering
 
 Before calling it done:
 - Open the file in a real browser (the built-in browser pane, or Claude in Chrome) — don't just eyeball the source.
 - Check both light and dark mode actually render correctly.
 - Check the nav at a wide width (the left pane is visible without clicking anything and stays put while the page scrolls) and at a narrow width (it becomes the top bar, the "Sections" button opens and closes the list, and a jumped-to heading isn't hidden under the bar). In both, links work and the current-section highlight updates on scroll. If the nav lists parts, scroll through a multi-part section: the part highlight follows, the section link stays marked, and with `collapse-subs` only that section's parts are open.
+- If the doc has fill-in fields: type a value and watch every use of it update; press Copy on a block with a value missing and with a malformed one (it should jump to the field, not copy); switch each choice field and check the right blocks show; reload with remembering on (values stay) and off (they're gone); press Reset.
 - Check the browser console for errors.
 - If the page has a CSS-grid diagram, check it at a narrow width too — grids that assume desktop width should degrade to a stacked layout rather than breaking.
 - Confirm there are no external network calls (no CDN `<script src>`, no remote fonts/images) — everything must be inline.
@@ -156,6 +181,8 @@ Before calling it done:
 ## Markdown version
 
 Mirror the HTML's content and heading structure in plain Markdown: same sections, same tables (as Markdown tables), same scenario walkthroughs, same references list. Drop anything that's purely visual/interactive (the theme toggle, the nav menu, CSS-grid diagrams) — render a diagram as a simple ASCII/text sketch or just describe the flow in prose instead. The goal is that someone reading only the `.md` file gets the same information, just without the visual polish.
+
+For a doc with fill-in fields, put a **Values used in this guide** table right after Prerequisites (or at the top of a non-guide doc): the placeholder (`<valkey-version>`), what it is, an example, its format, and which steps use it. Commands and output blocks keep the `<name>` placeholders. Steps that depend on a choice field show every variant, each labeled (*Windows (PowerShell)*, *Linux or macOS (bash)*).
 
 ## Where to save and how to deliver
 
@@ -166,4 +193,4 @@ Mirror the HTML's content and heading structure in plain Markdown: same sections
 
 ## A note on tone
 
-These are explainer docs, often read by someone who isn't already deep in the topic. Write like you're teaching, not logging. Favor plain language over jargon where you can, and when you do use a technical term, it's fine to define it briefly in passing rather than assuming it's known.
+These are explainer docs, often read by someone who isn't already deep in the topic. Write like you're teaching, not logging. Favor plain language over jargon where you can, and when you do use a technical term, it's fine to define it briefly in passing rather than assuming it's known. Guides keep the same tone with shorter, imperative steps: say what to do, then what the reader should see.
