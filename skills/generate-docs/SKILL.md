@@ -39,19 +39,36 @@ Every doc gets a navigation menu linking to each major section. This is what "co
 
 - **Wide screens (≥ 1024px): a left pane, always open.** The page is a two-column grid: a sticky section list on the left, the doc on the right. Desktop readers have the width, so don't hide the sections behind a button — a collapsed floating button in a corner is the wrong default here.
 - **Narrow screens (< 1024px): the same list collapses** into a sticky bar at the top with a "Sections" button that drops the list down. It's one `<nav>` restyled by a media query, not two copies of the list.
-- **Highlight the section in view** as the reader scrolls (an `IntersectionObserver` on each section), and keep the highlighted link visible if the pane has to scroll.
+- **Highlight where the reader is** as they scroll: the section in view, and the part in view when the nav lists parts (below). Keep the highlighted link visible if the pane has to scroll.
 - **One nav only.** Don't also put a row of section links in the header; the pane replaces it.
+
+#### Subheadings in the nav
+
+Sections often have parts (`<h3>`s). Decide section by section whether those parts get their own links, nested under the section's link:
+
+- **List the parts** when a section has two or more that a reader could want to jump to on their own: separate components, interfaces, options, steps, scenarios, sub-analyses. Long, multi-part sections are where readers get lost, so these benefit most.
+- **Keep it one link** when the section has a single `<h3>`, or its `<h3>`s are labels rather than destinations: card or panel titles in a side-by-side grid, or a few short groups under one heading (like vendor groups in References).
+- **Two levels at most.** Never put `<h4>`s in the nav. A section that seems to need a third level is usually two sections.
+- **Long nav, collapse the parts.** If the nav would have more than about 25 links in total, add the `collapse-subs` class to the `<nav>`: each section's parts then show only while the reader is in that section. Under about 25, show them all.
+- Every listed `<h3>` needs an `id`. While one of its parts is active, the section's link stays marked in a quieter style, so the reader still sees which section they're in.
+- The Markdown file needs nothing extra: the parts are already its `###` headings.
 
 A starting point that meets all of this (adapt the colors to the page's own variables, keep the behavior):
 
 ```html
 <div class="layout">
-  <nav class="sidenav" id="sidenav" aria-label="On this page">
+  <nav class="sidenav" id="sidenav" aria-label="On this page"> <!-- add class "collapse-subs" past ~25 links -->
     <button type="button" class="sidenav-btn" aria-expanded="false" aria-controls="sidenav-list">Sections</button>
     <p class="sidenav-title">On this page</p>
     <ol id="sidenav-list">
       <li><a href="#problem">The problem</a></li>
-      <!-- one <li> per section -->
+      <li><a href="#interfaces">Interfaces</a>
+        <ol>
+          <li><a href="#agent-api">Agent HTTP API</a></li>
+          <li><a href="#app-api">App API</a></li>
+        </ol>
+      </li>
+      <!-- one <li> per section, in page order -->
     </ol>
   </nav>
   <div class="content"><!-- header, main, footer --></div>
@@ -63,13 +80,18 @@ A starting point that meets all of this (adapt the colors to the page's own vari
 .sidenav a{display:block; padding:5px 12px; border-left:2px solid transparent; color:var(--muted); text-decoration:none; font-size:.9rem; line-height:1.35}
 .sidenav a:hover{color:var(--fg)}
 .sidenav a[aria-current="true"]{color:var(--accent); border-left-color:var(--accent); font-weight:650}
+/* parts: indented under their section, which stays marked while one of its parts is active */
+.sidenav ol ol{margin:0 0 4px}
+.sidenav ol ol a{padding:3px 12px 3px 26px; font-size:.84rem}
+.sidenav li.in-path > a:not([aria-current="true"]){color:var(--fg); font-weight:650}
+.sidenav.collapse-subs li:not(.in-path) > ol{display:none}
 /* narrow: sticky top bar + drop-down */
 .sidenav{position:sticky; top:0; z-index:20; margin:-32px -16px 24px; padding:8px 16px; background:var(--bg); border-bottom:1px solid var(--line)}
 .sidenav-title{display:none}
 .sidenav-btn{font:inherit; font-size:.9rem; font-weight:650; padding:6px 14px; border-radius:999px; border:1px solid var(--line-strong); background:var(--surface); color:var(--fg); cursor:pointer}
-.sidenav ol{display:none; position:absolute; left:16px; right:16px; top:100%; max-height:70vh; overflow:auto; padding:8px; background:var(--surface); border:1px solid var(--line-strong); border-radius:12px; box-shadow:0 8px 24px var(--shadow)}
-.sidenav.open ol{display:block}
-section{scroll-margin-top:64px}
+.sidenav > ol{display:none; position:absolute; left:16px; right:16px; top:100%; max-height:70vh; overflow:auto; padding:8px; background:var(--surface); border:1px solid var(--line-strong); border-radius:12px; box-shadow:0 8px 24px var(--shadow)}
+.sidenav.open > ol{display:block}
+main [id]{scroll-margin-top:64px}
 /* wide: left pane, always open */
 @media (min-width:1024px){
   .layout{display:grid; grid-template-columns:220px minmax(0, 1fr); gap:48px; max-width:1320px; margin:0 auto}
@@ -77,9 +99,9 @@ section{scroll-margin-top:64px}
   .sidenav{top:32px; align-self:start; max-height:calc(100vh - 64px); overflow-y:auto; margin:0; padding:0; background:none; border:0}
   .sidenav-btn{display:none}
   .sidenav-title{display:block; margin:0 0 8px 14px; font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
-  .sidenav ol{display:block; position:static; max-height:none; overflow:visible; padding:0; background:none; border:0; border-left:1px solid var(--line); border-radius:0; box-shadow:none}
+  .sidenav > ol{display:block; position:static; max-height:none; overflow:visible; padding:0; background:none; border:0; border-left:1px solid var(--line); border-radius:0; box-shadow:none}
   .sidenav a{margin-left:-1px}
-  section{scroll-margin-top:16px}
+  main [id]{scroll-margin-top:16px}
 }
 ```
 
@@ -95,22 +117,30 @@ document.addEventListener('click', function (e) { if (!nav.contains(e.target)) s
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && nav.classList.contains('open')) { setOpen(false); navBtn.focus(); } });
 
 var links = Array.prototype.slice.call(nav.querySelectorAll('a'));
-function setActive(id) {
-  links.forEach(function (a) {
-    var on = a.getAttribute('href') === '#' + id;
-    a.setAttribute('aria-current', String(on));
-    // keep the active link in view when the pane itself scrolls (wide layout only)
-    if (on && nav.scrollHeight > nav.clientHeight && (a.offsetTop < nav.scrollTop || a.offsetTop + a.offsetHeight > nav.scrollTop + nav.clientHeight)) {
-      nav.scrollTop = a.offsetTop - nav.clientHeight / 2;
-    }
-  });
+var targets = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+function setActive(i) {
+  var a = links[i];
+  links.forEach(function (l) { l.setAttribute('aria-current', String(l === a)); });
+  nav.querySelectorAll('.in-path').forEach(function (li) { li.classList.remove('in-path'); });
+  // mark the active link's <li> and its section's <li> (with collapse-subs, this opens that section's parts)
+  for (var li = a.parentElement; li; li = li.parentElement.closest('li')) li.classList.add('in-path');
+  // keep the active link in view when the pane itself scrolls (wide layout only)
+  if (nav.scrollHeight > nav.clientHeight && (a.offsetTop < nav.scrollTop || a.offsetTop + a.offsetHeight > nav.scrollTop + nav.clientHeight)) {
+    nav.scrollTop = a.offsetTop - nav.clientHeight / 2;
+  }
 }
-if ('IntersectionObserver' in window) {
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (en) { if (en.isIntersecting) setActive(en.target.id); });
-  }, { rootMargin: '-30% 0px -65% 0px' });
-  document.querySelectorAll('main section[id]').forEach(function (s) { io.observe(s); });
+// active = the last section or part whose top has passed 30% of the viewport; the last one at the very bottom
+var current = -1, queued = false;
+function update() {
+  queued = false;
+  var line = window.innerHeight * 0.3, i = 0;
+  while (i + 1 < targets.length && targets[i + 1].getBoundingClientRect().top <= line) i++;
+  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) i = targets.length - 1;
+  if (i !== current) { current = i; setActive(i); }
 }
+window.addEventListener('scroll', function () { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+window.addEventListener('resize', update);
+update();
 ```
 
 ### Verify before delivering
@@ -118,7 +148,7 @@ if ('IntersectionObserver' in window) {
 Before calling it done:
 - Open the file in a real browser (the built-in browser pane, or Claude in Chrome) — don't just eyeball the source.
 - Check both light and dark mode actually render correctly.
-- Check the nav at a wide width (the left pane is visible without clicking anything and stays put while the page scrolls) and at a narrow width (it becomes the top bar, the "Sections" button opens and closes the list, and a jumped-to heading isn't hidden under the bar). In both, links work and the current-section highlight updates on scroll.
+- Check the nav at a wide width (the left pane is visible without clicking anything and stays put while the page scrolls) and at a narrow width (it becomes the top bar, the "Sections" button opens and closes the list, and a jumped-to heading isn't hidden under the bar). In both, links work and the current-section highlight updates on scroll. If the nav lists parts, scroll through a multi-part section: the part highlight follows, the section link stays marked, and with `collapse-subs` only that section's parts are open.
 - Check the browser console for errors.
 - If the page has a CSS-grid diagram, check it at a narrow width too — grids that assume desktop width should degrade to a stacked layout rather than breaking.
 - Confirm there are no external network calls (no CDN `<script src>`, no remote fonts/images) — everything must be inline.
