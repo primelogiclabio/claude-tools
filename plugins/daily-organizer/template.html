@@ -129,7 +129,8 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
 .settings .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .settings #set-msg { font-size: 13px; color: var(--muted); }
 
-.table-wrap { overflow-x: auto; border-top: 1px solid var(--line); }
+/* position: relative keeps the screen-reader-only headings inside the table's own scroll area, not the page's. */
+.table-wrap { position: relative; overflow-x: auto; border-top: 1px solid var(--line); }
 #sec-today .table-wrap { border-top-color: var(--today); }
 table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
 .tasks th { text-align: left; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
