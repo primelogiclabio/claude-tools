@@ -31,8 +31,8 @@ The full instructions are in [`SKILL.md`](SKILL.md).
 ## When it runs
 
 Claude picks it up when you ask to set up progress tracking, ask to add an item
-to `PROGRESS.md`, ask what's next or where you are, say "park this", or say an
-item is done or ask to checkpoint.
+to `PROGRESS.md`, ask what's next, say to move on to the next item, ask where
+you are, say "park this", or say an item is done or ask to checkpoint.
 To call it directly, type `/project-progress` and choose it from the list. When
 it's installed as a plugin, its full name is
 `/project-progress:project-progress`.

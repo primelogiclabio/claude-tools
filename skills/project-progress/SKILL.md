@@ -1,6 +1,6 @@
 ---
 name: project-progress
-description: Track long project work in PROGRESS.md so the context window only holds the current task. Sets the file up, adds items to its Next list, starts the next item with a plan, parks side ideas instead of chasing them, and checkpoints a finished item before a /clear. Use whenever the user runs /project-progress, wants to set up progress tracking for a project, asks to add an item to PROGRESS.md, asks what's next or where they are, says "park this" about a side idea, or says an item is done or asks to checkpoint.
+description: Track long project work in PROGRESS.md so the context window only holds the current task. Sets the file up, adds items to its Next list, starts the next item with a plan, parks side ideas instead of chasing them, and checkpoints a finished item before a /clear. Use whenever the user runs /project-progress, wants to set up progress tracking for a project, asks to add an item to PROGRESS.md, asks what's next, says to move on to the next item, asks where they are, says "park this" about a side idea, or says an item is done or asks to checkpoint.
 ---
 
 # Project progress
@@ -11,7 +11,7 @@ The commands below are written as `/project-progress <mode>`. When the skill is 
 
 ## Modes
 
-Pick the mode from the argument. Also apply the matching mode when the user says it in plain words ("add X to next", "park this", "checkpoint", "what's next", "where are we").
+Pick the mode from the argument. Also apply the matching mode when the user says it in plain words ("add X to next", "park this", "checkpoint", "what's next", "move on to the next item", "where are we").
 
 | Argument | Mode |
 |---|---|
@@ -79,6 +79,7 @@ Trimming: Done is trimmed automatically, but the other sections only grow. When 
    - Work on one item from Next at a time.
    - Side issues or ideas noticed mid-task go in the Parking lot (project-progress skill, park). Don't act on them unless I say so.
    - After finishing an item, checkpoint it with the project-progress skill (done).
+   - When I say to move on, start the next item with the project-progress skill (next).
    ```
 
    The `@PROGRESS.md` import is what makes the file load in every session and come back after `/compact`.
