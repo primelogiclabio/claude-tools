@@ -70,7 +70,7 @@ The step-by-step instructions are in the
   skills directory:
 
   ```powershell
-  New-Item -ItemType Junction -Path "$HOME\.claude\skills\git-repo-creator" -Target "F:\development\claude-tools\skills\git-repo-creator"
+  New-Item -ItemType Junction -Path "$HOME\.claude\skills\git-repo-creator" -Target "F:\development\claude-tools\plugins\git-repo-creator"
   ```
 
   Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\git-repo-creator"`.

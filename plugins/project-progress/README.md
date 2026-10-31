@@ -37,7 +37,7 @@ To call it directly, type `/project-progress` and choose it from the list. When
 it's installed as a plugin, its full name is
 `/project-progress:project-progress`.
 
-It's not the same as the [project-tracker](../../mods/project-tracker/README.md)
+It's not the same as the [project-tracker](../project-tracker/README.md)
 mod. project-tracker is a task list in a pane; project-progress is a
 focus-and-checkpoint workflow that also records decisions and parked ideas. They
 can be used together; if you ask about "tasks" and both exist, Claude asks which
@@ -76,7 +76,7 @@ The step-by-step instructions are in the
   skills directory:
 
   ```powershell
-  New-Item -ItemType Junction -Path "$HOME\.claude\skills\project-progress" -Target "F:\development\claude-tools\skills\project-progress"
+  New-Item -ItemType Junction -Path "$HOME\.claude\skills\project-progress" -Target "F:\development\claude-tools\plugins\project-progress"
   ```
 
   Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\project-progress"`.

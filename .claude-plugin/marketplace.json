@@ -7,43 +7,43 @@
   "plugins": [
     {
       "name": "project-tracker",
-      "source": "./mods/project-tracker",
+      "source": "./plugins/project-tracker",
       "description": "Per-project task list in a docked side pane, persisted in <repo>/.claude/tasks.md across sessions",
       "category": "mod"
     },
     {
       "name": "context-bar",
-      "source": "./mods/context-bar",
+      "source": "./plugins/context-bar",
       "description": "Context card above the prompt: the window as one bar split by /context category, a legend, a threshold-coloured fill badge, plus session tokens, cost and rate limits",
       "category": "mod"
     },
     {
       "name": "resource-monitor",
-      "source": "./mods/resource-monitor",
+      "source": "./plugins/resource-monitor",
       "description": "CPU and memory of Claude Code and the processes it started: Resources pane, status line, warning colours, and a tool for Claude",
       "category": "mod"
     },
     {
       "name": "generate-docs",
-      "source": "./skills/generate-docs",
+      "source": "./plugins/generate-docs",
       "description": "Skill: generate project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, offline)",
       "category": "skill"
     },
     {
       "name": "workday-tracker",
-      "source": "./skills/workday-tracker",
+      "source": "./plugins/workday-tracker",
       "description": "Skill: house rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai (task types, required completion comments, optional ticket refs and status notes)",
       "category": "skill"
     },
     {
       "name": "git-repo-creator",
-      "source": "./skills/git-repo-creator",
+      "source": "./plugins/git-repo-creator",
       "description": "Skill: put a project on git and GitHub, or audit and fix an existing repo: name, description, visibility, license, .gitignore, README, CI workflow, and lockdown for public repos",
       "category": "skill"
     },
     {
       "name": "project-progress",
-      "source": "./skills/project-progress",
+      "source": "./plugins/project-progress",
       "description": "Skill: track long project work in PROGRESS.md: one item at a time with a plan, park side ideas instead of chasing them, checkpoint before /clear",
       "category": "skill"
     }

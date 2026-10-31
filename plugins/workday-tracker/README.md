@@ -27,7 +27,7 @@ Claude picks it up when you ask to add, update, complete or review items in
 your personal task tracker, or to extend the tracker itself. Pointing at it by
 link, or by name ("my workday tracker", "my task list"), is enough. It doesn't
 apply to team or project trackers, such as the
-[project-tracker](../../mods/project-tracker/README.md) mod; if it's unclear
+[project-tracker](../project-tracker/README.md) mod; if it's unclear
 which one you mean, Claude asks.
 
 To call it directly, type `/workday-tracker` and choose it from the list. When
@@ -66,7 +66,7 @@ The step-by-step instructions for both paths are in the
   skills directory:
 
   ```powershell
-  New-Item -ItemType Junction -Path "$HOME\.claude\skills\workday-tracker" -Target "F:\development\claude-tools\skills\workday-tracker"
+  New-Item -ItemType Junction -Path "$HOME\.claude\skills\workday-tracker" -Target "F:\development\claude-tools\plugins\workday-tracker"
   ```
 
   Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\workday-tracker"`.
