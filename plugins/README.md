@@ -66,10 +66,11 @@ Skills have no code, so there are no tests to run.
 
 To make a skill available in every session, in both the CLI and the desktop
 app, put it at `~/.claude/skills/<name>/`. Linking it with a junction means
-edits here apply straight away:
+edits here apply straight away. Put your clone's path in place of
+`C:\src\claude-tools`:
 
 ```powershell
-New-Item -ItemType Junction -Path "$HOME\.claude\skills\my-skill" -Target "F:\development\claude-tools\plugins\my-skill"
+New-Item -ItemType Junction -Path "$HOME\.claude\skills\my-skill" -Target "C:\src\claude-tools\plugins\my-skill"
 ```
 
 Remove a junction only with `cmd /c rmdir "<path>"`, never with

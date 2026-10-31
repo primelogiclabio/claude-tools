@@ -63,10 +63,10 @@ The step-by-step instructions for both paths are in the
 [repo README](../../README.md#installing). Notes specific to this skill:
 
 - **As a plain skill, without the plugin wrapper.** Link the folder into your
-  skills directory:
+  skills directory. Put your clone's path in place of `C:\src\claude-tools`:
 
   ```powershell
-  New-Item -ItemType Junction -Path "$HOME\.claude\skills\workday-tracker" -Target "F:\development\claude-tools\plugins\workday-tracker"
+  New-Item -ItemType Junction -Path "$HOME\.claude\skills\workday-tracker" -Target "C:\src\claude-tools\plugins\workday-tracker"
   ```
 
   Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\workday-tracker"`.

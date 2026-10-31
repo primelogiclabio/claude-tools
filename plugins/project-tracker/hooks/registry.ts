@@ -7,7 +7,7 @@
 //   {
 //     "version": 1,
 //     "projects": [
-//       { "name": "oauth-connector-project", "root": "F:\\development\\oauth-connector-project",
+//       { "name": "my-app", "root": "C:\\src\\my-app",
 //         "taskFile": ".claude/tasks.md", "firstSeen": "2026-10-10", "lastSeen": "2026-10-11" }
 //     ]
 //   }

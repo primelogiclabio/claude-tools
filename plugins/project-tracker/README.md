@@ -78,8 +78,8 @@ knows a project's name ("the oauth project") can find its `tasks.md`:
   "version": 1,
   "projects": [
     {
-      "name": "oauth-connector-project",
-      "root": "F:\\development\\oauth-connector-project",
+      "name": "my-app",
+      "root": "C:\\src\\my-app",
       "taskFile": ".claude/tasks.md",
       "firstSeen": "2026-10-10",
       "lastSeen": "2026-10-11"
@@ -128,20 +128,21 @@ One line installs it, in either of two places:
 
 Both add the `claude-tools` marketplace first if you haven't added it yet.
 The [repo README](../../README.md#installing) has the full steps. Other ways,
-for the machine where you edit the repo:
+for the machine where you edit the repo. Put your clone's path in place of
+`C:\src\claude-tools`:
 
 - **From the local folder, every session:**
   ```powershell
-  claude plugin marketplace add F:\development\claude-tools
+  claude plugin marketplace add C:\src\claude-tools
   claude plugin install project-tracker@claude-tools
   ```
 - **Straight from this folder, every session:** add it to
   `CLAUDE_CODE_PLUGIN_DIRS` in the `env` block of `~/.claude/settings.json`.
   ```json
-  { "env": { "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\plugins\\project-tracker" } }
+  { "env": { "CLAUDE_CODE_PLUGIN_DIRS": "C:\\src\\claude-tools\\plugins\\project-tracker" } }
   ```
 - **One CLI session:**
-  `claude --plugin-dir F:\development\claude-tools\plugins\project-tracker`
+  `claude --plugin-dir C:\src\claude-tools\plugins\project-tracker`
 
 Use only one of these. If you installed it earlier by cloning or linking it
 into `~/.claude/skills/project-tracker`, remove that copy first. The
@@ -166,7 +167,7 @@ real terminal. It takes about two minutes.
    inside it would make a `--plugin-dir` session reload the mod every time
    `tasks.md` changes.
    ```powershell
-   mkdir F:\development\tracker-demo; cd F:\development\tracker-demo; git init
+   mkdir C:\src\tracker-demo; cd C:\src\tracker-demo; git init
    ```
    The first time Claude Code opens a folder it asks *"Is this a project you
    created or one you trust?"*. Choose **Yes, I trust this folder**. Plugins
@@ -183,7 +184,7 @@ real terminal. It takes about two minutes.
 4. **Start Claude Code with the mod loaded.** If you installed it (method M
    or B in `claude-tools/README.md`), just run `claude`. Otherwise:
    ```powershell
-   claude --plugin-dir F:\development\claude-tools\plugins\project-tracker
+   claude --plugin-dir C:\src\claude-tools\plugins\project-tracker
    ```
 5. **Try it:**
    - `/tasks` should open the pane, docked if the terminal is wide enough.
@@ -198,7 +199,7 @@ real terminal. It takes about two minutes.
 6. **If nothing shows,** run with `claude --debug --plugin-dir …`. Lines that
    start with `project-tracker:` say why a hook was skipped or a tree was
    refused.
-   `claude plugin validate F:\development\claude-tools\plugins\project-tracker`
+   `claude plugin validate C:\src\claude-tools\plugins\project-tracker`
    checks the mod without starting a session.
 7. **In the desktop app:** after installing with method M or B, quit the app
    completely, reopen it, start a Code session in a trusted project and type
