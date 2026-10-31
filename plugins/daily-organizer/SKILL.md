@@ -25,7 +25,7 @@ The organizer is the artifact the user points at: by a link, by name ("my daily 
   - `log`, optional: comments, as a list of `{at, text}` entries (ISO timestamp, free text), oldest first
   - `comment`: the completion comment, set when `status` becomes `done`
   - `doneAt`: ISO timestamp, set with `comment`
-  - `today`, optional: the `YYYY-MM-DD` date the task is planned for
+  - `today`, optional: the `YYYY-MM-DD` date the task is planned for: today, or a later day. The field keeps the name `today` so older rows still work.
   - `owner`, optional: the id of the team member the task is for. No `owner` means it's the user's own.
 - `team/<id>`, one document per team member: `name`, `created`
 - `days/<YYYY-MM-DD>`, one document per day:
@@ -109,6 +109,8 @@ When the user asks to plan the day, or what to work on today:
    Leave older `today` dates alone: they're history, and the page only shows today's.
 5. Tell the user it's on the page under **Today**.
 
+The same works for a later day ("plan tomorrow", "plan Monday"). Use that day's date for `today` and for `days/<date>`. The carry-overs are tasks planned for days before it and not done. The page's day picker and **Today | Tomorrow** tabs show any of the next seven days, and its star plans a task for the day shown.
+
 ## Wrap up my day
 
 When the user asks to wrap up, close or summarize the day:
@@ -121,6 +123,7 @@ When the user asks to wrap up, close or summarize the day:
    - status notes that look stale.
 3. Show it, and ask whether anything else got done. Anything the user names as done still needs a comment.
 4. On the user's OK, write any completions, then `set` or `update` `days/<today>` with `summary` and `closedAt` (keep `plan` if it's there).
+5. Offer to plan tomorrow, starting from what carries over.
 
 ## Older trackers
 

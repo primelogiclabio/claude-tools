@@ -52,7 +52,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .view-toggle button[aria-pressed="true"] { background: var(--accent); color: var(--bg); font-weight: 500; }
 .wrap.is-table { max-width: 1120px; }
 .view-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-#filter { font-size: 13px; padding: 5px 8px; }
+#filter, #day { font-size: 13px; padding: 5px 8px; }
+.plan-chip { font-size: 12px; color: var(--today); white-space: nowrap; }
+.tasks .plan-chip { margin-left: 6px; }
 .owner { font-size: 12px; font-weight: 500; color: var(--person); white-space: nowrap; }
 .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 6vw, 38px); line-height: 1.1; text-wrap: balance; }
@@ -192,6 +194,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
       <p class="counts" id="counts"></p>
     </div>
     <div class="view-tools">
+      <select id="day" aria-label="Day to show"></select>
       <select id="filter" aria-label="Show tasks for" hidden></select>
       <div class="view-toggle" id="view-toggle" role="group" aria-label="Layout">
         <button type="button" id="view-list" aria-pressed="true">List</button>
@@ -203,7 +206,13 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
   <p class="notice" id="notice" role="status">Loading your tasks…</p>
 
   <section id="sec-today" aria-labelledby="h-today">
-    <div class="section-head"><h2 id="h-today">Today<span class="n" id="n-today"></span></h2></div>
+    <div class="section-head">
+      <h2 id="h-today"><span id="today-label">Today</span><span class="n" id="n-today"></span></h2>
+      <div class="view-toggle" role="group" aria-label="Day">
+        <button type="button" id="tab-today" aria-pressed="true">Today</button>
+        <button type="button" id="tab-tomorrow" aria-pressed="false">Tomorrow</button>
+      </div>
+    </div>
     <ul class="list" id="list-today"></ul>
     <div class="table-wrap" id="table-today" hidden></div>
     <p class="empty" id="empty-today">Nothing planned for today. Star a task to add it, or ask Claude to plan your day.</p>
@@ -223,7 +232,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
       </select>
       <select id="add-owner" aria-label="For" hidden><option value="">Me</option></select>
       <input type="text" id="add-ticket" placeholder="Ticket (optional), e.g. OPS-142 or a link" aria-label="Ticket" maxlength="500">
-      <label class="check-label"><input type="checkbox" id="add-today"> Today</label>
+      <label class="check-label"><input type="checkbox" id="add-today"> <span id="add-today-label">Today</span></label>
     </div>
     <button class="btn btn-primary" type="submit" id="add-submit">Add task</button>
   </form>
@@ -284,13 +293,44 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
 (() => {
   const $ = (id) => document.getElementById(id);
   const state = { tasks: [], days: [], settings: {}, team: [], teamLoaded: false, confirmed: false, slow: false, error: '', note: '', readOnly: false, closed: false };
-  const ui = { completing: null, noting: null, removing: null, clearing: false, drafts: {}, logOpen: new Set(), logRemoving: null, layout: 'list', filter: 'all', assigning: null, teamRemoving: null };
+  const ui = { completing: null, noting: null, removing: null, clearing: false, drafts: {}, logOpen: new Set(), logRemoving: null, layout: 'list', filter: 'all', day: null, assigning: null, teamRemoving: null };
   const chains = new Map();
   let db = null;
 
   const pad = (n) => String(n).padStart(2, '0');
   const dayKey = (d = new Date()) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
   const midnight = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const fromKey = (key) => { const [y, m, d] = key.split('-').map(Number); return new Date(y, m - 1, d); };
+  const addDays = (key, n) => { const d = fromKey(key); d.setDate(d.getDate() + n); return dayKey(d); };
+
+  // A plan day in words: "today", "tomorrow", then the weekday.
+  function dayWord(key, today) {
+    if (key === today) return 'today';
+    if (key === addDays(today, 1)) return 'tomorrow';
+    return fromKey(key).toLocaleDateString(undefined, { weekday: 'long' });
+  }
+
+  function shortDay(key, today) {
+    if (key === today || key === addDays(today, 1)) return dayWord(key, today);
+    return fromKey(key).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
+  // The days the picker offers: today and the six after it.
+  function dayChoices(today) {
+    return Array.from({ length: 7 }, (_, i) => {
+      const key = addDays(today, i);
+      const word = dayWord(key, today);
+      const label = i < 2 ? word[0].toUpperCase() + word.slice(1) : word + ' ' + fromKey(key).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+      return [key, label];
+    });
+  }
+
+  // Marks a task planned for a day other than the one shown.
+  function planChip(t, shownDay) {
+    const today = dayKey();
+    if (!t.today || t.today === shownDay || t.today < today || t.status === 'done') return null;
+    return el('span', { class: 'plan-chip', title: 'Planned for ' + dayWord(t.today, today) }, '★ ' + shortDay(t.today, today));
+  }
 
   function isoWeek(d) {
     const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -502,7 +542,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
 
     const star = !done && editable ? el('button', {
       type: 'button', class: 'icon-btn star', 'aria-pressed': String(planned),
-      'aria-label': planned ? 'Take off today' : 'Plan for today', title: planned ? 'Take off today' : 'Plan for today',
+      'aria-label': (planned ? 'Take off ' : 'Plan for ') + dayWord(today, dayKey()), title: (planned ? 'Take off ' : 'Plan for ') + dayWord(today, dayKey()),
       onclick: () => patch(t.id, { today: planned ? null : today }),
     }, planned ? '★' : '☆') : null;
 
@@ -591,6 +631,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
       el('div', { class: 'title-line' },
         el('span', { class: 'title' }, t.title || '(untitled)'), p.tag, p.ticket,
         t.owner ? el('span', { class: 'owner' }, 'for ' + memberName(t.owner)) : null,
+        planChip(t, today),
       ),
       t.note && !p.done ? el('div', { class: 'note' }, t.note) : null,
       p.done && t.comment ? el('div', { class: 'comment' }, t.comment) : null,
@@ -620,7 +661,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
       : (t.note ? el('span', { class: 'note' }, t.note) : null);
     const tr = el('tr', { class: [p.done ? 'is-done' : '', p.panels.length ? 'has-detail' : ''].join(' ').trim() || null },
       el('td', { class: 'c-check' }, p.check),
-      el('td', { class: 'c-task' }, el('span', { class: 'title' }, t.title || '(untitled)')),
+      el('td', { class: 'c-task' }, el('span', { class: 'title' }, t.title || '(untitled)'), planChip(t, today)),
       withOwner ? el('td', { class: 'c-owner' }, t.owner ? el('span', { class: 'owner' }, memberName(t.owner)) : el('span', { class: 'me' }, 'Me')) : null,
       el('td', { class: 'c-type' }, p.tag),
       el('td', { class: 'c-ticket' }, p.ticket),
@@ -710,6 +751,9 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
   function render() {
     const now = new Date();
     const today = dayKey(now);
+    if (!ui.day || ui.day < today) ui.day = today;
+    const sel = ui.day;
+    const selWord = dayWord(sel, today);
     $('week').textContent = 'Week ' + isoWeek(now) + ' · ' + today;
     $('date').textContent = now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -724,25 +768,32 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
     const byCreated = (a, b) => String(a.created || '').localeCompare(String(b.created || ''));
     renderTeam();
     const shown = state.tasks.filter(matchesFilter);
-    const planned = shown.filter((t) => t.today === today).sort((a, b) => (a.status === 'done') - (b.status === 'done') || byCreated(a, b));
-    const rest = shown.filter((t) => t.today !== today);
+    const planned = shown.filter((t) => t.today === sel).sort((a, b) => (a.status === 'done') - (b.status === 'done') || byCreated(a, b));
+    const rest = shown.filter((t) => t.today !== sel);
     const next = rest.filter((t) => t.status === 'next' || !t.status).sort(byCreated);
     const waiting = rest.filter((t) => t.status === 'waiting').sort(byCreated);
     const done = rest.filter((t) => t.status === 'done').sort((a, b) => String(b.doneAt || '').localeCompare(String(a.doneAt || '')));
 
-    fill('today', planned, today);
-    fill('next', next, today);
-    fill('waiting', waiting, today);
-    fill('done', done, today);
+    fill('today', planned, sel);
+    fill('next', next, sel);
+    fill('waiting', waiting, sel);
+    fill('done', done, sel);
     renderDays(byId);
 
     const doneToday = shown.filter((t) => t.status === 'done' && t.doneAt && dayKey(new Date(t.doneAt)) === today).length;
-    const openPlanned = planned.filter((t) => t.status !== 'done').length;
+    const openPlanned = shown.filter((t) => t.today === today && t.status !== 'done').length;
+    const daySelect = $('day');
+    if (document.activeElement !== daySelect) syncSelect(daySelect, dayChoices(today), sel);
+    $('tab-today').setAttribute('aria-pressed', String(sel === today));
+    $('tab-tomorrow').setAttribute('aria-pressed', String(sel === addDays(today, 1)));
+    $('today-label').textContent = sel === today || sel === addDays(today, 1) ? selWord[0].toUpperCase() + selWord.slice(1) : fromKey(sel).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' });
+    $('empty-today').textContent = 'Nothing planned for ' + selWord + '. Star a task to add it, or ask Claude to plan ' + (sel === today ? 'your day' : selWord) + '.';
+    $('add-today-label').textContent = selWord[0].toUpperCase() + selWord.slice(1);
     $('counts').textContent = state.closed ? '' :
       [openPlanned + ' left today', next.length + ' up next', waiting.length + ' waiting', doneToday + ' done today'].join(' · ');
 
     const clear = $('clear-done');
-    const allDone = state.tasks.filter((t) => t.status === 'done' && t.today !== today);
+    const allDone = state.tasks.filter((t) => t.status === 'done' && t.today !== sel);
     clear.replaceChildren();
     if (!state.readOnly && allDone.length) {
       if (ui.clearing) {
@@ -759,7 +810,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
     const form = $('add');
     form.hidden = state.closed;
     for (const c of form.elements) c.disabled = state.readOnly || !db;
-    for (const id of ['sec-today', 'sec-next', 'sec-waiting', 'sec-done', 'sec-days', 'sec-settings', 'view-toggle']) $(id).hidden = state.closed;
+    for (const id of ['sec-today', 'sec-next', 'sec-waiting', 'sec-done', 'sec-days', 'sec-settings', 'view-toggle', 'day']) $(id).hidden = state.closed;
     document.querySelector('.wrap').classList.toggle('is-table', ui.layout === 'table');
     $('view-list').setAttribute('aria-pressed', String(ui.layout === 'list'));
     $('view-table').setAttribute('aria-pressed', String(ui.layout === 'table'));
@@ -789,7 +840,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
       created: new Date().toISOString(),
     };
     if (ticket) body.ticket = ticket;
-    if ($('add-today').checked) body.today = dayKey();
+    if ($('add-today').checked) body.today = ui.day || dayKey();
     if ($('add-owner').value) body.owner = $('add-owner').value;
     const ref = db.collection('tasks').doc();
     write(ref.id, () => ref.set(body));
@@ -830,6 +881,10 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
       render();
     });
   }
+
+  $('day').addEventListener('change', (e) => { ui.day = e.target.value; render(); });
+  $('tab-today').addEventListener('click', () => { ui.day = dayKey(); render(); });
+  $('tab-tomorrow').addEventListener('click', () => { ui.day = addDays(dayKey(), 1); render(); });
 
   $('set-ticket').addEventListener('input', () => { ui.settingsTyped = true; $('set-msg').textContent = ''; });
   $('settings-form').addEventListener('submit', (e) => {

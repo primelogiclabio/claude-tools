@@ -72,7 +72,12 @@ with each person.
   comments), what carries over and what's waiting, asks whether anything else
   got done, and saves the summary to the **Days** log.
 
-You can also plan by hand: the star on any task puts it on today's list.
+You can also plan by hand, and ahead. The **Today | Tomorrow** tabs, and the
+day picker next to **Everyone** for any of the next seven days, choose which
+day the planned section shows. The star on a task plans it for that day. A
+task planned for another day shows a small "★ Tue" marker. Claude can plan
+ahead too ("plan tomorrow", "plan Monday"), and offers to plan tomorrow when
+you wrap up a day.
 
 The full instructions are in [`SKILL.md`](SKILL.md).
 
