@@ -3,7 +3,8 @@
 A skill that keeps long project work on track in a `PROGRESS.md` file at the
 repo root, so the context window only has to hold the current task. It's built
 for one habit: working on one item at a time, and writing side ideas down
-instead of chasing them.
+instead of chasing them. The same plugin adds a **Progress** pane that shows
+where you are without asking Claude.
 
 `PROGRESS.md` has a one-line goal and six short sections: **Current focus**, **Next**, **Done**
 (last 10), **Decisions**, **Parking lot** and **Gotchas**. It's current state,
@@ -53,6 +54,53 @@ from the list. When it's installed as a plugin, its full name is
 `/project-progress init` again: it leaves `PROGRESS.md` alone, shows how the
 rules changed, and replaces them if you say yes.
 
+## The Progress pane
+
+In a repo that has `PROGRESS.md`, a **Progress** pane opens when the session
+starts. It docks beside the transcript in the fullscreen terminal layout on a
+wide enough terminal, and shows as a panel in the desktop Code tab. It shows:
+
+- the goal, the **Now** item (Current focus) and the numbered **Next** list;
+- **Parked**, **Done**, **Decisions** and **Gotchas** as folded lines with a
+  count; select one to unfold it.
+
+The pane only reads the file. It picks up changes within about 2 seconds,
+whoever makes them. Its buttons put a request in the prompt for you to send, so
+every change still goes through the skill:
+
+| Button | Puts in the prompt |
+| --- | --- |
+| **Start next** (`n`), shown when nothing is in progress | `/project-progress:project-progress next` |
+| **Checkpoint** (`d`), shown while an item is in progress | `/project-progress:project-progress done` |
+| **Park…** (`p`), **Add…** (`a`) | `… park ` or `… add `, for you to finish typing |
+| **Status** (`s`) | `/project-progress:project-progress status` |
+
+Where no prompt box takes the text, it's copied to the clipboard instead. In a
+repo without `PROGRESS.md`, `/progress` shows a pane with a **Set up progress
+tracking** button that puts `… init` in the prompt.
+
+| Command | What it does |
+| --- | --- |
+| `/progress` | Shows the pane, or hides it if it's showing |
+| `/progress show`, `/progress hide` | Shows or hides it |
+| `/progress text` | Prints the goal, current focus, the next three items and the counts in the transcript. Also what `/progress` prints where no pane can be drawn. |
+| `/progress help` | Lists these |
+
+Turn on `statusLine` to also show `▶ <current focus> · 2 next` (or
+`○ nothing in progress · 2 next`) under the prompt. Claude Code draws every
+plugin's status line with a ⚠ and the plugin's name; it isn't a warning.
+
+### Options
+
+Set these in `/config`, or under `pluginConfigs.project-progress` in settings:
+
+| Option | Default | |
+| --- | --- | --- |
+| `showPane` | `true` | Open the pane at session start in a repo that has `PROGRESS.md` (or when `init` creates one mid-session). Off: it stays hidden until `/progress` shows it. |
+| `statusLine` | `false` | Show the current focus and the Next count in the status line. Off by default, since the pane shows the same. |
+
+## Not project-tracker
+
 It's not the same as the [project-tracker](../project-tracker/README.md)
 mod. project-tracker is a task list in a pane; project-progress is a
 focus-and-checkpoint workflow that also records decisions and parked ideas. They
@@ -61,11 +109,13 @@ can be used together: name project-tracker's list when you mean it.
 ## Where it works
 
 It relies on `CLAUDE.md` imports, plan mode and `/clear`, which are Claude Code
-features, and it writes files in your repo.
+features, and it writes files in your repo. The pane is a mod, which runs only
+inside Claude Code.
 
 | Where | Works? |
 | --- | --- |
-| Claude Code CLI, desktop Code tab, VS Code | ✔ full skill |
+| Claude Code CLI, desktop Code tab | ✔ full skill and the pane |
+| VS Code extension | ✔ full skill and `/progress text`; ⚠ the pane isn't drawn there |
 | Claude Code cloud sessions (claude.ai/code) | ⚠ only if the skill is on your claude.ai account. `PROGRESS.md` reaches other sessions only once it's committed and pushed. |
 | claude.ai web, desktop Chat, Cowork, mobile | ✘ no repo, `CLAUDE.md` or plan mode, so there is no reason to add it there |
 
@@ -109,17 +159,24 @@ From this folder:
 
 ```sh
 claude plugin validate .
+claude plugin test .
 ```
 
-It's a skill with no code, so there are no tests. To try a change, run
-`/project-progress init` in a scratch repo in a new session, then go through
-`add`, `next`, `park` and `done`.
+The tests cover the pane and its `PROGRESS.md` reader. The skill itself has no
+code: to try a change to it, run `/project-progress init` in a scratch repo in
+a new session, then go through `add`, `next`, `park` and `done`.
 
 ## Files
 
 ```
 project-progress/
-├── .claude-plugin/plugin.json   lets this folder install as a plugin
+├── .claude-plugin/plugin.json   lets this folder install as a plugin; the pane's options
 ├── SKILL.md                     the skill: frontmatter + instructions
+├── hooks/
+│   ├── hooks.json               loads register.tsx
+│   ├── register.tsx             the pane, /progress and the status line
+│   └── progress.ts              reads PROGRESS.md (never writes it)
+├── types/index.d.ts             the reader's types
+├── tests/                       run with claude plugin test
 └── README.md                    this file
 ```
