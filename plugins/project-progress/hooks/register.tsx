@@ -56,11 +56,12 @@ let unfolded = new Set<SectionKey>()
 let isStatusShown = false
 let isShowPane = true
 let isShown = false
+let sessionCwd = ''
 let root = ''
 let file = ''
 let mtime = -1
 
-// PROGRESS.md sits at the repo root: the nearest folder up from the
+// The skill's "Where PROGRESS.md lives": the nearest folder up from the
 // session's that holds one, else the nearest git root, else the session's own.
 async function findRoot($: EngineInterface, cwd: string): Promise<string> {
   for (let dir: string | null = cwd; dir !== null; dir = parent(dir)) {
@@ -115,7 +116,17 @@ async function openPane($: EngineInterface) {
 
 async function refreshIfChanged($: EngineInterface): Promise<void> {
   if (file === '') return
-  const exists = await $.fs.exists(file)
+  let exists = await $.fs.exists(file)
+  // Until there is a file, look again: init may set one up in a subfolder
+  // (a monorepo package) below the git root found at session start.
+  if (!exists) {
+    const found = await findRoot($, sessionCwd)
+    if (found !== root) {
+      root = found
+      file = join(root, FILE)
+      exists = await $.fs.exists(file)
+    }
+  }
   const now = exists ? (await $.fs.stat(file)).mtimeMs : 0
   if (now === mtime) return
   const wasThere = view?.exists === true
@@ -146,7 +157,8 @@ export const register: Register = (on, options) => {
   isShowPane = options.showPane !== false
 
   on('session.start', async ($, e, next) => {
-    root = await findRoot($, e.cwd)
+    sessionCwd = e.cwd
+    root = await findRoot($, sessionCwd)
     file = join(root, FILE)
     const v = await load($)
 

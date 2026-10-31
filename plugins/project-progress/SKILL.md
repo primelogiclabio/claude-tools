@@ -5,7 +5,7 @@ description: Track long project work in PROGRESS.md so the context window only h
 
 # Project progress
 
-Keeps long-running project work organized in `PROGRESS.md` at the repo root, so the context window only has to hold the current task. The core rules: one item at a time, and side ideas get parked, not chased.
+Keeps long-running project work organized in `PROGRESS.md` at the project's root (see Where PROGRESS.md lives), so the context window only has to hold the current task. The core rules: one item at a time, and side ideas get parked, not chased.
 
 The commands below are written as `/project-progress <mode>`. When the skill is installed as a plugin its full name is `/project-progress:project-progress`. When you tell the user what to type, use the form they typed, or whichever name the session lists if they haven't typed one.
 
@@ -74,12 +74,19 @@ Rules for the file:
 
 Trimming: Done is trimmed automatically, but the other sections only grow. When the file is still over about 60 lines, propose specific cuts in one message: merge related Decisions into one line, drop Gotchas that no longer apply, and point out Parking lot entries that look stale or already handled. Apply only the cuts the user approves. Next isn't trimmed: if it's what makes the file long, say so and leave it to the user. `done` and `status` both check for this.
 
+## Where PROGRESS.md lives
+
+- The project's PROGRESS.md is the nearest one from the session's folder upward, stopping at the git root. Every mode reads and writes that one, and the Progress pane shows it.
+- When there's none, `init` creates it. In a git repo it goes at the git root, unless the session started in a subfolder (such as a package in a monorepo) and the user picks that folder. Outside git it goes in the session's folder.
+- Never nest them. Before creating one, look for another PROGRESS.md in the same repo, skipping dependency and build folders such as `node_modules`. If one sits above or below the new spot, say where and ask before going ahead: a session started below both would load both.
+- The `CLAUDE.md` or `CLAUDE.local.md` that imports it sits in the same folder as PROGRESS.md.
+
 ## init
 
-1. If PROGRESS.md already exists, never overwrite it. Show its Current focus and Next, do only the workflow-block check at the end of step 4, and stop.
-2. Ask the user two things in one message: the current goal plus the first few Next items, and whether PROGRESS.md should be committed or kept personal.
-3. Create PROGRESS.md from the template with their answers.
-4. Wire it in. If committed, edit the project-root `CLAUDE.md`. If personal, use `CLAUDE.local.md` and add `/PROGRESS.md` and `/CLAUDE.local.md` to the repo's local exclude file (its path comes from `git rev-parse --git-path info/exclude`), skipping either one if the file already lists it. Don't use `.gitignore` for this: it is committed, so the personal choice would end up in everyone's copy. If the folder isn't a git repo, skip the exclude. Create `CLAUDE.md` or `CLAUDE.local.md` if it is missing. Add this block once:
+1. If a PROGRESS.md already applies (see Where PROGRESS.md lives), never overwrite it. Show its Current focus and Next, do only the workflow-block check at the end of step 4, and stop.
+2. Ask the user in one message for the current goal plus the first few Next items, and whether PROGRESS.md should be committed or kept personal. If the session started in a subfolder of a git repo, also ask whether to track the whole repo or just this folder. Outside git, don't ask about committing: there's nothing to commit to.
+3. Create PROGRESS.md from the template with their answers, in the folder Where PROGRESS.md lives gives.
+4. Wire it in, in the same folder. If committed, edit `CLAUDE.md`. If personal, use `CLAUDE.local.md` and add its folder's `PROGRESS.md` and `CLAUDE.local.md` to the repo's local exclude file (its path comes from `git rev-parse --git-path info/exclude`), skipping either one if the file already lists it. Write the entries as paths from the git root: `/PROGRESS.md` at the root, `/packages/api/PROGRESS.md` in a subfolder (`git rev-parse --show-prefix` gives the prefix). Don't use `.gitignore` for this: it is committed, so the personal choice would end up in everyone's copy. Outside git, use `CLAUDE.md` and skip the exclude. Create `CLAUDE.md` or `CLAUDE.local.md` if it is missing. Add this block once:
 
    ```markdown
    @PROGRESS.md
@@ -122,7 +129,7 @@ Also do this unprompted during any work: when you notice an unrelated bug, refac
 
 ## done / checkpoint
 
-1. Offer to run the tests. Find the project's test command: what `CLAUDE.md` or the README says first, else the usual places (`package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, `go.mod`, the runner for a `tests/` folder).
+1. Offer to run the tests. Find the project's test command: what `CLAUDE.md` or the README says first, else the usual places (`package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, `go.mod`, the runner for a `tests/` folder). In a monorepo, offer the test command of the package or packages the item changed, not the whole repo's, unless the repo's docs say to run one command for everything.
    - If the tests already ran and passed in this session after the last change, skip the offer and say so in a few words.
    - If you found a command, ask in one line, naming it: "Run `npm test` before checkpointing?" On a yes, run it, in the background if it's likely to take more than about 2 minutes. Don't run it without a yes.
    - If you found none, or the item changed nothing testable (only docs or PROGRESS.md), skip the offer without mentioning it.
@@ -134,7 +141,7 @@ Also do this unprompted during any work: when you notice an unrelated bug, refac
    - Trim Done to 10 entries.
    - If the file is still over about 60 lines, propose cuts (see Trimming).
 4. If Parking lot has entries, list them briefly and ask which, if any, to promote to Next, leaving out any you just proposed cutting. Move only what the user picks.
-5. Once any questions from steps 3 and 4 are answered, suggest committing (don't commit unless asked). Then tell the user to run `/clear` and `/project-progress next` to start the next item with a fresh context. You can't run `/clear` yourself.
+5. Once any questions from steps 3 and 4 are answered, suggest committing in a git repo (don't commit unless asked). Then tell the user to run `/clear` and `/project-progress next` to start the next item with a fresh context. You can't run `/clear` yourself.
 
 Also offer this unprompted: when the current item's work looks finished, such as its plan's steps being done and its checks passing, say so in one line and offer to checkpoint it. Don't checkpoint without a yes.
 
@@ -146,5 +153,5 @@ Read PROGRESS.md and report in a few lines: the current focus, the next three it
 
 - Never remove Parking lot or Next items, or change Decisions, without the user's say.
 - Never start a second item while one is in Current focus.
-- PROGRESS.md always stays at the repo root.
+- PROGRESS.md stays where `init` created it. Never move it, or create a second one in the same folder tree, without asking.
 - In a repo with PROGRESS.md, "task" and "item" mean its entries unless the user names another list, such as the project-tracker mod's `.claude/tasks.md` or a personal tracker.

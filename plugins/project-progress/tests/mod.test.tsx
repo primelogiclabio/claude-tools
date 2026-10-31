@@ -52,6 +52,7 @@ type World = {
   writes: string[]
   status: (string | undefined)[]
   opened: string[]
+  titles: string[]
   closed: string[]
   filled: string[]
   commands: string[]
@@ -78,6 +79,7 @@ function world(on: On, files: Record<string, string> = {}, isPlaced = true): Wor
     writes: [],
     status: [],
     opened: [],
+    titles: [],
     closed: [],
     filled: [],
     commands: [],
@@ -106,6 +108,7 @@ function world(on: On, files: Record<string, string> = {}, isPlaced = true): Wor
   })
   on('ui.open', ($, e) => {
     w.opened.push(e.id)
+    w.titles.push(e.title ?? '')
 
     return { value: isPlaced ? { isPlaced: true } : { isPlaced: false, reason: 'no-surface' } }
   })
@@ -215,6 +218,32 @@ describe('project-progress pane', () => {
     w.edit(PROGRESS, FILE)
     await clock.advance(2100)
     expect(w.opened).toEqual(['progress'])
+  })
+
+  test('a PROGRESS.md set up mid-session in a subfolder below the git root opens the pane on it', async ($, on) => {
+    const w = world(on)
+    const clock = freshClock(on)
+    await $.session.start(START)
+    w.edit('/work/app/src/PROGRESS.md', FILE)
+    await clock.advance(2100)
+    expect(w.opened).toEqual(['progress'])
+    expect(w.titles).toEqual(['Progress · src'])
+  })
+
+  test("a subfolder's PROGRESS.md wins over the git root's", async ($, on) => {
+    const w = world(on, { [PROGRESS]: FILE, '/work/app/src/PROGRESS.md': FILE })
+    freshClock(on)
+    await $.session.start(START)
+    expect(w.titles).toEqual(['Progress · src'])
+  })
+
+  test('outside git it uses the session folder', async ($, on) => {
+    const w = world(on)
+    const clock = freshClock(on)
+    await $.session.start({ ...START, cwd: '/work' })
+    w.edit('/work/PROGRESS.md', FILE)
+    await clock.advance(2100)
+    expect(w.titles).toEqual(['Progress · work'])
   })
 
   for (const surface of ['terminal', 'desktop'] as const) {
