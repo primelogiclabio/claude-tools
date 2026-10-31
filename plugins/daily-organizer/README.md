@@ -5,6 +5,11 @@ A skill for a **personal daily organizer** on claude.ai: one page with
 past plans and end-of-day summaries. Ask Claude to start one and it publishes
 the page from [`template.html`](template.html) and gives you the link.
 
+A **List | Table** switch at the top shows each section as a list or as a
+table with columns for type, ticket, note, age and comments. Each device
+remembers its own choice, so a phone can stay on the list while a desktop
+uses the table.
+
 It used to be called **workday-tracker**. See [Renamed](#renamed-from-workday-tracker)
 if you had that installed.
 

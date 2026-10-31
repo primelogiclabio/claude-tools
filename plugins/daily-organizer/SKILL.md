@@ -5,7 +5,7 @@ description: House rules for a personal daily organizer artifact on claude.ai (T
 
 # Daily organizer
 
-A personal, day-to-day organizer kept as a claude.ai artifact: a page with **Today**, **Up Next**, **Waiting On** and **Done**, and a **Days** log of past plans and summaries. The page is built from `template.html` in this skill's folder. Its tasks aren't in the page's code: they're rows in the artifact's own database, which the page shows live and Claude reads and writes with the `ArtifactData` tool.
+A personal, day-to-day organizer kept as a claude.ai artifact: a page with **Today**, **Up Next**, **Waiting On** and **Done**, and a **Days** log of past plans and summaries, shown as lists or tables (a **List | Table** switch the page remembers per device). The page is built from `template.html` in this skill's folder. Its tasks aren't in the page's code: they're rows in the artifact's own database, which the page shows live and Claude reads and writes with the `ArtifactData` tool.
 
 It's for one person's own work. Don't apply these rules to a team or project tracker, or to a repo's `PROGRESS.md`; if it's unclear which list the user means, ask.
 

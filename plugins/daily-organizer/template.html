@@ -43,7 +43,13 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.day { display: grid; gap: 2px; }
+.day { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px 16px; }
+.day-text { display: grid; gap: 2px; min-width: 0; }
+.view-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.view-toggle button { border: 0; background: none; padding: 5px 12px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.view-toggle button + button { border-left: 1px solid var(--line); }
+.view-toggle button[aria-pressed="true"] { background: var(--accent); color: var(--bg); font-weight: 500; }
+.wrap.is-table { max-width: 1120px; }
 .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 6vw, 38px); line-height: 1.1; text-wrap: balance; }
 .counts { margin: 4px 0 0; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -119,6 +125,25 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
 .settings .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .settings #set-msg { font-size: 13px; color: var(--muted); }
 
+.table-wrap { overflow-x: auto; border-top: 1px solid var(--line); }
+#sec-today .table-wrap { border-top-color: var(--today); }
+table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tasks th { text-align: left; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tasks td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tasks tr.has-detail td { border-bottom: 0; }
+.tasks tr.detail td { padding-top: 0; }
+.tasks .c-check { width: 1%; padding-right: 0; }
+.tasks .c-task { min-width: 18ch; overflow-wrap: anywhere; }
+.tasks .c-note { min-width: 18ch; max-width: 36ch; overflow-wrap: anywhere; }
+.tasks .c-type, .tasks .c-ticket, .tasks .c-age, .tasks .c-log, .tasks .c-star, .tasks .c-actions { white-space: nowrap; width: 1%; }
+.tasks .c-age { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tasks .c-age.stale { color: var(--today); }
+.tasks .c-log .link-btn { padding: 0 4px; margin-left: -4px; }
+.tasks .c-actions .row-tools { flex-wrap: nowrap; margin-left: 0; }
+.tasks .c-actions .link-btn { padding: 0 4px; }
+.tasks .note::before, .tasks .comment::before { content: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
 .add { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .add #add-title { grid-column: 1 / -1; font-size: 16px; }
 .add .opt { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; align-items: center; }
@@ -146,9 +171,15 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
 
 <div class="wrap">
   <header class="day">
-    <div class="eyebrow" id="week"></div>
-    <h1 id="date">Daily Organizer</h1>
-    <p class="counts" id="counts"></p>
+    <div class="day-text">
+      <div class="eyebrow" id="week"></div>
+      <h1 id="date">Daily Organizer</h1>
+      <p class="counts" id="counts"></p>
+    </div>
+    <div class="view-toggle" id="view-toggle" role="group" aria-label="Layout">
+      <button type="button" id="view-list" aria-pressed="true">List</button>
+      <button type="button" id="view-table" aria-pressed="false">Table</button>
+    </div>
   </header>
 
   <p class="notice" id="notice" role="status">Loading your tasks…</p>
@@ -156,6 +187,7 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
   <section id="sec-today" aria-labelledby="h-today">
     <div class="section-head"><h2 id="h-today">Today<span class="n" id="n-today"></span></h2></div>
     <ul class="list" id="list-today"></ul>
+    <div class="table-wrap" id="table-today" hidden></div>
     <p class="empty" id="empty-today">Nothing planned for today. Star a task to add it, or ask Claude to plan your day.</p>
   </section>
 
@@ -180,12 +212,14 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
   <section id="sec-next" aria-labelledby="h-next">
     <div class="section-head"><h2 id="h-next">Up Next<span class="n" id="n-next"></span></h2></div>
     <ul class="list" id="list-next"></ul>
+    <div class="table-wrap" id="table-next" hidden></div>
     <p class="empty" id="empty-next">Nothing up next.</p>
   </section>
 
   <section id="sec-waiting" aria-labelledby="h-waiting">
     <div class="section-head"><h2 id="h-waiting">Waiting On<span class="n" id="n-waiting"></span></h2></div>
     <ul class="list" id="list-waiting"></ul>
+    <div class="table-wrap" id="table-waiting" hidden></div>
     <p class="empty" id="empty-waiting">Nothing waiting on anyone.</p>
   </section>
 
@@ -195,6 +229,7 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
       <div id="clear-done"></div>
     </div>
     <ul class="list" id="list-done"></ul>
+    <div class="table-wrap" id="table-done" hidden></div>
     <p class="empty" id="empty-done">Finished tasks land here with their completion comment.</p>
   </section>
 
@@ -221,7 +256,7 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
 (() => {
   const $ = (id) => document.getElementById(id);
   const state = { tasks: [], days: [], settings: {}, confirmed: false, slow: false, error: '', note: '', readOnly: false, closed: false };
-  const ui = { completing: null, noting: null, removing: null, clearing: false, drafts: {}, logOpen: new Set(), logRemoving: null };
+  const ui = { completing: null, noting: null, removing: null, clearing: false, drafts: {}, logOpen: new Set(), logRemoving: null, layout: 'list' };
   const chains = new Map();
   let db = null;
 
@@ -379,7 +414,8 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     return el('span', { class: 'ticket', title: tk }, tk);
   }
 
-  function row(t, today) {
+  // The pieces of one task, shared by the list and table layouts.
+  function parts(t, today) {
     const done = t.status === 'done';
     const planned = t.today === today;
     const editable = !state.readOnly;
@@ -401,15 +437,11 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
       },
     });
 
-    const meta = el('div', { class: 'meta' },
-      el('span', {}, ago(added, 'added')),
-      waitingLong ? el('span', { class: 'stale' }, 'waiting ' + added + ' days') : null,
-      done && t.doneAt ? el('span', {}, ago(daysSince(t.doneAt), 'done')) : null,
-      log.length || editable ? el('button', {
-        type: 'button', class: 'link-btn', 'aria-expanded': String(logOpen), 'aria-controls': 'logbox-' + t.id,
-        onclick: () => toggleLog(t.id),
-      }, log.length ? log.length + (log.length === 1 ? ' comment' : ' comments') : 'Add comment') : null,
-    );
+    const logBtn = (short) => (log.length || editable ? el('button', {
+      type: 'button', class: 'link-btn', 'aria-expanded': String(logOpen), 'aria-controls': 'logbox-' + t.id,
+      title: log.length ? 'Show comments' : 'Add a comment',
+      onclick: () => toggleLog(t.id),
+    }, log.length ? (short ? String(log.length) : log.length + (log.length === 1 ? ' comment' : ' comments')) : (short ? 'Add' : 'Add comment')) : null);
 
     const tools = editable ? el('div', { class: 'row-tools' },
       !done && t.status === 'next' ? el('button', { type: 'button', class: 'link-btn', onclick: () => patch(t.id, { status: 'waiting' }) }, 'Move to Waiting') : null,
@@ -421,29 +453,19 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
       el('button', { type: 'button', class: 'link-btn danger', onclick: () => { ui.removing = t.id; ui.completing = ui.noting = null; render(); } }, 'Remove'),
     ) : null;
 
-    const body = el('div', { class: 'body' },
-      el('div', { class: 'title-line' },
-        el('span', { class: 'title' }, t.title || '(untitled)'),
-        el('span', { class: 'tag tag-' + typeName }, typeName),
-        t.ticket ? ticketNode(String(t.ticket)) : null,
-      ),
-      t.note && !done ? el('div', { class: 'note' }, t.note) : null,
-      done && t.comment ? el('div', { class: 'comment' }, t.comment) : null,
-      meta,
-      tools,
-    );
-
     const star = !done && editable ? el('button', {
       type: 'button', class: 'icon-btn star', 'aria-pressed': String(planned),
       'aria-label': planned ? 'Take off today' : 'Plan for today', title: planned ? 'Take off today' : 'Plan for today',
       onclick: () => patch(t.id, { today: planned ? null : today }),
     }, planned ? '★' : '☆') : null;
 
-    const li = el('li', { class: 'task' + (done ? ' is-done' : '') }, check, body, el('div', { class: 'actions' }, star));
+    const tag = el('span', { class: 'tag tag-' + typeName }, typeName);
+    const ticket = t.ticket ? ticketNode(String(t.ticket)) : null;
 
+    const panels = [];
     if (ui.completing === t.id) {
       const key = 'done-' + t.id;
-      li.append(el('div', { class: 'inline' },
+      panels.push(el('div', { class: 'inline' },
         el('label', { for: key }, 'What got done or decided? A comment is needed to finish a task.'),
         draftInput(key, { placeholder: 'e.g. Shipped the fix, PR merged', maxlength: 500, required: true }, () => complete(t)),
         el('button', { type: 'button', class: 'btn btn-primary', id: key + '-save', disabled: !(ui.drafts[key] || '').trim(), onclick: () => complete(t) }, 'Mark done'),
@@ -452,7 +474,7 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     }
     if (ui.noting === t.id) {
       const key = 'note-' + t.id;
-      li.append(el('div', { class: 'inline' },
+      panels.push(el('div', { class: 'inline' },
         el('label', { for: key }, 'Status note, e.g. blocked on DNS change'),
         draftInput(key, { maxlength: 300 }, () => saveNote(t)),
         el('button', { type: 'button', class: 'btn btn-primary', onclick: () => saveNote(t) }, 'Save'),
@@ -460,7 +482,7 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
       ));
     }
     if (ui.removing === t.id) {
-      li.append(el('div', { class: 'inline' },
+      panels.push(el('div', { class: 'inline' },
         el('span', {}, 'Remove this task for good?'),
         el('button', { type: 'button', class: 'btn btn-danger', onclick: () => { ui.removing = null; remove(t.id); } }, 'Remove'),
         el('button', { type: 'button', class: 'btn', onclick: () => { ui.removing = null; render(); } }, 'Keep'),
@@ -468,7 +490,7 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     }
     if (logOpen) {
       const key = 'log-' + t.id;
-      li.append(el('div', { class: 'log', id: 'logbox-' + t.id },
+      panels.push(el('div', { class: 'log', id: 'logbox-' + t.id },
         log.length ? el('ol', {}, log.map((entry, i) => {
           const rk = t.id + ':' + i;
           const tools = !editable ? null : ui.logRemoving === rk
@@ -491,13 +513,70 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
         ) : null,
       ));
     }
-    return li;
+    return { done, added, waitingLong, check, logBtn, tools, star, tag, ticket, panels };
+  }
+
+  function listRow(t, today) {
+    const p = parts(t, today);
+    const meta = el('div', { class: 'meta' },
+      el('span', {}, ago(p.added, 'added')),
+      p.waitingLong ? el('span', { class: 'stale' }, 'waiting ' + p.added + ' days') : null,
+      p.done && t.doneAt ? el('span', {}, ago(daysSince(t.doneAt), 'done')) : null,
+      p.logBtn(false),
+    );
+    const body = el('div', { class: 'body' },
+      el('div', { class: 'title-line' }, el('span', { class: 'title' }, t.title || '(untitled)'), p.tag, p.ticket),
+      t.note && !p.done ? el('div', { class: 'note' }, t.note) : null,
+      p.done && t.comment ? el('div', { class: 'comment' }, t.comment) : null,
+      meta,
+      p.tools,
+    );
+    return el('li', { class: 'task' + (p.done ? ' is-done' : '') }, p.check, body, el('div', { class: 'actions' }, p.star), p.panels);
+  }
+
+  // Table columns: [heading, shown only to screen readers].
+  const COLUMNS = [['Done', true], ['Task'], ['Type'], ['Ticket'], ['Note'], ['Age'], ['Comments'], ['Today', true], ['Actions', true]];
+
+  function ageCell(t, p) {
+    if (p.done) {
+      const n = daysSince(t.doneAt);
+      return n === null ? '' : 'done ' + (n <= 0 ? 'today' : n + 'd');
+    }
+    if (p.added === null) return '';
+    return p.added <= 0 ? 'today' : p.added + 'd';
+  }
+
+  function tableRows(t, today) {
+    const p = parts(t, today);
+    const note = p.done
+      ? (t.comment ? el('span', { class: 'comment' }, t.comment) : null)
+      : (t.note ? el('span', { class: 'note' }, t.note) : null);
+    const tr = el('tr', { class: [p.done ? 'is-done' : '', p.panels.length ? 'has-detail' : ''].join(' ').trim() || null },
+      el('td', { class: 'c-check' }, p.check),
+      el('td', { class: 'c-task' }, el('span', { class: 'title' }, t.title || '(untitled)')),
+      el('td', { class: 'c-type' }, p.tag),
+      el('td', { class: 'c-ticket' }, p.ticket),
+      el('td', { class: 'c-note' }, note),
+      el('td', { class: 'c-age' + (p.waitingLong ? ' stale' : ''), title: p.waitingLong ? 'Waiting ' + p.added + ' days' : null }, ageCell(t, p)),
+      el('td', { class: 'c-log' }, p.logBtn(true)),
+      el('td', { class: 'c-star' }, p.star),
+      el('td', { class: 'c-actions' }, p.tools),
+    );
+    if (!p.panels.length) return [tr];
+    return [tr, el('tr', { class: 'detail' }, el('td', { colspan: COLUMNS.length }, p.panels))];
   }
 
   function fill(name, items, today) {
+    const asTable = ui.layout === 'table';
     const list = $('list-' + name);
-    list.replaceChildren(...items.map((t) => row(t, today)));
-    list.hidden = items.length === 0;
+    const table = $('table-' + name);
+    list.replaceChildren(...(asTable ? [] : items.map((t) => listRow(t, today))));
+    table.replaceChildren(...(asTable && items.length ? [el('table', { class: 'tasks' },
+      el('thead', {}, el('tr', {}, COLUMNS.map(([label, hidden]) => el('th', { scope: 'col' }, hidden ? el('span', { class: 'sr' }, label) : label)))),
+      el('tbody', {}, items.flatMap((t) => tableRows(t, today))),
+    )] : []));
+    list.hidden = asTable || items.length === 0;
+    table.hidden = !asTable || items.length === 0;
     $('empty-' + name).hidden = items.length > 0;
     $('n-' + name).textContent = items.length ? String(items.length) : '';
   }
@@ -576,7 +655,10 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     const form = $('add');
     form.hidden = state.closed;
     for (const c of form.elements) c.disabled = state.readOnly || !db;
-    for (const id of ['sec-today', 'sec-next', 'sec-waiting', 'sec-done', 'sec-days', 'sec-settings']) $(id).hidden = state.closed;
+    for (const id of ['sec-today', 'sec-next', 'sec-waiting', 'sec-done', 'sec-days', 'sec-settings', 'view-toggle']) $(id).hidden = state.closed;
+    document.querySelector('.wrap').classList.toggle('is-table', ui.layout === 'table');
+    $('view-list').setAttribute('aria-pressed', String(ui.layout === 'list'));
+    $('view-table').setAttribute('aria-pressed', String(ui.layout === 'table'));
     for (const c of $('settings-form').elements) c.disabled = state.readOnly || !db;
     const ticketInput = $('set-ticket');
     if (!ui.settingsTyped && document.activeElement !== ticketInput) ticketInput.value = state.settings.ticketUrl || '';
@@ -611,6 +693,16 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     $('add-today').checked = false;
     $('add-title').focus();
   });
+
+  // The layout is a per-device preference, so it lives in this browser only.
+  try { if (localStorage.getItem('organizer-layout') === 'table') ui.layout = 'table'; } catch (e) { /* storage blocked: start in list */ }
+  for (const [id, value] of [['view-list', 'list'], ['view-table', 'table']]) {
+    $(id).addEventListener('click', () => {
+      ui.layout = value;
+      try { localStorage.setItem('organizer-layout', value); } catch (e) { /* not remembered, still switches */ }
+      render();
+    });
+  }
 
   $('set-ticket').addEventListener('input', () => { ui.settingsTyped = true; $('set-msg').textContent = ''; });
   $('settings-form').addEventListener('submit', (e) => {
