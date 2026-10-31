@@ -122,15 +122,19 @@ Also do this unprompted during any work: when you notice an unrelated bug, refac
 
 ## done / checkpoint
 
-1. If you know of failing tests, a broken build or unfinished steps for the current item, say so and ask whether to checkpoint anyway.
-2. Update PROGRESS.md:
-   - Move the item from Current focus to the top of Done as one line with its outcome. Set Current focus to (none).
+1. Offer to run the tests. Find the project's test command: what `CLAUDE.md` or the README says first, else the usual places (`package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, `go.mod`, the runner for a `tests/` folder).
+   - If the tests already ran and passed in this session after the last change, skip the offer and say so in a few words.
+   - If you found a command, ask in one line, naming it: "Run `npm test` before checkpointing?" On a yes, run it, in the background if it's likely to take more than about 2 minutes. Don't run it without a yes.
+   - If you found none, or the item changed nothing testable (only docs or PROGRESS.md), skip the offer without mentioning it.
+2. If the tests fail, or you know of a broken build or unfinished steps for the current item, say so and ask whether to checkpoint anyway. Don't fix failures inside `done`: if the user wants them fixed first, leave the item in Current focus.
+3. Update PROGRESS.md:
+   - Move the item from Current focus to the top of Done as one line with its outcome, noting "tests pass" only if they ran in step 1. Set Current focus to (none).
    - Add any decisions made during the item to Decisions.
    - Add anything surprising that would trip up future work to Gotchas.
    - Trim Done to 10 entries.
    - If the file is still over about 60 lines, propose cuts (see Trimming).
-3. If Parking lot has entries, list them briefly and ask which, if any, to promote to Next, leaving out any you just proposed cutting. Move only what the user picks.
-4. Once any questions from steps 2 and 3 are answered, suggest committing (don't commit unless asked). Then tell the user to run `/clear` and `/project-progress next` to start the next item with a fresh context. You can't run `/clear` yourself.
+4. If Parking lot has entries, list them briefly and ask which, if any, to promote to Next, leaving out any you just proposed cutting. Move only what the user picks.
+5. Once any questions from steps 3 and 4 are answered, suggest committing (don't commit unless asked). Then tell the user to run `/clear` and `/project-progress next` to start the next item with a fresh context. You can't run `/clear` yourself.
 
 Also offer this unprompted: when the current item's work looks finished, such as its plan's steps being done and its checks passing, say so in one line and offer to checkpoint it. Don't checkpoint without a yes.
 

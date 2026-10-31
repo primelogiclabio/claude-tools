@@ -21,7 +21,7 @@ The skill has six modes:
 | `/project-progress add <item>` | Adds an item to Next, at the bottom unless you say where. Also reorders or drops Next items when you ask. |
 | `/project-progress next` | Moves the next item into Current focus and starts a plan for just that item. Nothing is built until you approve the plan. If Next is empty, offers the parked ideas or asks what to work on. |
 | `/project-progress park <idea>` | Writes a side idea to the Parking lot and goes back to the current item. Claude also parks unrelated bugs or refactors it notices on its own. |
-| `/project-progress done` | Records the item in Done, adds decisions and gotchas, proposes cuts if the file is too long, asks which parked items to promote, then tells you to `/clear` and start the next one. When an item's work looks finished, Claude offers this on its own. |
+| `/project-progress done` | Offers to run the project's tests first, when it finds a test command and they haven't passed since the last change. Then records the item in Done, adds decisions and gotchas, proposes cuts if the file is too long, asks which parked items to promote, then tells you to `/clear` and start the next one. When an item's work looks finished, Claude offers this on its own. |
 | `/project-progress` | Shows the current focus, the next three items and how many are parked, and flags a file that's grown too long. |
 
 The loop it supports: **add** work as you plan it, **next** (plan) → build →
