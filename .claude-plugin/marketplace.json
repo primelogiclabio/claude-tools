@@ -26,7 +26,7 @@
     {
       "name": "generate-docs",
       "source": "./skills/generate-docs",
-      "description": "Skill: generate project or research documentation as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, offline)",
+      "description": "Skill: generate project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, offline)",
       "category": "skill"
     },
     {

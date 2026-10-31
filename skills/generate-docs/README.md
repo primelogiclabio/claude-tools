@@ -2,14 +2,23 @@
 
 A skill that generates **project documentation** and **research
 documentation**, such as architecture overviews, stack and tool comparisons,
-decision docs and research write-ups. Each doc is two files that share one
-name:
+decision docs and research write-ups, plus step-by-step **guides** (how-tos,
+setup steps, runbooks). Each doc is two files that share one name:
 
 - **`topic.html`**: self-contained, with inline CSS and JS and no network
   calls, so it opens offline by double-clicking. It has a light/dark toggle and
   a section menu that highlights the section you're reading: a left pane on
   wide screens, a drop-down from a top bar on narrow ones. Sections with
   several parts get nested links to each part.
+
+  Guides can have **fill-in fields** for values only you know, such as a
+  version, port or host name. You type each value once, in the step that
+  first needs it, and every command and paste-ready block that uses it updates.
+  Every code block has a Copy button, which sends you to the right field if a
+  value is missing or in the wrong format. A choice field (Windows or Linux,
+  say) shows only the matching commands. Values are remembered in your browser
+  unless you turn that off, and Reset clears them. Passwords and keys are
+  never fields.
 - **`topic.md`**: the same content in plain Markdown, for git, a wiki or a
   chat paste.
 
@@ -115,5 +124,6 @@ write-up in a new session.
 generate-docs/
 ├── .claude-plugin/plugin.json   lets this folder install as a plugin
 ├── SKILL.md                     the skill: frontmatter + instructions
+├── guide-fields.md              starting code for fill-in fields, read only when a doc has them
 └── README.md                    this file
 ```
