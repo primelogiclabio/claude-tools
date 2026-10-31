@@ -1,6 +1,6 @@
 {
   "name": "project-progress",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "license": "MIT",
   "author": { "name": "prime" },
   "description": "Skill: track long project work in PROGRESS.md: one item at a time with a plan, park side ideas instead of chasing them, checkpoint before /clear",

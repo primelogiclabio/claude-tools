@@ -16,11 +16,11 @@ The skill has six modes:
 
 | Command | What it does |
 | --- | --- |
-| `/project-progress init` | Creates `PROGRESS.md` and adds the import and workflow rules to `CLAUDE.md`. Asks whether to commit the file or keep it personal (through `CLAUDE.local.md`, with both files listed in the repo's local `.git/info/exclude` so your `.gitignore` stays untouched). Never overwrites an existing file. |
+| `/project-progress init` | Creates `PROGRESS.md` and adds the import and workflow rules to `CLAUDE.md`. Asks whether to commit the file or keep it personal (through `CLAUDE.local.md`, with both files listed in the repo's local `.git/info/exclude` so your `.gitignore` stays untouched). Never overwrites an existing `PROGRESS.md`. In a repo set up with an older version, it offers to update the workflow rules. |
 | `/project-progress add <item>` | Adds an item to Next, at the bottom unless you say where. Also reorders or drops Next items when you ask. |
 | `/project-progress next` | Moves the next item into Current focus and starts a plan for just that item. Nothing is built until you approve the plan. If Next is empty, offers the parked ideas or asks what to work on. |
 | `/project-progress park <idea>` | Writes a side idea to the Parking lot and goes back to the current item. Claude also parks unrelated bugs or refactors it notices on its own. |
-| `/project-progress done` | Records the item in Done, adds decisions and gotchas, proposes cuts if the file is too long, asks which parked items to promote, then tells you to `/clear` and start the next one. |
+| `/project-progress done` | Records the item in Done, adds decisions and gotchas, proposes cuts if the file is too long, asks which parked items to promote, then tells you to `/clear` and start the next one. When an item's work looks finished, Claude offers this on its own. |
 | `/project-progress` | Shows the current focus, the next three items and how many are parked, and flags a file that's grown too long. |
 
 The loop it supports: **add** work as you plan it, **next** (plan) → build →
@@ -30,18 +30,33 @@ The full instructions are in [`SKILL.md`](SKILL.md).
 
 ## When it runs
 
-Claude picks it up when you ask to set up progress tracking, ask to add an item
-to `PROGRESS.md`, ask what's next, say to move on to the next item, ask where
-you are, say "park this", or say an item is done or ask to checkpoint.
-To call it directly, type `/project-progress` and choose it from the list. When
-it's installed as a plugin, its full name is
+You don't need to name the modes. Once `init` has run, the workflow rules load
+in every session of that repo, so plain wording works:
+
+| You say | What happens |
+| --- | --- |
+| "what's next?", "what's the next task?" | Claude shows the current focus and the next item, and offers to start it |
+| "move on", "start the next item" | `next`: the item moves into Current focus and Claude plans it |
+| "done", "that's finished" | `done`: the item is checkpointed |
+| "park this", "add X to next", "where are we" | `park`, `add`, status |
+
+In a repo with `PROGRESS.md`, "task" and "item" mean its entries unless you name
+another list. Claude also offers a checkpoint by itself when an item's work
+looks finished.
+
+The same wording picks the skill up in other repos too, as does asking to set up
+progress tracking. To call it directly, type `/project-progress` and choose it
+from the list. When it's installed as a plugin, its full name is
 `/project-progress:project-progress`.
+
+**Repos set up with an older version** keep their old workflow rules. Run
+`/project-progress init` again: it leaves `PROGRESS.md` alone, shows how the
+rules changed, and replaces them if you say yes.
 
 It's not the same as the [project-tracker](../project-tracker/README.md)
 mod. project-tracker is a task list in a pane; project-progress is a
 focus-and-checkpoint workflow that also records decisions and parked ideas. They
-can be used together; if you ask about "tasks" and both exist, Claude asks which
-one you mean.
+can be used together: name project-tracker's list when you mean it.
 
 ## Where it works
 
