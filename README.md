@@ -33,7 +33,7 @@ claude-tools/
 | Name | Kind | What it does |
 | --- | --- | --- |
 | [project-tracker](plugins/project-tracker/README.md) | mod | Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
-| [context-bar](plugins/context-bar/README.md) | mod | Context card above the prompt: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
+| [context-bar](plugins/context-bar/README.md) | mod | Context card above the prompt, off until `/context-bar show` or the `showBand` option: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
 | [resource-monitor](plugins/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
 | [generate-docs](plugins/generate-docs/README.md) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
 | [workday-tracker](plugins/workday-tracker/README.md) | skill | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai: task types, required completion comments, optional ticket refs and status notes |
@@ -359,9 +359,10 @@ Nothing is installed. Repeat the flag to load more than one plugin.
 2. **project-tracker:** type `/tasks`. Where the pane appears depends on
    terminal width and layout; see its [README](plugins/project-tracker/README.md).
    `/tasks add Try the tracker` creates `<project>/.claude/tasks.md`.
-3. **context-bar:** the card appears above the prompt. The header and badge
-   fill in after the first response; `/context-bar` prints the full
-   breakdown.
+3. **context-bar:** nothing shows until you ask. `/context-bar show` draws
+   the card above the prompt for the session (the `showBand` option draws it
+   in every session); the header and badge fill in after the first response.
+   `/context-bar` prints the full breakdown.
 4. **resource-monitor:** the status line shows a readout such as
    `⚙ CPU 12% · 2.1 GB`; CPU appears after the second sample (5 s apart); `/resources` opens the pane.
 5. **generate-docs:** ask for a write-up, for example "write up an overview
