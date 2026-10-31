@@ -1,6 +1,7 @@
 {
   "name": "generate-docs",
   "version": "0.1.1",
+  "license": "MIT",
   "author": { "name": "prime" },
   "description": "Skill: generate project or research documentation as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, no network calls)",
   "skills": ["./"]

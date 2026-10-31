@@ -1,6 +1,7 @@
 {
   "name": "git-repo-creator",
   "version": "0.1.0",
+  "license": "MIT",
   "author": { "name": "prime" },
   "description": "Skill: put a project on git and GitHub, or audit and fix an existing repo: name, description, visibility, license, .gitignore, README, CI workflow, and lockdown for public repos",
   "skills": ["./"]

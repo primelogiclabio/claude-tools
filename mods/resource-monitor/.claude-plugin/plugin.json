@@ -1,6 +1,7 @@
 {
   "name": "resource-monitor",
   "version": "0.1.1",
+  "license": "MIT",
   "author": { "name": "prime" },
   "description": "CPU and memory of Claude Code and the processes it starts: a Resources pane with sparklines, a status-line readout, warning colours, and a tool so Claude can answer about it",
   "userConfig": {
