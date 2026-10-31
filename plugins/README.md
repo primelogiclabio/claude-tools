@@ -10,7 +10,7 @@ repo's marketplace on its own.
 | [context-bar](context-bar/README.md) | mod | Context card above the prompt: the window as one bar split by `/context` category, plus session tokens, cost and rate limits |
 | [resource-monitor](resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: pane, status line, warning colours and a `resources` tool |
 | [generate-docs](generate-docs/README.md) | skill | Generates project or research documentation as self-contained HTML + Markdown |
-| [workday-tracker](workday-tracker/README.md) | skill | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai |
+| [daily-organizer](daily-organizer/README.md) | skill | A personal daily organizer artifact on claude.ai: Today, Up Next, Waiting On and Done in the artifact's database, with a morning plan and an end-of-day summary |
 | [git-repo-creator](git-repo-creator/README.md) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, visibility, license, workflow, lockdown for public repos |
 | [project-progress](project-progress/README.md) | skill | Tracks long project work in `PROGRESS.md`: one item at a time with a plan, side ideas parked, a checkpoint before each `/clear` |
 

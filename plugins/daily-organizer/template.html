@@ -1,0 +1,562 @@
+<title>Daily Organizer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one 760px column like a daybook page: the dated header, Today, the add bar, the three lists, then the day log. */
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #1b2230;
+  --muted: #5a6476;
+  --line: #dce1e9;
+  --accent: #2c52b0;
+  --today: #a3620b;
+  --idea: #7146ad;
+  --done: #2a7649;
+  --danger: #b0281f;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151c; --surface: #19202a; --ink: #e5e9f0; --muted: #9aa4b5; --line: #2a3240;
+    --accent: #8eaaff; --today: #e3a748; --idea: #c3a2f2; --done: #74c795; --danger: #f08a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #19202a; --ink: #e5e9f0; --muted: #9aa4b5; --line: #2a3240;
+  --accent: #8eaaff; --today: #e3a748; --idea: #c3a2f2; --done: #74c795; --danger: #f08a80;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
+.wrap {
+  max-width: 760px; margin: 0 auto; display: grid; gap: 28px;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.day { display: grid; gap: 2px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 6vw, 38px); line-height: 1.1; text-wrap: balance; }
+.counts { margin: 4px 0 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.notice { margin: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--muted); }
+.notice.is-error { border-color: var(--danger); color: var(--danger); }
+
+section { display: grid; gap: 8px; min-width: 0; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h2 .n { font-family: var(--font-mono); font-weight: 400; margin-left: 6px; font-variant-numeric: tabular-nums; }
+#sec-today h2 { color: var(--today); }
+.empty { margin: 0; color: var(--muted); font-size: 14px; }
+
+.list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+#sec-today .list { border-top-color: var(--today); }
+.task { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.task input[type="checkbox"] { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--done); cursor: pointer; }
+.body { min-width: 0; display: grid; gap: 3px; }
+.title-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.title { overflow-wrap: anywhere; }
+.is-done .title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.tag { font-family: var(--font-mono); font-size: 11px; padding: 1px 6px; border-radius: 3px; border: 1px solid currentColor; line-height: 1.4; white-space: nowrap; }
+.tag-task { color: var(--accent); }
+.tag-idea { color: var(--idea); }
+.tag-follow-up { color: var(--today); }
+.ticket { font-family: var(--font-mono); font-size: 12px; color: var(--accent); max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stale { color: var(--today); font-weight: 500; }
+.note { font-size: 14px; color: var(--ink); overflow-wrap: anywhere; }
+.note::before { content: "Status: "; color: var(--muted); }
+.comment { font-size: 14px; color: var(--done); overflow-wrap: anywhere; }
+.comment::before { content: "Done: "; color: var(--muted); }
+
+.actions { display: flex; gap: 2px; align-items: center; }
+.icon-btn, .link-btn { background: none; border: 0; padding: 4px 6px; border-radius: 4px; cursor: pointer; color: var(--muted); }
+.icon-btn:hover, .link-btn:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.star[aria-pressed="true"] { color: var(--today); }
+.star { font-size: 17px; line-height: 1; }
+.row-tools { display: flex; flex-wrap: wrap; gap: 0 2px; margin-left: -6px; }
+.link-btn { font-size: 13px; }
+.link-btn.danger { color: var(--danger); }
+
+.inline { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.inline label { width: 100%; font-size: 13px; color: var(--muted); }
+.inline input[type="text"] { flex: 1 1 220px; min-width: 0; }
+input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); }
+.btn { padding: 6px 12px; border-radius: 5px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 500; }
+.btn-danger { border-color: var(--danger); color: var(--danger); }
+.btn:disabled { opacity: .5; cursor: default; }
+
+.add { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.add #add-title { grid-column: 1 / -1; font-size: 16px; }
+.add .opt { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; align-items: center; }
+.add #add-ticket { flex: 1 1 180px; min-width: 0; font-family: var(--font-mono); font-size: 13px; }
+.add .check-label { display: flex; gap: 6px; align-items: center; font-size: 14px; color: var(--muted); }
+.add .btn-primary { grid-column: 1 / -1; justify-self: end; }
+
+.days { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.days details { border-bottom: 1px solid var(--line); padding: 8px 0; }
+.days summary { cursor: pointer; display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.days summary .d { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.days summary .s { color: var(--muted); font-size: 13px; }
+.days .day-body { display: grid; gap: 6px; padding: 8px 0 4px 20px; }
+.days ul { margin: 0; padding-left: 18px; }
+.days .summary-text { white-space: pre-wrap; margin: 0; overflow-wrap: anywhere; }
+.days .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+
+@media (max-width: 480px) {
+  .add { grid-template-columns: 1fr 1fr; }
+  .task { grid-template-columns: auto 1fr; }
+  .actions { grid-column: 2; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="day">
+    <div class="eyebrow" id="week"></div>
+    <h1 id="date">Daily Organizer</h1>
+    <p class="counts" id="counts"></p>
+  </header>
+
+  <p class="notice" id="notice" role="status">Loading your tasks…</p>
+
+  <section id="sec-today" aria-labelledby="h-today">
+    <div class="section-head"><h2 id="h-today">Today<span class="n" id="n-today"></span></h2></div>
+    <ul class="list" id="list-today"></ul>
+    <p class="empty" id="empty-today">Nothing planned for today. Star a task to add it, or ask Claude to plan your day.</p>
+  </section>
+
+  <form class="add" id="add" autocomplete="off">
+    <input type="text" id="add-title" placeholder="Add a task" aria-label="Task" maxlength="300" required>
+    <div class="opt">
+      <select id="add-type" aria-label="Type">
+        <option value="task">Task</option>
+        <option value="idea">Idea</option>
+        <option value="follow-up">Follow-up</option>
+      </select>
+      <select id="add-status" aria-label="List">
+        <option value="next">Up Next</option>
+        <option value="waiting">Waiting On</option>
+      </select>
+      <input type="text" id="add-ticket" placeholder="Ticket (optional), e.g. OPS-142 or a link" aria-label="Ticket" maxlength="500">
+      <label class="check-label"><input type="checkbox" id="add-today"> Today</label>
+    </div>
+    <button class="btn btn-primary" type="submit" id="add-submit">Add task</button>
+  </form>
+
+  <section id="sec-next" aria-labelledby="h-next">
+    <div class="section-head"><h2 id="h-next">Up Next<span class="n" id="n-next"></span></h2></div>
+    <ul class="list" id="list-next"></ul>
+    <p class="empty" id="empty-next">Nothing up next.</p>
+  </section>
+
+  <section id="sec-waiting" aria-labelledby="h-waiting">
+    <div class="section-head"><h2 id="h-waiting">Waiting On<span class="n" id="n-waiting"></span></h2></div>
+    <ul class="list" id="list-waiting"></ul>
+    <p class="empty" id="empty-waiting">Nothing waiting on anyone.</p>
+  </section>
+
+  <section id="sec-done" aria-labelledby="h-done">
+    <div class="section-head">
+      <h2 id="h-done">Done<span class="n" id="n-done"></span></h2>
+      <div id="clear-done"></div>
+    </div>
+    <ul class="list" id="list-done"></ul>
+    <p class="empty" id="empty-done">Finished tasks land here with their completion comment.</p>
+  </section>
+
+  <section id="sec-days" aria-labelledby="h-days">
+    <div class="section-head"><h2 id="h-days">Days</h2></div>
+    <div class="days" id="days"></div>
+    <p class="empty" id="empty-days">Each day's plan and end-of-day summary are kept here.</p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const state = { tasks: [], days: [], confirmed: false, slow: false, error: '', note: '', readOnly: false, closed: false };
+  const ui = { completing: null, noting: null, removing: null, clearing: false, drafts: {} };
+  const chains = new Map();
+  let db = null;
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const dayKey = (d = new Date()) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const midnight = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  function isoWeek(d) {
+    const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+    const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+    return Math.ceil(((t - y0) / 86400000 + 1) / 7);
+  }
+
+  function daysSince(iso) {
+    const a = iso ? new Date(iso) : null;
+    if (!a || isNaN(a)) return null;
+    return Math.round((midnight(new Date()) - midnight(a)) / 86400000);
+  }
+
+  function ago(n, verb) {
+    if (n === null) return '';
+    if (n <= 0) return verb + ' today';
+    if (n === 1) return verb + ' yesterday';
+    return verb + ' ' + n + ' days ago';
+  }
+
+  function dayLabel(key) {
+    const [y, m, d] = key.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    if (isNaN(date)) return key;
+    return date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function el(tag, attrs, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === 'class') n.className = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? '' : String(v));
+    }
+    for (const c of kids.flat()) if (c !== null && c !== undefined && c !== false) n.append(c);
+    return n;
+  }
+
+  // Writes: one at a time per document, one quiet retry when the store is briefly away.
+  function write(id, op) {
+    const run = () => op().catch((e) => {
+      if (e && e.code === 'unavailable') return new Promise((r) => setTimeout(r, 300 + Math.random() * 500)).then(op);
+      throw e;
+    });
+    const next = (chains.get(id) || Promise.resolve()).then(run).catch(fail);
+    chains.set(id, next);
+    return next;
+  }
+
+  function fail(e) {
+    const code = e && e.code;
+    if (code === 'invalid_argument') { state.readOnly = true; state.error = 'You can see this organizer but not change it.'; }
+    else if (code === 'quota_exceeded') state.error = 'The organizer is full. Clear done tasks to make room.';
+    else if (code === 'revoked') { state.readOnly = true; state.error = 'Access to this organizer changed. Reload the page to continue.'; }
+    else state.error = "That change didn't save. Try it again.";
+    render();
+  }
+
+  const taskRef = (id) => db.collection('tasks').doc(id);
+  const patch = (id, fields) => write(id, () => taskRef(id).update(fields));
+  const remove = (id) => write(id, () => taskRef(id).delete());
+
+  function complete(t) {
+    const comment = (ui.drafts['done-' + t.id] || '').trim();
+    if (!comment) return;
+    ui.completing = null;
+    delete ui.drafts['done-' + t.id];
+    patch(t.id, { status: 'done', comment, doneAt: new Date().toISOString() });
+  }
+
+  function reopen(t) {
+    const body = { ...t };
+    delete body.id; delete body.comment; delete body.doneAt;
+    body.status = 'next';
+    write(t.id, () => taskRef(t.id).set(body));
+  }
+
+  function saveNote(t) {
+    const note = (ui.drafts['note-' + t.id] || '').trim();
+    ui.noting = null;
+    delete ui.drafts['note-' + t.id];
+    if (note !== (t.note || '')) patch(t.id, { note: note || null });
+    else render();
+  }
+
+  function draftInput(key, attrs, onEnter) {
+    return el('input', {
+      type: 'text', id: key, value: ui.drafts[key] ?? '', ...attrs,
+      oninput: (e) => { ui.drafts[key] = e.target.value; const b = $(key + '-save'); if (b && attrs.required) b.disabled = !e.target.value.trim(); },
+      onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); onEnter(); } if (e.key === 'Escape') { ui.completing = ui.noting = null; render(); } },
+    });
+  }
+
+  function ticketNode(tk) {
+    if (/^https?:\/\//i.test(tk)) {
+      let label = tk;
+      try {
+        const u = new URL(tk);
+        const key = u.pathname.match(/[A-Z][A-Z0-9]+-\d+/);
+        label = key ? key[0] : u.hostname.replace(/^www\./, '') + u.pathname.replace(/\/$/, '');
+      } catch (e) { /* keep the raw text */ }
+      return el('a', { class: 'ticket', href: tk, target: '_blank', rel: 'noopener noreferrer', title: tk }, label);
+    }
+    return el('span', { class: 'ticket', title: tk }, tk);
+  }
+
+  function row(t, today) {
+    const done = t.status === 'done';
+    const planned = t.today === today;
+    const editable = !state.readOnly;
+    const typeName = t.type === 'idea' || t.type === 'follow-up' ? t.type : 'task';
+    const added = daysSince(t.created);
+    const waitingLong = t.status === 'waiting' && added !== null && added >= 3;
+
+    const check = el('input', {
+      type: 'checkbox', id: 'chk-' + t.id, checked: done, disabled: !editable,
+      'aria-label': (done ? 'Reopen: ' : 'Complete: ') + (t.title || ''),
+      onchange: (e) => {
+        if (done) { reopen(t); return; }
+        e.target.checked = false;
+        ui.completing = t.id; ui.noting = ui.removing = null;
+        render();
+        const f = $('done-' + t.id); if (f) f.focus();
+      },
+    });
+
+    const meta = el('div', { class: 'meta' },
+      el('span', {}, ago(added, 'added')),
+      waitingLong ? el('span', { class: 'stale' }, 'waiting ' + added + ' days') : null,
+      done && t.doneAt ? el('span', {}, ago(daysSince(t.doneAt), 'done')) : null,
+    );
+
+    const tools = editable ? el('div', { class: 'row-tools' },
+      !done && t.status === 'next' ? el('button', { type: 'button', class: 'link-btn', onclick: () => patch(t.id, { status: 'waiting' }) }, 'Move to Waiting') : null,
+      !done && t.status === 'waiting' ? el('button', { type: 'button', class: 'link-btn', onclick: () => patch(t.id, { status: 'next' }) }, 'Move to Up Next') : null,
+      !done ? el('button', { type: 'button', class: 'link-btn', onclick: () => {
+        ui.noting = t.id; ui.completing = ui.removing = null; ui.drafts['note-' + t.id] = t.note || ''; render();
+        const f = $('note-' + t.id); if (f) f.focus();
+      } }, t.note ? 'Edit status' : 'Add status') : null,
+      el('button', { type: 'button', class: 'link-btn danger', onclick: () => { ui.removing = t.id; ui.completing = ui.noting = null; render(); } }, 'Remove'),
+    ) : null;
+
+    const body = el('div', { class: 'body' },
+      el('div', { class: 'title-line' },
+        el('span', { class: 'title' }, t.title || '(untitled)'),
+        el('span', { class: 'tag tag-' + typeName }, typeName),
+        t.ticket ? ticketNode(String(t.ticket)) : null,
+      ),
+      t.note && !done ? el('div', { class: 'note' }, t.note) : null,
+      done && t.comment ? el('div', { class: 'comment' }, t.comment) : null,
+      meta,
+      tools,
+    );
+
+    const star = !done && editable ? el('button', {
+      type: 'button', class: 'icon-btn star', 'aria-pressed': String(planned),
+      'aria-label': planned ? 'Take off today' : 'Plan for today', title: planned ? 'Take off today' : 'Plan for today',
+      onclick: () => patch(t.id, { today: planned ? null : today }),
+    }, planned ? '★' : '☆') : null;
+
+    const li = el('li', { class: 'task' + (done ? ' is-done' : '') }, check, body, el('div', { class: 'actions' }, star));
+
+    if (ui.completing === t.id) {
+      const key = 'done-' + t.id;
+      li.append(el('div', { class: 'inline' },
+        el('label', { for: key }, 'What got done or decided? A comment is needed to finish a task.'),
+        draftInput(key, { placeholder: 'e.g. Shipped the fix, PR merged', maxlength: 500, required: true }, () => complete(t)),
+        el('button', { type: 'button', class: 'btn btn-primary', id: key + '-save', disabled: !(ui.drafts[key] || '').trim(), onclick: () => complete(t) }, 'Mark done'),
+        el('button', { type: 'button', class: 'btn', onclick: () => { ui.completing = null; render(); } }, 'Cancel'),
+      ));
+    }
+    if (ui.noting === t.id) {
+      const key = 'note-' + t.id;
+      li.append(el('div', { class: 'inline' },
+        el('label', { for: key }, 'Status note, e.g. blocked on DNS change'),
+        draftInput(key, { maxlength: 300 }, () => saveNote(t)),
+        el('button', { type: 'button', class: 'btn btn-primary', onclick: () => saveNote(t) }, 'Save'),
+        el('button', { type: 'button', class: 'btn', onclick: () => { ui.noting = null; render(); } }, 'Cancel'),
+      ));
+    }
+    if (ui.removing === t.id) {
+      li.append(el('div', { class: 'inline' },
+        el('span', {}, 'Remove this task for good?'),
+        el('button', { type: 'button', class: 'btn btn-danger', onclick: () => { ui.removing = null; remove(t.id); } }, 'Remove'),
+        el('button', { type: 'button', class: 'btn', onclick: () => { ui.removing = null; render(); } }, 'Keep'),
+      ));
+    }
+    return li;
+  }
+
+  function fill(name, items, today) {
+    const list = $('list-' + name);
+    list.replaceChildren(...items.map((t) => row(t, today)));
+    list.hidden = items.length === 0;
+    $('empty-' + name).hidden = items.length > 0;
+    $('n-' + name).textContent = items.length ? String(items.length) : '';
+  }
+
+  function renderDays(byId) {
+    const box = $('days');
+    const days = [...state.days].sort((a, b) => (a.id < b.id ? 1 : -1));
+    box.replaceChildren(...days.map((d) => {
+      const plan = Array.isArray(d.plan) ? d.plan : [];
+      const bits = [plan.length + ' planned'];
+      if (d.summary) bits.push('summary');
+      return el('details', {},
+        el('summary', {}, el('span', { class: 'd' }, dayLabel(d.id)), el('span', { class: 's' }, bits.join(' · '))),
+        el('div', { class: 'day-body' },
+          d.planNote ? el('p', { class: 'summary-text' }, d.planNote) : null,
+          plan.length ? el('div', {}, el('div', { class: 'k' }, 'Plan'),
+            el('ul', {}, plan.map((id) => {
+              const t = byId.get(id);
+              return el('li', {}, t ? (t.title || '(untitled)') + (t.status === 'done' ? ' ✓' : '') : '(removed task)');
+            }))) : null,
+          d.summary ? el('div', {}, el('div', { class: 'k' }, 'End of day'), el('p', { class: 'summary-text' }, d.summary)) : null,
+        ),
+      );
+    }));
+    box.hidden = days.length === 0;
+    $('empty-days').hidden = days.length > 0;
+  }
+
+  function render() {
+    const now = new Date();
+    const today = dayKey(now);
+    $('week').textContent = 'Week ' + isoWeek(now) + ' · ' + today;
+    $('date').textContent = now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+
+    const notice = $('notice');
+    const msg = state.error || state.note || (state.slow ? "Your tasks can't be reached yet. What's shown may be out of date." : (!state.confirmed && !state.closed ? 'Loading your tasks…' : ''));
+    notice.textContent = msg;
+    notice.hidden = !msg;
+    notice.classList.toggle('is-error', Boolean(state.error));
+
+    const active = document.activeElement && document.activeElement.id;
+    const byId = new Map(state.tasks.map((t) => [t.id, t]));
+    const byCreated = (a, b) => String(a.created || '').localeCompare(String(b.created || ''));
+    const planned = state.tasks.filter((t) => t.today === today).sort((a, b) => (a.status === 'done') - (b.status === 'done') || byCreated(a, b));
+    const rest = state.tasks.filter((t) => t.today !== today);
+    const next = rest.filter((t) => t.status === 'next' || !t.status).sort(byCreated);
+    const waiting = rest.filter((t) => t.status === 'waiting').sort(byCreated);
+    const done = rest.filter((t) => t.status === 'done').sort((a, b) => String(b.doneAt || '').localeCompare(String(a.doneAt || '')));
+
+    fill('today', planned, today);
+    fill('next', next, today);
+    fill('waiting', waiting, today);
+    fill('done', done, today);
+    renderDays(byId);
+
+    const doneToday = state.tasks.filter((t) => t.status === 'done' && t.doneAt && dayKey(new Date(t.doneAt)) === today).length;
+    const openPlanned = planned.filter((t) => t.status !== 'done').length;
+    $('counts').textContent = state.closed ? '' :
+      [openPlanned + ' left today', next.length + ' up next', waiting.length + ' waiting', doneToday + ' done today'].join(' · ');
+
+    const clear = $('clear-done');
+    const allDone = state.tasks.filter((t) => t.status === 'done' && t.today !== today);
+    clear.replaceChildren();
+    if (!state.readOnly && allDone.length) {
+      if (ui.clearing) {
+        clear.append(el('span', { class: 'inline' },
+          el('span', {}, 'Remove ' + allDone.length + ' done ' + (allDone.length === 1 ? 'task' : 'tasks') + '?'),
+          el('button', { type: 'button', class: 'btn btn-danger', onclick: () => { ui.clearing = false; allDone.forEach((t) => remove(t.id)); } }, 'Clear'),
+          el('button', { type: 'button', class: 'btn', onclick: () => { ui.clearing = false; render(); } }, 'Keep'),
+        ));
+      } else {
+        clear.append(el('button', { type: 'button', class: 'link-btn', onclick: () => { ui.clearing = true; render(); } }, 'Clear done'));
+      }
+    }
+
+    const form = $('add');
+    form.hidden = state.closed;
+    for (const c of form.elements) c.disabled = state.readOnly || !db;
+    for (const id of ['sec-today', 'sec-next', 'sec-waiting', 'sec-done', 'sec-days']) $(id).hidden = state.closed;
+
+    if (active) {
+      const f = $(active);
+      if (f && f !== document.activeElement) {
+        f.focus();
+        if (typeof f.value === 'string' && f.setSelectionRange) { try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) { /* not a text field */ } }
+      }
+    }
+  }
+
+  $('add').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!db || state.readOnly) return;
+    const title = $('add-title').value.trim();
+    if (!title) return;
+    const ticket = $('add-ticket').value.trim();
+    const body = {
+      title,
+      type: $('add-type').value,
+      status: $('add-status').value,
+      created: new Date().toISOString(),
+    };
+    if (ticket) body.ticket = ticket;
+    if ($('add-today').checked) body.today = dayKey();
+    const ref = db.collection('tasks').doc();
+    write(ref.id, () => ref.set(body));
+    $('add-title').value = '';
+    $('add-ticket').value = '';
+    $('add-today').checked = false;
+    $('add-title').focus();
+  });
+
+  async function boot() {
+    render();
+    const claude = window.claude;
+    if (!claude || typeof claude.use !== 'function') {
+      state.closed = true;
+      state.note = 'Open this organizer on claude.ai to see your tasks.';
+      render();
+      return;
+    }
+    const timer = setTimeout(() => { state.slow = true; render(); }, 10000);
+    db = await claude.use('db');
+    if (!db) {
+      clearTimeout(timer);
+      state.closed = true;
+      state.note = 'Sign in to claude.ai to see your tasks.';
+      render();
+      return;
+    }
+    const user = await claude.use('user');
+    if (user) {
+      let canEdit = null;
+      try { canEdit = await user.canEdit(); } catch (e) { canEdit = null; }
+      if (canEdit === false) {
+        clearTimeout(timer);
+        state.closed = true;
+        state.note = 'This organizer is private to its owner.';
+        render();
+        return;
+      }
+    }
+    let gotTasks = false, gotDays = false;
+    const settle = (meta) => {
+      if (gotTasks && gotDays && meta && !meta.fromCache) { state.confirmed = true; state.slow = false; clearTimeout(timer); }
+    };
+    const lost = (e) => {
+      clearTimeout(timer);
+      state.confirmed = true;
+      state.slow = false;
+      state.error = e && e.code === 'revoked' ? 'Access to this organizer changed. Reload the page to continue.' : "Your tasks can't be loaded right now. Reload the page to try again.";
+      render();
+    };
+    db.collection('tasks').onSnapshot((snap) => {
+      state.tasks = snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+      if (!snap.metadata.fromCache) gotTasks = true;
+      settle(snap.metadata);
+      render();
+    }, lost);
+    db.collection('days').onSnapshot((snap) => {
+      state.days = snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+      if (!snap.metadata.fromCache) gotDays = true;
+      settle(snap.metadata);
+      render();
+    }, lost);
+  }
+
+  let shownDay = dayKey();
+  setInterval(() => { if (dayKey() !== shownDay) { shownDay = dayKey(); render(); } }, 60000);
+  boot();
+})();
+</script>
