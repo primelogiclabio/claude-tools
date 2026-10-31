@@ -110,6 +110,15 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
 .log .log-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
 .meta .link-btn { padding: 0 4px; margin-left: -4px; }
 
+#settings summary { cursor: pointer; }
+#settings summary h2 { display: inline; }
+.settings { display: grid; gap: 6px; padding-top: 10px; max-width: 560px; }
+.settings label { font-size: 14px; font-weight: 500; }
+.settings input { font-family: var(--font-mono); font-size: 13px; min-width: 0; }
+.settings .hint { margin: 0; font-size: 13px; color: var(--muted); }
+.settings .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.settings #set-msg { font-size: 13px; color: var(--muted); }
+
 .add { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .add #add-title { grid-column: 1 / -1; font-size: 16px; }
 .add .opt { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; align-items: center; }
@@ -194,12 +203,24 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     <div class="days" id="days"></div>
     <p class="empty" id="empty-days">Each day's plan and end-of-day summary are kept here.</p>
   </section>
+
+  <section id="sec-settings" aria-labelledby="h-settings">
+    <details id="settings">
+      <summary><h2 id="h-settings">Settings</h2></summary>
+      <form class="settings" id="settings-form" autocomplete="off">
+        <label for="set-ticket">Ticket link</label>
+        <input type="text" id="set-ticket" placeholder="https://yourcompany.atlassian.net/browse/" maxlength="500">
+        <p class="hint">Ticket keys such as OPS-142 link here. The key goes at the end, or wherever you write {key}. Tickets saved as full links work without this.</p>
+        <div class="row"><button class="btn btn-primary" type="submit">Save</button><span id="set-msg" role="status"></span></div>
+      </form>
+    </details>
+  </section>
 </div>
 
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const state = { tasks: [], days: [], confirmed: false, slow: false, error: '', note: '', readOnly: false, closed: false };
+  const state = { tasks: [], days: [], settings: {}, confirmed: false, slow: false, error: '', note: '', readOnly: false, closed: false };
   const ui = { completing: null, noting: null, removing: null, clearing: false, drafts: {}, logOpen: new Set(), logRemoving: null };
   const chains = new Map();
   let db = null;
@@ -335,7 +356,17 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     });
   }
 
+  // A ticket key links through the Ticket link setting: {key} marks where it goes, else it's appended.
+  function ticketHref(key) {
+    const base = typeof state.settings.ticketUrl === 'string' ? state.settings.ticketUrl.trim() : '';
+    if (!/^https?:\/\//i.test(base)) return null;
+    const k = encodeURIComponent(key.trim());
+    return base.includes('{key}') ? base.split('{key}').join(k) : base + k;
+  }
+
   function ticketNode(tk) {
+    const href = /^https?:\/\//i.test(tk) ? null : ticketHref(tk);
+    if (href) return el('a', { class: 'ticket', href, target: '_blank', rel: 'noopener noreferrer', title: href }, tk);
     if (/^https?:\/\//i.test(tk)) {
       let label = tk;
       try {
@@ -545,7 +576,10 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     const form = $('add');
     form.hidden = state.closed;
     for (const c of form.elements) c.disabled = state.readOnly || !db;
-    for (const id of ['sec-today', 'sec-next', 'sec-waiting', 'sec-done', 'sec-days']) $(id).hidden = state.closed;
+    for (const id of ['sec-today', 'sec-next', 'sec-waiting', 'sec-done', 'sec-days', 'sec-settings']) $(id).hidden = state.closed;
+    for (const c of $('settings-form').elements) c.disabled = state.readOnly || !db;
+    const ticketInput = $('set-ticket');
+    if (!ui.settingsTyped && document.activeElement !== ticketInput) ticketInput.value = state.settings.ticketUrl || '';
 
     if (active) {
       const f = $(active);
@@ -576,6 +610,21 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
     $('add-ticket').value = '';
     $('add-today').checked = false;
     $('add-title').focus();
+  });
+
+  $('set-ticket').addEventListener('input', () => { ui.settingsTyped = true; $('set-msg').textContent = ''; });
+  $('settings-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!db || state.readOnly) return;
+    const value = $('set-ticket').value.trim();
+    const msg = $('set-msg');
+    if (value && !/^https?:\/\//i.test(value)) { msg.textContent = 'Start the link with https://'; return; }
+    ui.settingsTyped = false;
+    state.error = '';
+    const body = { ...state.settings, ticketUrl: value || null };
+    write('settings-main', () => db.doc('settings/main').set(body)).then(() => {
+      if (!state.error) msg.textContent = value ? 'Saved. Ticket keys now link there.' : 'Saved. Ticket keys show as plain text.';
+    });
   });
 
   async function boot() {
@@ -631,6 +680,11 @@ input[type="text"], select { padding: 6px 8px; border: 1px solid var(--line); bo
       settle(snap.metadata);
       render();
     }, lost);
+    // Settings are optional: if they can't load, tickets just stay plain text.
+    db.doc('settings/main').onSnapshot((snap) => {
+      state.settings = snap.exists ? { ...snap.data() } : {};
+      render();
+    }, () => {});
   }
 
   let shownDay = dayKey();

@@ -28,7 +28,11 @@ artifact on claude.ai, in the artifact's own database:
   it isn't clear.
 - A task is marked done only with a short **completion comment** saying what
   was done or decided. The page asks for it too.
-- A task can have a **ticket**, such as a Jira or Linear key or a URL.
+- A task can have a **ticket**: a key such as `OPS-142`, or a full link. Full
+  links are always clickable. To make keys clickable too, set **Ticket link**
+  under **Settings** on the page, or tell Claude where your tickets live.
+  `https://yourcompany.atlassian.net/browse/` adds the key at the end;
+  `https://linear.app/yourteam/issue/{key}` puts it where `{key}` is.
 - A task can have a **status note** that changes over time, such as "blocked
   on DNS change".
 - A task can collect **comments**: dated entries with more detail on progress,

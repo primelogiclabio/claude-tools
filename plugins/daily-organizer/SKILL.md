@@ -31,6 +31,8 @@ The organizer is the artifact the user points at: by a link, by name ("my daily 
   - `planNote`, optional
   - `summary`, optional: the end-of-day summary
   - `closedAt`, optional
+- `settings/main`, one document:
+  - `ticketUrl`, optional: where ticket keys link. Either a URL with `{key}` where the key goes, or a prefix the key is added to the end of.
 
 Dates are the user's local date. New task ids are letters, digits and dashes, such as `t-` plus the current time in milliseconds.
 
@@ -50,7 +52,7 @@ Dates are the user's local date. New task ids are letters, digits and dashes, su
 
 1. **Type.** Every task is a `task`, `idea` or `follow-up`. Ask when the user doesn't say. Default to `task` only for a clearly actionable to-do. A stray thought is likely an `idea`, and something waiting on another person or system is likely a `follow-up`: ask rather than guess.
 2. **Completing needs a comment.** A task is done only with a short comment saying what was done or decided. If the user says "mark X done" without one, ask for it first. The page enforces the same rule.
-3. **Ticket, optional.** A Jira or Linear key or a URL, at creation or later. Never required.
+3. **Ticket, optional.** A ticket key such as `OPS-142`, or a full URL, at creation or later. Never required. A full URL always links. A key links once the organizer has a ticket link (below), and shows as plain text until then.
 4. **Status note, optional.** A short, changing note such as "blocked on DNS change", separate from the completion comment. Useful for anything that sits more than a day.
 5. **Comments, optional.** Dated entries with more detail on progress: what was tried, what was found, what's next. They build up over time, while the status note stays the one-line current state. When the user shares progress on a task, add it as a comment. Change the status note only when they say where the task stands now.
 
@@ -71,6 +73,13 @@ Never republish the page to change tasks. Its code changes only when the user as
 To finish a task, `update` `status: "done"`, `comment` and `doneAt` together. To reopen one, `update` `status: "next"` and remove the other two by writing each as `{"__delete__": true}`. Remove a status note or a `today` date the same way.
 
 To add a comment, `update` `log` with the task's existing entries plus the new one at the end: an `update` replaces the whole list, so leaving the old entries out deletes them.
+
+## Ticket link
+
+The page's **Settings** section has a **Ticket link** field, saved as `ticketUrl` in `settings/main`.
+- When the user says where their tickets live (for example "our Jira is acme.atlassian.net"), set it with `ArtifactData`: `https://acme.atlassian.net/browse/` adds the key at the end, and `https://linear.app/acme/issue/{key}` puts it where `{key}` is. Use `set` if the document doesn't exist yet, else `update` with its `if_version`.
+- Then show one example link built from a ticket they already have, so they can check it opens the right page.
+- If the user adds a ticket key while no ticket link is set, mention once that the page can link keys and ask where their tickets live. Don't ask again in the same conversation.
 
 ## Plan my day
 
