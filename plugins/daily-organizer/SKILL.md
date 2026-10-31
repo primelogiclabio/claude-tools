@@ -26,6 +26,8 @@ The organizer is the artifact the user points at: by a link, by name ("my daily 
   - `comment`: the completion comment, set when `status` becomes `done`
   - `doneAt`: ISO timestamp, set with `comment`
   - `today`, optional: the `YYYY-MM-DD` date the task is planned for
+  - `owner`, optional: the id of the team member the task is for. No `owner` means it's the user's own.
+- `team/<id>`, one document per team member: `name`, `created`
 - `days/<YYYY-MM-DD>`, one document per day:
   - `plan`: task ids
   - `planNote`, optional
@@ -56,7 +58,17 @@ Dates are the user's local date. New task ids are letters, digits and dashes, su
 4. **Status note, optional.** A short, changing note such as "blocked on DNS change", separate from the completion comment. Useful for anything that sits more than a day.
 5. **Comments, optional.** Dated entries with more detail on progress: what was tried, what was found, what's next. They build up over time, while the status note stays the one-line current state. When the user shares progress on a task, add it as a comment. Change the status note only when they say where the task stands now.
 
-A plain "add a task" with nothing else is a `task` in Up Next, with no ticket or note.
+6. **Owner.** A task is the user's own unless they name a team member ("add a follow-up for Sam to check the logs"). Then set `owner` to that member's id. If nobody on the team has that name, ask whether to add them first. Never guess an owner.
+
+A plain "add a task" with nothing else is the user's own `task` in Up Next, with no ticket or note.
+
+## Team
+
+The page's **Settings** section lists the team, and the add box and each task's **Assign** let the user pick who a task is for. The page can also show one person's tasks at a time.
+- To add someone, `set` `team/<new id>` with `name` and `created`. Ids are letters, digits and dashes, such as `m-` plus the time in milliseconds.
+- To assign a task, `update` its `owner`. To give it back to the user, write `owner` as `{"__delete__": true}`.
+- To remove someone, first give their tasks back to the user (one `batch` of `owner` deletes), then `delete` their `team` document. Say how many tasks came back.
+- When the user asks what someone has, `query` `tasks` where `owner` is that member's id.
 
 ## Changing tasks
 
@@ -84,8 +96,8 @@ The page's **Settings** section has a **Ticket link** field, saved as `ticketUrl
 ## Plan my day
 
 When the user asks to plan the day, or what to work on today:
-1. Read `tasks`, and the most recent `days` document before today.
-2. Pick out:
+1. Read `tasks`, `team`, and the most recent `days` document before today.
+2. Plan from the user's own tasks. A task assigned to someone else only comes in as a check-in ("ask Sam about the logs") when it's been open 3 or more days. Pick out:
    - tasks planned for an earlier day and not done (carry-overs);
    - follow-ups and Waiting On tasks added 3 or more days ago, which may need chasing;
    - anything whose ticket, status note or latest comment suggests urgency.
@@ -105,7 +117,7 @@ When the user asks to wrap up, close or summarize the day:
    - what got done today, with each completion comment;
    - progress on open tasks, from comments added today;
    - which of today's planned tasks are still open, so they carry over;
-   - what's waiting on others;
+   - what's waiting on others, including tasks assigned to team members, by person;
    - status notes that look stale.
 3. Show it, and ask whether anything else got done. Anything the user names as done still needs a comment.
 4. On the user's OK, write any completions, then `set` or `update` `days/<today>` with `summary` and `closedAt` (keep `plan` if it's there).

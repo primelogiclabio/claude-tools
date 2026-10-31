@@ -45,6 +45,23 @@ artifact on claude.ai, in the artifact's own database:
   stands now; the comments keep the history. Say "add a comment to the DNS
   task: …" or use **Add comment** under the task on the page.
 
+## Team
+
+Tasks are yours unless you say otherwise. To hand some out:
+
+- Add people under **Settings › Team** on the page, or tell Claude ("add Sam
+  to my team").
+- Pick who a task is for when you add it, with **Assign** on any task, or by
+  asking ("add a follow-up for Sam to check the logs"). The task then shows
+  "for Sam".
+- The menu next to **List | Table** shows **Everyone**, **Mine** or one
+  person's tasks. Each device remembers its choice.
+- Removing someone from the team gives their tasks back to you.
+
+"Plan my day" plans from your own tasks, and suggests checking in on tasks
+someone else has had for 3 days or more. "Wrap up my day" lists what's still
+with each person.
+
 ## Planning your day
 
 - **"Plan my day."** Claude looks at what's open, what was planned yesterday
