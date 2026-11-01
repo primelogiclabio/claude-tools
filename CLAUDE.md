@@ -4,7 +4,7 @@ This repo is the `claude-tools` plugin marketplace. Its plugins are moving out t
 
 ## Layout
 
-- `.claude-plugin/marketplace.json` lists every plugin. One that still lives here has `"source": "./plugins/<name>"`. One that has moved has `"source": {"source": "github", "repo": "primelogiclabio/claude-<name>"}`.
+- `.claude-plugin/marketplace.json` lists every plugin. One that still lives here has `"source": "./plugins/<name>"`. One that has moved has `"source": {"source": "url", "url": "https://github.com/primelogiclabio/claude-<name>.git"}`. Don't use a `"github"` source: Claude Code clones it over SSH, which fails for anyone without a GitHub SSH key.
 - `plugins/<name>/` holds the plugins that haven't moved yet. Start new plugins in their own repo, not here.
 - `README.md` covers the marketplace as a whole: what's in it, where each plugin works, and how to install. A plugin's own README lives with the plugin.
 
