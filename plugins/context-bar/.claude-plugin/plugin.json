@@ -1,18 +1,18 @@
 {
   "name": "context-bar",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "license": "MIT",
   "author": {
     "name": "prime"
   },
-  "description": "Context card above the prompt: the window as one bar segmented by /context category (system prompt, tools, MCP, agents, memory, skills, messages, free), a legend, a fill badge coloured by threshold, plus session tokens, cost and rate limits; /context-bar for the breakdown",
+  "description": "Context card above the prompt, off until /context-bar show or the showBand option: the window as one bar segmented by /context category (system prompt, tools, MCP, agents, memory, skills, messages, free), a legend, a fill badge coloured by threshold, plus session tokens, cost and rate limits; /context-bar for the breakdown",
   "types": "./types/index.d.ts",
   "userConfig": {
     "showBand": {
       "type": "boolean",
       "title": "Show the context card above the prompt",
-      "description": "Draw the context card above the prompt. /context-bar hide and /context-bar show change it for the session.",
-      "default": true
+      "description": "Draw the context card above the prompt in every session. Off: /context-bar show draws it for one session, and /context-bar hide removes it.",
+      "default": false
     },
     "showLegend": {
       "type": "boolean",
