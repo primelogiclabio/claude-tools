@@ -1,8 +1,10 @@
 # plugins
 
-Every installable item in this repo. Each one sits in its own folder and is a
-plugin: it has its own `.claude-plugin/plugin.json`, so it installs from this
-repo's marketplace on its own.
+The installable items that still live in this repo. Each one sits in its own
+folder and is a plugin: it has its own `.claude-plugin/plugin.json`, so it
+installs from this repo's marketplace on its own. Items that have moved to
+repos of their own, such as daily-organizer, are listed in the repo README's
+[Contents](../README.md#contents).
 
 | Plugin | Kind | What it does |
 | --- | --- | --- |
@@ -10,7 +12,6 @@ repo's marketplace on its own.
 | [context-bar](context-bar/README.md) | mod | Context card above the prompt: the window as one bar split by `/context` category, plus session tokens, cost and rate limits |
 | [resource-monitor](resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: pane, status line, warning colours and a `resources` tool |
 | [generate-docs](generate-docs/README.md) | skill | Generates project or research documentation as self-contained HTML + Markdown |
-| [daily-organizer](daily-organizer/README.md) | skill | A personal daily organizer artifact on claude.ai: Today, Up Next, Waiting On and Done in the artifact's database, with a morning plan and an end-of-day summary |
 | [git-repo-creator](git-repo-creator/README.md) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, visibility, license, workflow, lockdown for public repos |
 | [project-progress](project-progress/README.md) | skill + mod | Tracks long project work in `PROGRESS.md`: one item at a time with a plan, side ideas parked, a checkpoint before each `/clear`; a **Progress** pane shows where you are |
 
@@ -56,9 +57,9 @@ root, as a skill does, with `hooks/`, `tests/` and `types/` beside it for its
 pane; its `plugin.json` has `"skills": ["./"]` as well as the pane's
 `userConfig`.
 
-Every plugin also has a `README.md` for people browsing the repo. To add one,
-follow the steps in the [repo README](../README.md#working-on-this-repo), then
-check it:
+Every plugin also has a `README.md` for people browsing the repo. New plugins
+start in a repo of their own, with the same layout at its root; see the steps
+in the [repo README](../README.md#working-on-this-repo). To check one here:
 
 ```powershell
 claude plugin validate .\plugins\my-plugin

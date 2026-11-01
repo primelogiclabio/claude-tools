@@ -31,8 +31,8 @@
     },
     {
       "name": "daily-organizer",
-      "source": "./plugins/daily-organizer",
-      "description": "Skill: a personal daily organizer artifact on claude.ai (Today, Up Next, Waiting On, Done) with tasks in the artifact's database, task types, required completion comments, a morning plan and an end-of-day summary",
+      "source": { "source": "github", "repo": "primelogiclabio/claude-daily-organizer" },
+      "description": "A Claude skill that keeps your personal daily organizer on claude.ai: Today, Up Next, Waiting On and Done lists that you and Claude both update, with a morning plan and an end-of-day summary.",
       "category": "skill"
     },
     {
