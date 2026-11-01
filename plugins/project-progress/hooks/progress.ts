@@ -7,7 +7,7 @@
 //   - (none)
 //   ## Next
 //   - [ ] ...
-//   ## Done (last 10) / ## Decisions / ## Parking lot / ## Gotchas
+//   ## Done (last 10) / ## Decisions / ## Parking lot / ## Gotchas / ## Related
 //   - ...
 //
 // Unknown headings and the lines under them are skipped, not dropped from
@@ -22,6 +22,7 @@ export const SECTION_TITLE: Record<SectionKey, string> = {
   decisions: 'Decisions',
   parked: 'Parked',
   gotchas: 'Gotchas',
+  related: 'Related',
 }
 
 const HEADING = /^#{2,}\s+(.*)$/
@@ -38,12 +39,13 @@ function sectionOf(heading: string): SectionKey | null {
   if (name.startsWith('decisions')) return 'decisions'
   if (name.startsWith('parking lot') || name.startsWith('parked')) return 'parked'
   if (name.startsWith('gotchas')) return 'gotchas'
+  if (name.startsWith('related')) return 'related'
 
   return null
 }
 
 export function empty(): ProgressDoc {
-  return { goal: '', focus: [], next: [], done: [], decisions: [], parked: [], gotchas: [] }
+  return { goal: '', focus: [], next: [], done: [], decisions: [], parked: [], gotchas: [], related: [] }
 }
 
 export function parse(source: string): ProgressDoc {

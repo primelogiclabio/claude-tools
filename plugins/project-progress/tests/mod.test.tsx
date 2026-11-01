@@ -43,6 +43,9 @@ const FILE = [
   '## Gotchas',
   '- (none)',
   '',
+  '## Related',
+  '- `../site`: the app page',
+  '',
 ].join('\n')
 
 type World = {
@@ -258,6 +261,11 @@ describe('project-progress pane', () => {
 
       await ui.press({ key: 'fold-parked' })
       expect(await ui.find({ text: /Try dark mode/ })).toBeDefined()
+
+      expect(await ui.find({ text: /▸ Related 1/ })).toBeDefined()
+      expect(await ui.find({ text: /the app page/ })).toBeUndefined()
+      await ui.press({ key: 'fold-related' })
+      expect(await ui.find({ text: /the app page/ })).toBeDefined()
 
       await ui.press({ key: 'next' })
       await ui.press({ key: 'park' })

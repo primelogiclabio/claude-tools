@@ -33,7 +33,7 @@ The user usually won't name a mode. Map plain words like this:
 
 If PROGRESS.md doesn't exist and the mode isn't `init`, say so and offer `init`.
 
-Direct edits the user asks for in plain words, such as reordering Next, dropping a Next item or a parked idea, or rewording an entry, don't need a mode: make exactly that change and confirm in one line.
+Direct edits the user asks for in plain words, such as reordering Next, dropping a Next item or a parked idea, adding or dropping a Related entry, or rewording an entry, don't need a mode: make exactly that change and confirm in one line.
 
 ## PROGRESS.md format
 
@@ -61,6 +61,9 @@ Goal: ...
 
 ## Gotchas
 - ...
+
+## Related
+- `path`: what to update there, and when
 ```
 
 Rules for the file:
@@ -71,8 +74,9 @@ Rules for the file:
 - One line per entry. No code snippets, file dumps or stack traces.
 - Decisions are one line each, with the reason.
 - An empty section holds `- (none)`.
+- Related lists folders or repos outside PROGRESS.md's own that items also change, such as a docs site or a shared library. Give each one's path, relative to PROGRESS.md's folder when it sits nearby so it works on another machine with the same layout, and what to update there and when: `` `../site`: the plugins page; update it when a plugin is added or renamed``. A file without the section has none; add the section with its first entry.
 
-Trimming: Done is trimmed automatically, but the other sections only grow. When the file is still over about 60 lines, propose specific cuts in one message: merge related Decisions into one line, drop Gotchas that no longer apply, and point out Parking lot entries that look stale or already handled. Apply only the cuts the user approves. Next isn't trimmed: if it's what makes the file long, say so and leave it to the user. `done` and `status` both check for this.
+Trimming: Done is trimmed automatically, but the other sections only grow. When the file is still over about 60 lines, propose specific cuts in one message: merge related Decisions into one line, drop Gotchas that no longer apply, and point out Parking lot entries that look stale or already handled and Related entries no longer used. Apply only the cuts the user approves. Next isn't trimmed: if it's what makes the file long, say so and leave it to the user. `done` and `status` both check for this.
 
 ## Where PROGRESS.md lives
 
@@ -84,8 +88,8 @@ Trimming: Done is trimmed automatically, but the other sections only grow. When 
 ## init
 
 1. If a PROGRESS.md already applies (see Where PROGRESS.md lives), never overwrite it. Show its Current focus and Next, do only the workflow-block check at the end of step 4, and stop.
-2. Ask the user in one message for the current goal plus the first few Next items, and whether PROGRESS.md should be committed or kept personal. If the session started in a subfolder of a git repo, also ask whether to track the whole repo or just this folder. Outside git, don't ask about committing: there's nothing to commit to.
-3. Create PROGRESS.md from the template with their answers, in the folder Where PROGRESS.md lives gives.
+2. Ask the user in one message for the current goal plus the first few Next items, and whether PROGRESS.md should be committed or kept personal. If the session started in a subfolder of a git repo, also ask whether to track the whole repo or just this folder. Outside git, don't ask about committing: there's nothing to commit to. Also ask whether work here changes other folders or repos too, such as a docs site or a shared library, and what to update there; most projects have none.
+3. Create PROGRESS.md from the template with their answers, in the folder Where PROGRESS.md lives gives. List any other places under Related, or write `- (none)`.
 4. Wire it in, in the same folder. If committed, edit `CLAUDE.md`. If personal, use `CLAUDE.local.md` and add its folder's `PROGRESS.md` and `CLAUDE.local.md` to the repo's local exclude file (its path comes from `git rev-parse --git-path info/exclude`), skipping either one if the file already lists it. Write the entries as paths from the git root: `/PROGRESS.md` at the root, `/packages/api/PROGRESS.md` in a subfolder (`git rev-parse --show-prefix` gives the prefix). Don't use `.gitignore` for this: it is committed, so the personal choice would end up in everyone's copy. Outside git, use `CLAUDE.md` and skip the exclude. Create `CLAUDE.md` or `CLAUDE.local.md` if it is missing. Add this block once:
 
    ```markdown
@@ -116,7 +120,7 @@ Trimming: Done is trimmed automatically, but the other sections only grow. When 
 1. Read PROGRESS.md.
 2. If Current focus already has an item, ask whether to keep going with it or switch. On a switch, move the current item back to the top of Next with a short note on where it stopped.
 3. Take the named item, or the top unchecked item in Next, and move it to Current focus, without its checkbox. If Next has no unchecked items, say so: list any Parking lot entries and ask which to promote, or ask what to work on next if the Parking lot is empty too. Move a promoted entry out of the Parking lot, put the answer in Current focus, and continue from here.
-4. Enter plan mode and write a plan scoped to that item only. If you can't enter plan mode yourself, ask the user to switch to it.
+4. Enter plan mode and write a plan scoped to that item only. If the item affects a place listed under Related, include the changes there as steps that name the place. If the session can't reach that folder, ask the user to add it (`/add-dir <path>` in the CLI). If you can't enter plan mode yourself, ask the user to switch to it.
 5. Don't implement anything until the user approves the plan.
 
 ## park
@@ -129,11 +133,11 @@ Also do this unprompted during any work: when you notice an unrelated bug, refac
 
 ## done / checkpoint
 
-1. Offer to run the tests. Find the project's test command: what `CLAUDE.md` or the README says first, else the usual places (`package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, `go.mod`, the runner for a `tests/` folder). In a monorepo, offer the test command of the package or packages the item changed, not the whole repo's, unless the repo's docs say to run one command for everything.
+1. Offer to run the tests. Find the project's test command: what `CLAUDE.md` or the README says first, else the usual places (`package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, `go.mod`, the runner for a `tests/` folder). In a monorepo, offer the test command of the package or packages the item changed, not the whole repo's, unless the repo's docs say to run one command for everything. If the item changed a Related repo that has its own tests, offer those in the same question.
    - If the tests already ran and passed in this session after the last change, skip the offer and say so in a few words.
    - If you found a command, ask in one line, naming it: "Run `npm test` before checkpointing?" On a yes, run it, in the background if it's likely to take more than about 2 minutes. Don't run it without a yes.
    - If you found none, or the item changed nothing testable (only docs or PROGRESS.md), skip the offer without mentioning it.
-2. If the tests fail, or you know of a broken build or unfinished steps for the current item, say so and ask whether to checkpoint anyway. Don't fix failures inside `done`: if the user wants them fixed first, leave the item in Current focus.
+2. If the tests fail, or you know of a broken build or unfinished steps for the current item, including a Related place it should have changed but didn't or that you can't reach to check, say so and ask whether to checkpoint anyway. Don't fix failures inside `done`: if the user wants them fixed first, leave the item in Current focus.
 3. Update PROGRESS.md:
    - Move the item from Current focus to the top of Done as one line with its outcome, noting "tests pass" only if they ran in step 1. Set Current focus to (none).
    - Add any decisions made during the item to Decisions.
@@ -141,7 +145,7 @@ Also do this unprompted during any work: when you notice an unrelated bug, refac
    - Trim Done to 10 entries.
    - If the file is still over about 60 lines, propose cuts (see Trimming).
 4. If Parking lot has entries, list them briefly and ask which, if any, to promote to Next, leaving out any you just proposed cutting. Move only what the user picks.
-5. Once any questions from steps 3 and 4 are answered, suggest committing in a git repo (don't commit unless asked). Then tell the user to run `/clear` and `/project-progress next` to start the next item with a fresh context. You can't run `/clear` yourself.
+5. Once any questions from steps 3 and 4 are answered, suggest committing in a git repo, and in each Related repo the item changed (don't commit unless asked). Then tell the user to run `/clear` and `/project-progress next` to start the next item with a fresh context. You can't run `/clear` yourself.
 
 Also offer this unprompted: when the current item's work looks finished, such as its plan's steps being done and its checks passing, say so in one line and offer to checkpoint it. Don't checkpoint without a yes.
 
@@ -151,7 +155,7 @@ Read PROGRESS.md and report in a few lines: the current focus, the next three it
 
 ## Guardrails
 
-- Never remove Parking lot or Next items, or change Decisions, without the user's say.
+- Never remove Parking lot, Next or Related entries, or change Decisions, without the user's say.
 - Never start a second item while one is in Current focus.
 - PROGRESS.md stays where `init` created it. Never move it, or create a second one in the same folder tree, without asking.
 - In a repo with PROGRESS.md, "task" and "item" mean its entries unless the user names another list, such as the project-tracker mod's `.claude/tasks.md` or a personal tracker.

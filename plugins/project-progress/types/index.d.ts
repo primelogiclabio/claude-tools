@@ -1,5 +1,5 @@
 /** A PROGRESS.md section the pane draws, by the skill's headings. */
-export type SectionKey = 'focus' | 'next' | 'done' | 'decisions' | 'parked' | 'gotchas'
+export type SectionKey = 'focus' | 'next' | 'done' | 'decisions' | 'parked' | 'gotchas' | 'related'
 
 export type NextItem = {
   text: string
@@ -16,6 +16,8 @@ export type ProgressDoc = {
   decisions: string[]
   parked: string[]
   gotchas: string[]
+  /** Folders or repos outside PROGRESS.md's own that items also change. */
+  related: string[]
 }
 
 /** What the pane draws: where the file lives and what it holds. */

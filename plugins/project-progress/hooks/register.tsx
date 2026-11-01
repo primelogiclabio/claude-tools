@@ -8,7 +8,7 @@ const FILE = 'PROGRESS.md'
 // The skill in this same plugin, by the name a plugin install gives it.
 const SKILL = '/project-progress:project-progress'
 
-const FOLDS: readonly Exclude<SectionKey, 'focus' | 'next'>[] = ['parked', 'done', 'decisions', 'gotchas']
+const FOLDS: readonly Exclude<SectionKey, 'focus' | 'next'>[] = ['parked', 'done', 'decisions', 'gotchas', 'related']
 
 const HELP = [
   '/progress          show or hide the Progress pane',
