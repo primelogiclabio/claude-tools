@@ -6,6 +6,9 @@ const PLUGIN = 'context-bar'
 const START = { cwd: '/work/app', surface: 'terminal', isInteractive: true } as const
 const RUN = { origin: { kind: 'composer' }, presentation: { isFullscreen: true, columns: 160 } } as const
 
+// The card is off by default; the tests that draw it turn it on.
+const SHOWN = { options: { showBand: true } }
+
 const BAND_PROPS = {
   hasSurvey: false,
   isWorking: false,
@@ -111,7 +114,7 @@ describe('context-bar', () => {
   })
 
   for (const surface of ['terminal', 'desktop'] as const) {
-    test(`the card: header, a bar segmented by category, a legend (${surface})`, async ($, on) => {
+    test(`the card: header, a bar segmented by category, a legend (${surface})`, SHOWN, async ($, on) => {
       world(on, BUSY)
       mock.clock(on, { now: 0 })
       await $.session.start({ ...START, surface })
@@ -139,7 +142,7 @@ describe('context-bar', () => {
     })
   }
 
-  test('every category in the window gets a segment, even a tiny one', async ($, on) => {
+  test('every category in the window gets a segment, even a tiny one', SHOWN, async ($, on) => {
     world(on, BUSY)
     mock.clock(on, { now: 0 })
     await $.session.start(START)
@@ -157,7 +160,7 @@ describe('context-bar', () => {
     await ui.unmount()
   })
 
-  test('the badge colour follows the thresholds', { options: { warnAt: 15, dangerAt: 20 } }, async ($, on) => {
+  test('the badge colour follows the thresholds', { options: { ...SHOWN.options, warnAt: 15, dangerAt: 20 } }, async ($, on) => {
     world(on, BUSY)
     mock.clock(on, { now: 0 })
     await $.session.start(START)
@@ -166,7 +169,7 @@ describe('context-bar', () => {
     await ui.unmount()
   })
 
-  test('without a breakdown it falls back to a single fill bar', async ($, on) => {
+  test('without a breakdown it falls back to a single fill bar', SHOWN, async ($, on) => {
     world(on, BUSY, { hasBreakdown: false })
     mock.clock(on, { now: 0 })
     await $.session.start(START)
@@ -177,7 +180,7 @@ describe('context-bar', () => {
     await ui.unmount()
   })
 
-  test('a fresh session shows the window with no fill yet', async ($, on) => {
+  test('a fresh session shows the window with no fill yet', SHOWN, async ($, on) => {
     world(on, FRESH, { hasBreakdown: false })
     mock.clock(on, { now: 0 })
     await $.session.start(START)
@@ -187,7 +190,7 @@ describe('context-bar', () => {
     await ui.unmount()
   })
 
-  test('session.measure updates the badge and fetches a fresh breakdown', async ($, on) => {
+  test('session.measure updates the badge and fetches a fresh breakdown', SHOWN, async ($, on) => {
     const w = world(on, FRESH)
     mock.clock(on, { now: 0 })
     await $.session.start(START)
@@ -200,7 +203,7 @@ describe('context-bar', () => {
     await ui.unmount()
   })
 
-  test('a short band drops the usage line, then the legend', async ($, on) => {
+  test('a short band drops the usage line, then the legend', SHOWN, async ($, on) => {
     world(on, BUSY)
     mock.clock(on, { now: 0 })
     await $.session.start(START)
@@ -215,15 +218,31 @@ describe('context-bar', () => {
     await ui.unmount()
   })
 
-  test('/context-bar hide, show, compact and full', async ($, on) => {
+  test('the card is off until /context-bar show', async ($, on) => {
     world(on, BUSY)
     mock.clock(on, { now: 0 })
     await $.session.start(START)
+    let ui = await $.ui.mount(band('terminal'))
+    expect(await ui.find({ type: 'Text', text: '◆ context' })).toBeUndefined()
+    expect(await ui.find({ type: 'Box', key: 'engine-band' })).toBeDefined()
+    await ui.unmount()
+    expect((await $.command.run({ ...RUN, command: 'context-bar', args: 'show' })).text).toMatch(/shown/)
+    ui = await $.ui.mount(band('terminal'))
+    expect(await ui.find({ type: 'Text', text: '◆ context' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^ messages 186k/ })).toBeDefined()
+    await ui.unmount()
+  })
+
+  test('/context-bar hide, compact and full', async ($, on) => {
+    world(on, BUSY)
+    mock.clock(on, { now: 0 })
+    await $.session.start(START)
+    await $.command.run({ ...RUN, command: 'context-bar', args: 'show' })
     expect((await $.command.run({ ...RUN, command: 'context-bar', args: 'hide' })).text).toMatch(/hidden/)
     let ui = await $.ui.mount(band('terminal'))
     expect(await ui.find({ type: 'Text', text: '◆ context' })).toBeUndefined()
     await ui.unmount()
-    await $.command.run({ ...RUN, command: 'context-bar', args: 'show' })
+    // compact shows the card as well, or it would change nothing you can see.
     await $.command.run({ ...RUN, command: 'context-bar', args: 'compact' })
     ui = await $.ui.mount(band('terminal'))
     expect(await ui.find({ type: 'Text', text: '◆ context' })).toBeDefined()

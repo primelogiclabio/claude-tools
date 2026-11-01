@@ -14,7 +14,7 @@
     {
       "name": "context-bar",
       "source": "./plugins/context-bar",
-      "description": "Context card above the prompt: the window as one bar split by /context category, a legend, a threshold-coloured fill badge, plus session tokens, cost and rate limits",
+      "description": "Context card above the prompt, off until /context-bar show or the showBand option: the window as one bar split by /context category, a legend, a threshold-coloured fill badge, plus session tokens, cost and rate limits",
       "category": "mod"
     },
     {

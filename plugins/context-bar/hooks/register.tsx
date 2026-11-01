@@ -29,15 +29,15 @@ const totalsAtom = atom({ plugin: 'context-bar', key: 'totals' } as const, empty
 
 const HELP = [
   '/context-bar            the full breakdown as text: context by category, tokens this session, cost, rate limits',
-  '/context-bar hide       hide the card above the prompt for this session',
-  '/context-bar show       show it again',
-  '/context-bar compact    header and bar only, no legend',
-  '/context-bar full       header, bar and the legend',
+  '/context-bar show       show the card above the prompt for this session',
+  '/context-bar hide       hide it again',
+  '/context-bar compact    the card with header and bar only, no legend',
+  '/context-bar full       the card with header, bar and the legend',
 ].join('\n')
 
 // Module state: the engine's latest figures, fetched again after a reload.
 let snap: Snapshot = { window: 0, rateLimits: [] }
-let isBandShown = true
+let isBandShown = false
 let isLegendShown = true
 let warnAt = 60
 let dangerAt = 85
@@ -106,7 +106,7 @@ function pad(text: string, width: number): string {
 }
 
 export const register: Register = (on, options) => {
-  isBandShown = options.showBand !== false
+  isBandShown = options.showBand === true
   isLegendShown = options.showLegend !== false
   isCostShown = options.showCost !== false
   warnAt = num(options.warnAt, 60)
@@ -117,8 +117,8 @@ export const register: Register = (on, options) => {
     const started = await next(e)
     await $.command.register({
       name: COMMAND,
-      description: 'Context window by category, tokens this session, cost and rate limits; hide, show or compact the card',
-      argumentHint: '[hide|show|compact|full|help]',
+      description: 'Context window by category, tokens this session, cost and rate limits; show, hide or compact the card',
+      argumentHint: '[show|hide|compact|full|help]',
     })
     await refresh($).catch(() => undefined)
 
@@ -154,8 +154,8 @@ export const register: Register = (on, options) => {
     if (verb === 'help' || verb === '?') return { text: HELP }
     const toggles: Record<string, () => string> = {
       hide: () => ((isBandShown = false), 'Context card hidden for this session. /context-bar show brings it back.'),
-      show: () => ((isBandShown = true), 'Context card shown.'),
-      compact: () => ((isLegendShown = false), 'Context card: header and bar only. /context-bar full brings the legend back.'),
+      show: () => ((isBandShown = true), 'Context card shown for this session. /context-bar hide hides it.'),
+      compact: () => ((isLegendShown = false), (isBandShown = true), 'Context card: header and bar only. /context-bar full brings the legend back.'),
       full: () => ((isLegendShown = true), (isBandShown = true), 'Context card: header, bar and legend.'),
     }
     const toggle = toggles[verb]
