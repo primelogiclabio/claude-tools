@@ -9,8 +9,6 @@ desktop.ini
 node_modules/
 *.log
 
-# Personal Claude Code settings for working in this repo
+# Personal Claude Code files for working in this repo
 .claude/settings.local.json
-
-# Plugin-specific ignores live next to each plugin
-# (e.g. plugins/project-tracker/.gitignore for its generated types and tsconfig)
+.claude/worktrees/

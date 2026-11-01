@@ -5,7 +5,6 @@ This repo is the `claude-tools` plugin marketplace. Every plugin lives in a repo
 ## Layout
 
 - `.claude-plugin/marketplace.json` lists every plugin, each with `"source": {"source": "url", "url": "https://github.com/primelogiclabio/claude-<name>.git"}`. Don't use a `"github"` source: Claude Code clones it over SSH, which fails for anyone without a GitHub SSH key.
-- There is no `plugins/` folder any more. New plugins start in a repo of their own.
 - `README.md` covers the marketplace as a whole: what's in it, where each plugin works, and how to install. A plugin's own README lives in its repo.
 
 ## Plugin repos
@@ -18,9 +17,5 @@ This repo is the `claude-tools` plugin marketplace. Every plugin lives in a repo
 ## Adding a plugin
 
 1. Create its repo, `claude-<name>`, with the files above.
-2. Here, in one pull request: add its marketplace entry and a row in the README's Contents table, and mention it wherever the README lists plugins by kind.
+2. Here, in one pull request: add its marketplace entry and a row in the README's Contents table, mention it wherever the README lists plugins by kind, and run `claude plugin validate .`.
 3. After that merges, check that `claude plugin install <name> --marketplace primelogiclabio/claude-tools` installs it.
-
-## How the plugins moved out
-
-They used to live in `plugins/<name>/`. Each was moved with its history: `git subtree split --prefix=plugins/<name> -b <name>-split` (run where the folder is checked out), pushed as the new repo's `main`, with links that pointed into this repo changed to full GitHub URLs. Then one pull request here pointed the marketplace entries at the new repos and deleted the folders. project-tracker, deprecated in favour of project-progress, was dropped instead of moved.

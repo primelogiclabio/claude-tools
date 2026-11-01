@@ -420,18 +420,27 @@ Each plugin's own repo has its validate and test commands in its README's
 
 To add a mod or skill:
 
-1. Give it a repo of its own named `claude-<name>`, with a
-   `.claude-plugin/plugin.json`, a `README.md` and an MIT `LICENSE`. The
-   READMEs share one layout: what it does, when it runs, **Where it works**,
-   **Options** (mods), **Install** with both one-line commands, and
-   **Developing** with its validate (and test) commands.
-2. Add an entry to `.claude-plugin/marketplace.json`. Keep the entry `name`
-   the same as the `name` in the item's own `plugin.json`, write `source` as
-   `{"source": "url", "url": "https://github.com/primelogiclabio/claude-<name>.git"}`,
-   and use the same description. A `"github"` source clones over SSH and
-   fails for anyone without a GitHub SSH key, so use the HTTPS URL.
-3. Add it to the Contents table above.
-4. Run `claude plugin validate .`.
+1. Give it a public repo of its own named `claude-<name>`, with a
+   `.claude-plugin/plugin.json` (its `homepage` and `repository` set to the
+   repo), a `README.md` and an MIT `LICENSE`. Lock it down like this repo: a
+   protected `main` and tags, approval for workflows from forks, no wiki or
+   projects. The READMEs share one layout: what it does, when it runs,
+   **Where it works**, **Options** (mods), **Install** with both one-line
+   commands, and **Developing** with its validate (and test) commands.
+2. Here, in one pull request:
+   - Add an entry to `.claude-plugin/marketplace.json`. Keep the entry `name`
+     the same as the `name` in the item's own `plugin.json`, write `source` as
+     `{"source": "url", "url": "https://github.com/primelogiclabio/claude-<name>.git"}`,
+     and use the same description. A `"github"` source clones over SSH and
+     fails for anyone without a GitHub SSH key, so use the HTTPS URL.
+   - Add a row to the Contents table above, and name it wherever this README
+     lists plugins by kind: **Where each item works**, the install commands,
+     **First run**, **Changing plugin options** (mods) and
+     **Troubleshooting**.
+   - Run `claude plugin validate .`.
+3. After it merges, check that
+   `claude plugin install <name> --marketplace primelogiclabio/claude-tools`
+   installs it.
 
 [`CLAUDE.md`](CLAUDE.md) has the conventions for the plugin repos.
 
