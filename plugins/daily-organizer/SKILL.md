@@ -5,7 +5,7 @@ description: House rules for a personal daily organizer artifact on claude.ai (T
 
 # Daily organizer
 
-A personal, day-to-day organizer kept as a claude.ai artifact: a page with **Today**, **Up Next**, **Waiting On** and **Done**, and a **Days** log of past plans and summaries, shown as lists or tables (a **List | Table** switch the page remembers per device). The page is built from `template.html` in this skill's folder. Its tasks aren't in the page's code: they're rows in the artifact's own database, which the page shows live and Claude reads and writes with the `ArtifactData` tool.
+A personal, day-to-day organizer kept as a claude.ai artifact: a page with **Today**, **Up Next**, **Waiting On** and **Done**, and a **Days** log of past plans and summaries, shown as lists or tables. A bar above the lists picks the day shown, whose tasks to show (once there's a team) and **List | Table**; the layout, the person and whether the **Add a task** box is folded are remembered per device. The page is built from `template.html` in this skill's folder. Its tasks aren't in the page's code: they're rows in the artifact's own database, which the page shows live and Claude reads and writes with the `ArtifactData` tool.
 
 It's for one person's own work. Don't apply these rules to a team or project tracker, or to a repo's `PROGRESS.md`; if it's unclear which list the user means, ask.
 
@@ -17,7 +17,7 @@ The organizer is the artifact the user points at: by a link, by name ("my daily 
 
 - `tasks/<id>`, one document per task:
   - `title`
-  - `type`: `task`, `idea` or `follow-up`
+  - `type`: `task`, `idea`, `follow-up` or `discussion`
   - `status`: `next`, `waiting` or `done`
   - `created`: ISO timestamp
   - `ticket`, optional: a ticket key or URL
@@ -52,7 +52,7 @@ Dates are the user's local date. New task ids are letters, digits and dashes, su
 
 ## Task rules
 
-1. **Type.** Every task is a `task`, `idea` or `follow-up`. Ask when the user doesn't say. Default to `task` only for a clearly actionable to-do. A stray thought is likely an `idea`, and something waiting on another person or system is likely a `follow-up`: ask rather than guess.
+1. **Type.** Every task is a `task`, `idea`, `follow-up` or `discussion`. Ask when the user doesn't say. Default to `task` only for a clearly actionable to-do. A stray thought is likely an `idea`, something waiting on another person or system is likely a `follow-up`, and a topic to talk through with someone (a point for a 1:1 or a meeting) is likely a `discussion`: ask rather than guess. Who a discussion is with goes in its title, such as "Q3 budget with Sam"; `owner` still means whose task it is.
 2. **Completing needs a comment.** A task is done only with a short comment saying what was done or decided. If the user says "mark X done" without one, ask for it first. The page enforces the same rule.
 3. **Ticket, optional.** A ticket key such as `OPS-142`, or a full URL, at creation or later. Never required. A full URL always links. A key links once the organizer has a ticket link (below), and shows as plain text until then.
 4. **Status note, optional.** A short, changing note such as "blocked on DNS change", separate from the completion comment. Useful for anything that sits more than a day.

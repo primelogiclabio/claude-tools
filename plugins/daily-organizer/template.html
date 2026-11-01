@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-/* Layout: one 760px column like a daybook page: the dated header, Today, the add bar, the three lists, then the day log. */
+/* Layout: one 760px column like a daybook page: the dated header, the day and people filters, Today, the foldable add box, the three lists, then the day log. */
 :root {
   --bg: #f4f6f9;
   --surface: #ffffff;
@@ -14,6 +14,7 @@
   --accent: #2c52b0;
   --today: #a3620b;
   --idea: #7146ad;
+  --discussion: #a5316c;
   --done: #2a7649;
   --danger: #b0281f;
   --person: #0b6f86;
@@ -24,13 +25,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #11151c; --surface: #19202a; --ink: #e5e9f0; --muted: #9aa4b5; --line: #2a3240;
-    --accent: #8eaaff; --today: #e3a748; --idea: #c3a2f2; --done: #74c795; --danger: #f08a80; --person: #6fcbe0;
+    --accent: #8eaaff; --today: #e3a748; --idea: #c3a2f2; --discussion: #f28dc0; --done: #74c795; --danger: #f08a80; --person: #6fcbe0;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #11151c; --surface: #19202a; --ink: #e5e9f0; --muted: #9aa4b5; --line: #2a3240;
-  --accent: #8eaaff; --today: #e3a748; --idea: #c3a2f2; --done: #74c795; --danger: #f08a80; --person: #6fcbe0;
+  --accent: #8eaaff; --today: #e3a748; --idea: #c3a2f2; --discussion: #f28dc0; --done: #74c795; --danger: #f08a80; --person: #6fcbe0;
   color-scheme: dark;
 }
 
@@ -44,14 +45,19 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.day { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px 16px; }
-.day-text { display: grid; gap: 2px; min-width: 0; }
+.day { display: grid; gap: 2px; min-width: 0; }
+/* The filters wrap to two rows on a phone: the day, then people with the layout switch kept at the right. */
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.filters #view-toggle { margin-left: auto; }
+.filter { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.filter select { min-width: 0; }
+.filter .view-toggle { flex: none; }
+.filter-label { flex: none; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .view-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface); }
 .view-toggle button { border: 0; background: none; padding: 5px 12px; font-size: 13px; cursor: pointer; color: var(--muted); }
 .view-toggle button + button { border-left: 1px solid var(--line); }
 .view-toggle button[aria-pressed="true"] { background: var(--accent); color: var(--bg); font-weight: 500; }
 .wrap.is-table { max-width: 1120px; }
-.view-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 #filter, #day { font-size: 13px; padding: 5px 8px; }
 .plan-chip { font-size: 12px; color: var(--today); white-space: nowrap; }
 .tasks .plan-chip { margin-left: 6px; }
@@ -82,6 +88,7 @@ h2 .n { font-family: var(--font-mono); font-weight: 400; margin-left: 6px; font-
 .tag-task { color: var(--accent); }
 .tag-idea { color: var(--idea); }
 .tag-follow-up { color: var(--today); }
+.tag-discussion { color: var(--discussion); }
 .ticket { font-family: var(--font-mono); font-size: 12px; color: var(--accent); max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .stale { color: var(--today); font-weight: 500; }
@@ -161,7 +168,10 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
 .team .hint { margin: 0; font-size: 13px; color: var(--muted); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.add { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.add-box { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.add-box summary { cursor: pointer; padding: 10px 12px; color: var(--accent); font-weight: 500; }
+.add-box[open] summary { padding-bottom: 2px; }
+.add { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 8px 12px 12px; }
 .add #add-title { grid-column: 1 / -1; font-size: 16px; }
 .add .opt { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; align-items: center; }
 .add #add-ticket { flex: 1 1 180px; min-width: 0; font-family: var(--font-mono); font-size: 13px; }
@@ -188,54 +198,63 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
 
 <div class="wrap">
   <header class="day">
-    <div class="day-text">
-      <div class="eyebrow" id="week"></div>
-      <h1 id="date">Daily Organizer</h1>
-      <p class="counts" id="counts"></p>
-    </div>
-    <div class="view-tools">
-      <select id="day" aria-label="Day to show"></select>
-      <select id="filter" aria-label="Show tasks for" hidden></select>
-      <div class="view-toggle" id="view-toggle" role="group" aria-label="Layout">
-        <button type="button" id="view-list" aria-pressed="true">List</button>
-        <button type="button" id="view-table" aria-pressed="false">Table</button>
-      </div>
-    </div>
+    <div class="eyebrow" id="week"></div>
+    <h1 id="date">Daily Organizer</h1>
+    <p class="counts" id="counts"></p>
   </header>
 
   <p class="notice" id="notice" role="status">Loading your tasks…</p>
 
-  <section id="sec-today" aria-labelledby="h-today">
-    <div class="section-head">
-      <h2 id="h-today"><span id="today-label">Today</span><span class="n" id="n-today"></span></h2>
-      <div class="view-toggle" role="group" aria-label="Day">
+  <div class="filters" id="filters" role="group" aria-label="What to show">
+    <div class="filter">
+      <span class="filter-label" id="lbl-day">Day</span>
+      <div class="view-toggle" role="group" aria-labelledby="lbl-day">
         <button type="button" id="tab-today" aria-pressed="true">Today</button>
         <button type="button" id="tab-tomorrow" aria-pressed="false">Tomorrow</button>
       </div>
+      <select id="day" aria-label="Day to show"></select>
+    </div>
+    <div class="filter" id="filter-people" hidden>
+      <label class="filter-label" for="filter">People</label>
+      <select id="filter"></select>
+    </div>
+    <div class="view-toggle" id="view-toggle" role="group" aria-label="Layout">
+      <button type="button" id="view-list" aria-pressed="true">List</button>
+      <button type="button" id="view-table" aria-pressed="false">Table</button>
+    </div>
+  </div>
+
+  <section id="sec-today" aria-labelledby="h-today">
+    <div class="section-head">
+      <h2 id="h-today"><span id="today-label">Today</span><span class="n" id="n-today"></span></h2>
     </div>
     <ul class="list" id="list-today"></ul>
     <div class="table-wrap" id="table-today" hidden></div>
     <p class="empty" id="empty-today">Nothing planned for today. Star a task to add it, or ask Claude to plan your day.</p>
   </section>
 
-  <form class="add" id="add" autocomplete="off">
-    <input type="text" id="add-title" placeholder="Add a task" aria-label="Task" maxlength="300" required>
-    <div class="opt">
-      <select id="add-type" aria-label="Type">
-        <option value="task">Task</option>
-        <option value="idea">Idea</option>
-        <option value="follow-up">Follow-up</option>
-      </select>
-      <select id="add-status" aria-label="List">
-        <option value="next">Up Next</option>
-        <option value="waiting">Waiting On</option>
-      </select>
-      <select id="add-owner" aria-label="For" hidden><option value="">Me</option></select>
-      <input type="text" id="add-ticket" placeholder="Ticket (optional), e.g. OPS-142 or a link" aria-label="Ticket" maxlength="500">
-      <label class="check-label"><input type="checkbox" id="add-today"> <span id="add-today-label">Today</span></label>
-    </div>
-    <button class="btn btn-primary" type="submit" id="add-submit">Add task</button>
-  </form>
+  <details class="add-box" id="add-box" open>
+    <summary id="add-summary">Add a task</summary>
+    <form class="add" id="add" autocomplete="off">
+      <input type="text" id="add-title" placeholder="e.g. Check the DNS change" aria-label="Task" maxlength="300" required>
+      <div class="opt">
+        <select id="add-type" aria-label="Type">
+          <option value="task">Task</option>
+          <option value="idea">Idea</option>
+          <option value="follow-up">Follow-up</option>
+          <option value="discussion">Discussion</option>
+        </select>
+        <select id="add-status" aria-label="List">
+          <option value="next">Up Next</option>
+          <option value="waiting">Waiting On</option>
+        </select>
+        <select id="add-owner" aria-label="For" hidden><option value="">Me</option></select>
+        <input type="text" id="add-ticket" placeholder="Ticket (optional), e.g. OPS-142 or a link" aria-label="Ticket" maxlength="500">
+        <label class="check-label"><input type="checkbox" id="add-today"> <span id="add-today-label">Today</span></label>
+      </div>
+      <button class="btn btn-primary" type="submit" id="add-submit">Add task</button>
+    </form>
+  </details>
 
   <section id="sec-next" aria-labelledby="h-next">
     <div class="section-head"><h2 id="h-next">Up Next<span class="n" id="n-next"></span></h2></div>
@@ -295,6 +314,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
   const state = { tasks: [], days: [], settings: {}, team: [], teamLoaded: false, confirmed: false, slow: false, error: '', note: '', readOnly: false, closed: false };
   const ui = { completing: null, noting: null, removing: null, clearing: false, drafts: {}, logOpen: new Set(), logRemoving: null, layout: 'list', filter: 'all', day: null, assigning: null, teamRemoving: null };
   const chains = new Map();
+  const TYPES = ['task', 'idea', 'follow-up', 'discussion'];
   let db = null;
 
   const pad = (n) => String(n).padStart(2, '0');
@@ -502,7 +522,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
     const done = t.status === 'done';
     const planned = t.today === today;
     const editable = !state.readOnly;
-    const typeName = t.type === 'idea' || t.type === 'follow-up' ? t.type : 'task';
+    const typeName = TYPES.includes(t.type) ? t.type : 'task';
     const added = daysSince(t.created);
     const waitingLong = t.status === 'waiting' && added !== null && added >= 3;
     const log = logOf(t);
@@ -729,7 +749,7 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
 
     const filter = $('filter');
     if (document.activeElement !== filter) syncSelect(filter, [['all', 'Everyone'], ['me', 'Mine'], ...members], ui.filter);
-    filter.hidden = !has || state.closed;
+    $('filter-people').hidden = !has;
     const owner = $('add-owner');
     if (document.activeElement !== owner) syncSelect(owner, [['', 'Me'], ...members]);
     owner.hidden = !has;
@@ -807,10 +827,8 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
       }
     }
 
-    const form = $('add');
-    form.hidden = state.closed;
-    for (const c of form.elements) c.disabled = state.readOnly || !db;
-    for (const id of ['sec-today', 'sec-next', 'sec-waiting', 'sec-done', 'sec-days', 'sec-settings', 'view-toggle', 'day']) $(id).hidden = state.closed;
+    for (const c of $('add').elements) c.disabled = state.readOnly || !db;
+    for (const id of ['filters', 'sec-today', 'add-box', 'sec-next', 'sec-waiting', 'sec-done', 'sec-days', 'sec-settings']) $(id).hidden = state.closed;
     document.querySelector('.wrap').classList.toggle('is-table', ui.layout === 'table');
     $('view-list').setAttribute('aria-pressed', String(ui.layout === 'list'));
     $('view-table').setAttribute('aria-pressed', String(ui.layout === 'table'));
@@ -871,9 +889,20 @@ table.tasks { width: 100%; border-collapse: collapse; font-size: 14px; }
     render();
   });
 
-  // The layout and the person filter are per-device preferences, so they live in this browser only.
+  // The layout, the person filter and the add box's fold are per-device preferences, so they live in this browser only.
   try { ui.filter = localStorage.getItem('organizer-filter') || 'all'; } catch (e) { /* storage blocked: show everyone */ }
   try { if (localStorage.getItem('organizer-layout') === 'table') ui.layout = 'table'; } catch (e) { /* storage blocked: start in list */ }
+  const addBox = $('add-box');
+  let addByHand = false;
+  try { if (localStorage.getItem('organizer-add') === 'closed') addBox.open = false; } catch (e) { /* storage blocked: start open */ }
+  // Only a click on the summary is remembered and moves focus: the page's own open/close fires toggle too.
+  $('add-summary').addEventListener('click', () => { addByHand = true; });
+  addBox.addEventListener('toggle', () => {
+    if (!addByHand) return;
+    addByHand = false;
+    try { localStorage.setItem('organizer-add', addBox.open ? 'open' : 'closed'); } catch (e) { /* not remembered, still folds */ }
+    if (addBox.open && !$('add-title').disabled) $('add-title').focus();
+  });
   for (const [id, value] of [['view-list', 'list'], ['view-table', 'table']]) {
     $(id).addEventListener('click', () => {
       ui.layout = value;

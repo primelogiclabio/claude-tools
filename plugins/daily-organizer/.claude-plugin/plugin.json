@@ -1,6 +1,6 @@
 {
   "name": "daily-organizer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "author": { "name": "prime" },
   "description": "Skill: a personal daily organizer artifact on claude.ai (Today, Up Next, Waiting On, Done) with tasks in the artifact's database, task types, completion comments, ticket refs, status notes, a morning plan and an end-of-day summary",
