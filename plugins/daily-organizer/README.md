@@ -5,10 +5,12 @@ A skill for a **personal daily organizer** on claude.ai: one page with
 past plans and end-of-day summaries. Ask Claude to start one and it publishes
 the page from [`template.html`](template.html) and gives you the link.
 
-A **List | Table** switch at the top shows each section as a list or as a
-table with columns for type, ticket, note, age and comments. Each device
-remembers its own choice, so a phone can stay on the list while a desktop
-uses the table.
+A bar above the lists holds the **Day** and **People** filters and a
+**List | Table** switch, which shows each section as a list or as a table
+with columns for type, ticket, note, age and comments. Each device remembers
+its own choice, so a phone can stay on the list while a desktop uses the
+table. The **Add a task** box folds away when you don't need it, and each
+device remembers that too.
 
 It used to be called **workday-tracker**. See [Renamed](#renamed-from-workday-tracker)
 if you had that installed.
@@ -29,8 +31,9 @@ artifact on claude.ai, in the artifact's own database:
 
 ## The rules it keeps
 
-- Every task has a **type**: `task`, `idea` or `follow-up`. Claude asks when
-  it isn't clear.
+- Every task has a **type**: `task`, `idea`, `follow-up` or `discussion` (a
+  topic to talk through with someone, such as a point for a 1:1). Claude asks
+  when it isn't clear.
 - A task is marked done only with a short **completion comment** saying what
   was done or decided. The page asks for it too.
 - A task can have a **ticket**: a key such as `OPS-142`, or a full link. Full
@@ -54,7 +57,7 @@ Tasks are yours unless you say otherwise. To hand some out:
 - Pick who a task is for when you add it, with **Assign** on any task, or by
   asking ("add a follow-up for Sam to check the logs"). The task then shows
   "for Sam".
-- The menu next to **List | Table** shows **Everyone**, **Mine** or one
+- The **People** filter above the lists shows **Everyone**, **Mine** or one
   person's tasks. Each device remembers its choice.
 - Removing someone from the team gives their tasks back to you.
 
@@ -72,9 +75,9 @@ with each person.
   comments), what carries over and what's waiting, asks whether anything else
   got done, and saves the summary to the **Days** log.
 
-You can also plan by hand, and ahead. The **Today | Tomorrow** tabs, and the
-day picker next to **Everyone** for any of the next seven days, choose which
-day the planned section shows. The star on a task plans it for that day. A
+You can also plan by hand, and ahead. The **Day** filter's **Today |
+Tomorrow** tabs, and the day picker beside them for any of the next seven
+days, choose which day the planned section shows. The star on a task plans it for that day. A
 task planned for another day shows a small "★ Tue" marker. Claude can plan
 ahead too ("plan tomorrow", "plan Monday"), and offers to plan tomorrow when
 you wrap up a day.
