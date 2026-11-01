@@ -8,7 +8,7 @@
     {
       "name": "project-tracker",
       "source": "./plugins/project-tracker",
-      "description": "Per-project task list in a docked side pane, persisted in <repo>/.claude/tasks.md across sessions",
+      "description": "Deprecated, use project-progress: per-project task list in a docked side pane, persisted in <repo>/.claude/tasks.md across sessions",
       "category": "mod"
     },
     {
