@@ -31,7 +31,7 @@
     },
     {
       "name": "daily-organizer",
-      "source": { "source": "github", "repo": "primelogiclabio/claude-daily-organizer" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-daily-organizer.git" },
       "description": "A Claude skill that keeps your personal daily organizer on claude.ai: Today, Up Next, Waiting On and Done lists that you and Claude both update, with a morning plan and an end-of-day summary.",
       "category": "skill"
     },

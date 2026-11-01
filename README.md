@@ -460,8 +460,9 @@ To add a mod or skill:
    **Developing** with its validate (and test) commands.
 2. Add an entry to `.claude-plugin/marketplace.json`. Keep the entry `name`
    the same as the `name` in the item's own `plugin.json`, write `source` as
-   `{"source": "github", "repo": "primelogiclabio/claude-<name>"}`, and use
-   the same description.
+   `{"source": "url", "url": "https://github.com/primelogiclabio/claude-<name>.git"}`,
+   and use the same description. A `"github"` source clones over SSH and
+   fails for anyone without a GitHub SSH key, so use the HTTPS URL.
 3. Add it to the Contents table above.
 4. Run `claude plugin validate .`.
 
