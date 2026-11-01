@@ -44,7 +44,7 @@
     {
       "name": "project-progress",
       "source": "./plugins/project-progress",
-      "description": "Skill: track long project work in PROGRESS.md: one item at a time with a plan, park side ideas instead of chasing them, checkpoint before /clear",
+      "description": "Skill and pane: track long project work in PROGRESS.md: one item at a time with a plan, park side ideas instead of chasing them, checkpoint before /clear; a Progress pane shows where you are",
       "category": "skill"
     }
   ]

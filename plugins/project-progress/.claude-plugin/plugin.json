@@ -1,8 +1,22 @@
 {
   "name": "project-progress",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "license": "MIT",
   "author": { "name": "prime" },
-  "description": "Skill: track long project work in PROGRESS.md: one item at a time with a plan, park side ideas instead of chasing them, checkpoint before /clear",
-  "skills": ["./"]
+  "description": "Skill and pane: track long project work in PROGRESS.md: one item at a time with a plan, park side ideas instead of chasing them, checkpoint before /clear; a Progress pane shows where you are",
+  "skills": ["./"],
+  "userConfig": {
+    "showPane": {
+      "type": "boolean",
+      "title": "Show the Progress pane",
+      "description": "Open the Progress pane when a session starts in a project that has PROGRESS.md. Off: it stays hidden until /progress shows it.",
+      "default": true
+    },
+    "statusLine": {
+      "type": "boolean",
+      "title": "Show progress in the status line",
+      "description": "Show the current focus and how many Next items are left in the status line. Off by default, since the pane shows the same.",
+      "default": false
+    }
+  }
 }
