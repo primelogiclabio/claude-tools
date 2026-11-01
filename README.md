@@ -16,7 +16,7 @@ claude-tools/
     ├── generate-docs/        skill
     ├── daily-organizer/      skill
     ├── git-repo-creator/     skill
-    └── project-progress/     skill
+    └── project-progress/     skill + mod
 ```
 
 **Mods vs skills.**
@@ -27,18 +27,20 @@ claude-tools/
 - A **skill** is a `SKILL.md`: a description that tells Claude when to use it,
   followed by instructions. It has no code. Each skill here also carries a small
   `plugin.json`, so it installs through the marketplace the same way a mod does.
+- A plugin can be **both**: project-progress is a skill that also ships a pane,
+  so one install gets the two.
 
 ## Contents
 
 | Name | Kind | What it does |
 | --- | --- | --- |
 | [project-tracker](plugins/project-tracker/README.md) | mod | Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
-| [context-bar](plugins/context-bar/README.md) | mod | Context card above the prompt: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
+| [context-bar](plugins/context-bar/README.md) | mod | Context card above the prompt, off until `/context-bar show` or the `showBand` option: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
 | [resource-monitor](plugins/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
 | [generate-docs](plugins/generate-docs/README.md) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
 | [daily-organizer](plugins/daily-organizer/README.md) | skill | A personal daily organizer artifact on claude.ai: Today, Up Next, Waiting On and Done with tasks in the artifact's database, task types, required completion comments, a morning plan and an end-of-day summary. Was workday-tracker |
 | [git-repo-creator](plugins/git-repo-creator/README.md) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, public or private, license, CI workflow, and a lockdown against outside contributors for public repos |
-| [project-progress](plugins/project-progress/README.md) | skill | Tracks long project work in `PROGRESS.md` so context holds only the current task: one item at a time with a plan, side ideas parked instead of chased, a checkpoint before each `/clear` |
+| [project-progress](plugins/project-progress/README.md) | skill + mod | Tracks long project work in `PROGRESS.md` so context holds only the current task: one item at a time with a plan, side ideas parked instead of chased, a checkpoint before each `/clear`; a **Progress** pane shows where you are, with `/progress` |
 
 ---
 
@@ -72,11 +74,11 @@ three modes, and each behaves differently:
 - **Desktop Code tab**: Claude Code with a graphical interface. Behaves like the
   CLI.
 
-| Where you use Claude | Skills: generate-docs, daily-organizer, git-repo-creator, project-progress | Mods: project-tracker, context-bar, resource-monitor |
+| Where you use Claude | Skills: generate-docs, daily-organizer, git-repo-creator, project-progress | Mods: project-tracker, context-bar, resource-monitor, project-progress's pane |
 | --- | --- | --- |
 | **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ (daily-organizer: needs the Artifact tools, see below; git-repo-creator: needs `git` and `gh`) | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
 | **Desktop app, Code tab** (local or SSH session) | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
-| **VS Code extension** chat panel | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ⚠ partly. Hooks run, so the commands (`/tasks`, `/context-bar`, `/resources text`) and the tools work, but **panes and the bar aren't drawn**. |
+| **VS Code extension** chat panel | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ⚠ partly. Hooks run, so the commands (`/tasks`, `/context-bar`, `/resources text`, `/progress text`) and the tools work, but **panes and the bar aren't drawn**. |
 | **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below), except git-repo-creator and project-progress | ✘ mods are Claude Code only |
 | **Desktop app, Chat** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ |
 | **claude.ai on the web** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ claude.ai doesn't run mods |
@@ -123,6 +125,8 @@ it from `CLAUDE.md`, and works with plan mode and `/clear`. Those are Claude
 Code features, so it works only in Claude Code. Chat, Cowork, the web and
 mobile have no repo or `CLAUDE.md` for it, so don't add it to your claude.ai
 account. Run `/project-progress init` once in each repo you want to track.
+Its **Progress** pane is the mod part of the same plugin: it reads
+`PROGRESS.md` and draws beside the chat in the CLI and the desktop Code tab.
 
 ## Installing
 
@@ -361,9 +365,10 @@ Nothing is installed. Repeat the flag to load more than one plugin.
 2. **project-tracker:** type `/tasks`. Where the pane appears depends on
    terminal width and layout; see its [README](plugins/project-tracker/README.md).
    `/tasks add Try the tracker` creates `<project>/.claude/tasks.md`.
-3. **context-bar:** the card appears above the prompt. The header and badge
-   fill in after the first response; `/context-bar` prints the full
-   breakdown.
+3. **context-bar:** nothing shows until you ask. `/context-bar show` draws
+   the card above the prompt for the session (the `showBand` option draws it
+   in every session); the header and badge fill in after the first response.
+   `/context-bar` prints the full breakdown.
 4. **resource-monitor:** the status line shows a readout such as
    `⚙ CPU 12% · 2.1 GB`; CPU appears after the second sample (5 s apart); `/resources` opens the pane.
 5. **generate-docs:** ask for a write-up, for example "write up an overview
@@ -379,17 +384,19 @@ Nothing is installed. Repeat the flag to load more than one plugin.
 8. **project-progress:** in a repo you want to track, type
    `/project-progress init` and pick it. It asks for your current goal and
    first few items, and whether to commit `PROGRESS.md` or keep it personal.
-   Then use `/project-progress next` to start an item.
+   Then use `/project-progress next` to start an item. The **Progress** pane
+   opens in repos that have `PROGRESS.md`; `/progress` shows or hides it.
 
 #### Changing plugin options
 
-The three mods have options, listed in each one's README:
+The mods have options, listed in each one's README:
 
 | Mod | Options |
 | --- | --- |
 | project-tracker | `autoOpen`, `statusLine`, `injectContext`, `taskFile`, `registerProject` |
 | context-bar | `showBand`, `showLegend`, `warnAt`, `dangerAt`, `showCost` |
 | resource-monitor | `cpuWarn`, `memWarn`, `intervalSeconds`, `statusLine`, `autoOpen`, `injectContext` |
+| project-progress (its pane) | `showPane`, `statusLine` |
 
 Set them in `/config` inside a session, or from the shell:
 
@@ -398,13 +405,13 @@ claude plugin configure <name>@claude-tools
 ```
 
 For a plugin loaded with method B or C, use the bare name with no `@…`.
-Start a new session after any change. The skills have no options.
+Start a new session after any change. The other skills have no options.
 
 #### Troubleshooting
 
 | Symptom | Fix |
 | --- | --- |
-| A command (`/tasks`, `/context-bar`, `/resources`, `/generate-docs`, `/daily-organizer`, `/git-repo-creator`, `/project-progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
+| A command (`/tasks`, `/context-bar`, `/resources`, `/generate-docs`, `/daily-organizer`, `/git-repo-creator`, `/project-progress`, `/progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
 | `Plugin "…" not found in marketplace "claude-tools"` | Use the name from the table above, with `@claude-tools`. Run `claude plugin marketplace update claude-tools` to refresh the catalog. |
 | `Source path does not exist` on install | The catalog points at a folder that isn't in the copy you added. Make sure your clone or push includes `plugins/`. |
 | A duplicate command or skill, or changes that seem to come from an old copy | Two install methods are active, or the plugin and an account skill are both on. Keep only one, and check `~/.claude/skills/` for an old copy. |
@@ -430,10 +437,11 @@ claude plugin validate .\plugins\daily-organizer
 claude plugin validate .\plugins\git-repo-creator
 claude plugin validate .\plugins\project-progress
 
-# Test suites (mods only; skills have no code to test)
+# Test suites (mods, and project-progress's pane; the other skills have no code to test)
 claude plugin test .\plugins\project-tracker
 claude plugin test .\plugins\context-bar
 claude plugin test .\plugins\resource-monitor
+claude plugin test .\plugins\project-progress
 ```
 
 To add a mod or skill:

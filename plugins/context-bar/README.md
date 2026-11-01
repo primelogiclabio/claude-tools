@@ -19,6 +19,10 @@ flex layout, not runs of block characters, so the bar stays on one row in the
 desktop app's proportional font as well as in a terminal. Free space is the
 theme's faint grey.
 
+**The card is off by default.** `/context-bar show` draws it for the
+session, and the `showBand` option draws it in every session. `/context-bar`
+prints the same figures as text whenever you want them.
+
 ## Where each figure comes from
 
 Everything comes from Claude Code's own mods API. Nothing is invented.
@@ -53,8 +57,8 @@ and red from `dangerAt` (85%). The rate-limit figures use the same thresholds.
 | Command | Does |
 | --- | --- |
 | `/context-bar` | Prints the full breakdown as text: every category (deferred ones included), the compaction point, tokens split into main and subagents, cost, and each rate limit with its reset time |
-| `/context-bar hide` / `show` | Hides or shows the card for this session |
-| `/context-bar compact` / `full` | Header and bar only, or with the legend |
+| `/context-bar show` / `hide` | Shows or hides the card for this session |
+| `/context-bar compact` / `full` | Shows the card with header and bar only, or with the legend |
 | `/context-bar help` | Lists these |
 
 It isn't called `/usage` because Claude Code already has a built-in `/usage`.
@@ -78,7 +82,7 @@ Set these in `/config`, or with
 
 | Option | Default | |
 | --- | --- | --- |
-| `showBand` | `true` | Draw the card above the prompt |
+| `showBand` | `false` | Draw the card above the prompt in every session |
 | `showLegend` | `true` | Show the legend under the bar |
 | `warnAt` | `60` | Badge yellow from this % of the context window |
 | `dangerAt` | `85` | Badge red from this % |
