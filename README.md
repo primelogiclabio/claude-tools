@@ -34,7 +34,7 @@ claude-tools/
 
 | Name | Kind | What it does |
 | --- | --- | --- |
-| [project-tracker](plugins/project-tracker/README.md) | mod | Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
+| [project-tracker](plugins/project-tracker/README.md) | mod | **Deprecated**, use project-progress. Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
 | [context-bar](plugins/context-bar/README.md) | mod | Context card above the prompt, off until `/context-bar show` or the `showBand` option: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
 | [resource-monitor](plugins/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
 | [generate-docs](plugins/generate-docs/README.md) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
@@ -58,7 +58,7 @@ in this repo. Once someone adds the repo as a marketplace, they can:
   **Marketplaces**.
 
 The marketplace's name is **`claude-tools`**, so install ids look like
-`project-tracker@claude-tools`.
+`project-progress@claude-tools`.
 
 Docs: [Create a marketplace](https://code.claude.com/docs/en/plugins/create-marketplace),
 [Marketplace reference](https://code.claude.com/docs/en/plugins/marketplace-reference),
@@ -238,7 +238,6 @@ update one and nothing changes
 
 ```powershell
 claude plugin marketplace add F:\development\claude-tools
-claude plugin install project-tracker@claude-tools
 claude plugin install generate-docs@claude-tools
 claude plugin install daily-organizer@claude-tools
 claude plugin install git-repo-creator@claude-tools
@@ -257,19 +256,19 @@ marketplace first if needed, in either of two places:
 - **Inside a Claude Code session** (CLI or desktop Code tab, 2.1.275+), type
   the command below. It asks for an install scope.
   ```
-  /plugin install project-tracker --marketplace primelogiclabio/claude-tools
+  /plugin install project-progress --marketplace primelogiclabio/claude-tools
   ```
 - **From a terminal** (PowerShell, bash; CLI 2.1.292+), run:
   ```
-  claude plugin install project-tracker --marketplace primelogiclabio/claude-tools
+  claude plugin install project-progress --marketplace primelogiclabio/claude-tools
   ```
 
-Swap `project-tracker` for any name in the [Contents](#contents) table. On an
+Swap `project-progress` for any name in the [Contents](#contents) table. On an
 older CLI, add the marketplace first, then install by id:
 
 ```powershell
 claude plugin marketplace add primelogiclabio/claude-tools
-claude plugin install project-tracker@claude-tools
+claude plugin install project-progress@claude-tools
 ```
 
 Use the local-folder form above only on the machine where you edit the repo.
@@ -282,7 +281,7 @@ installed from the CLI at user scope are already there. Start a new session
 after installing.
 
 **Check it:** `claude plugin list` should show each one you installed, for
-example `project-tracker@claude-tools`, with `Status: ✔ enabled`.
+example `project-progress@claude-tools`, with `Status: ✔ enabled`.
 
 **Uninstall:** `claude plugin uninstall <name>@claude-tools`.
 To remove the whole marketplace, run
@@ -362,9 +361,9 @@ Nothing is installed. Repeat the flag to load more than one plugin.
    folder**. In the desktop app this is the access request when you pick the
    project folder for a Code session. Plugins don't run until the folder is
    trusted.
-2. **project-tracker:** type `/tasks`. Where the pane appears depends on
-   terminal width and layout; see its [README](plugins/project-tracker/README.md).
-   `/tasks add Try the tracker` creates `<project>/.claude/tasks.md`.
+2. **project-tracker** is deprecated; use project-progress (step 8). If you
+   still have it, `/tasks` opens its pane; see its
+   [README](plugins/project-tracker/README.md) for moving to project-progress.
 3. **context-bar:** nothing shows until you ask. `/context-bar show` draws
    the card above the prompt for the session (the `showBand` option draws it
    in every session); the header and badge fill in after the first response.

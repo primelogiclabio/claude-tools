@@ -1,5 +1,25 @@
 # project-tracker
 
+> **Deprecated.** [project-progress](../project-progress/README.md) replaces
+> this mod. It keeps the project's work in `PROGRESS.md`, plans one item at a
+> time, parks side ideas instead of chasing them, and has its own **Progress**
+> pane. project-tracker still installs and works, but it gets no more changes.
+
+## Moving to project-progress
+
+1. Install project-progress:
+   `claude plugin install project-progress@claude-tools`.
+2. In each project, start a session and run `/project-progress init`. When it
+   asks for the first items, give it your open tasks from `.claude/tasks.md`:
+   the **In progress** one becomes the current focus and **Todo** becomes Next.
+3. Uninstall this mod: `claude plugin uninstall project-tracker@claude-tools`.
+4. Delete `.claude/tasks.md` from each project once you've moved its tasks.
+   If `registerProject` was on (the default), also delete
+   `~/.claude/project-tracker/projects.json` (or the same path under
+   `CLAUDE_CONFIG_DIR`).
+
+## What it does
+
 A Claude Code mod that keeps a per-project task list in a side pane, and
 keeps it across sessions.
 
