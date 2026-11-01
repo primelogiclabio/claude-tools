@@ -30,6 +30,12 @@
       "category": "skill"
     },
     {
+      "name": "jira-dashboard",
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-jira-dashboard.git" },
+      "description": "A Claude skill that keeps a Jira dashboard on claude.ai: new, recently updated and your own tickets from your Jira site, refreshed each morning through the Atlassian connector, with a review mark that keeps unreviewed tickets as a backlog.",
+      "category": "skill"
+    },
+    {
       "name": "git-repo-creator",
       "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-git-repo-creator.git" },
       "description": "Skill: put a project on git and GitHub, or audit and fix an existing repo: name, description, visibility, license, .gitignore, README, CI workflow, and lockdown for public repos",

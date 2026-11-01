@@ -32,6 +32,7 @@ claude-tools/
 | [resource-monitor](https://github.com/primelogiclabio/claude-resource-monitor) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
 | [generate-docs](https://github.com/primelogiclabio/claude-generate-docs) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
 | [daily-organizer](https://github.com/primelogiclabio/claude-daily-organizer) | skill | A personal daily organizer on claude.ai: Today, Up Next, Waiting On and Done lists that you and Claude both update, with a morning plan and an end-of-day summary. Was workday-tracker |
+| [jira-dashboard](https://github.com/primelogiclabio/claude-jira-dashboard) | skill | A Jira dashboard on claude.ai: new, recently updated and your own tickets from your Jira site, refreshed through the Atlassian connector, with a review backlog and discussion flags with notes |
 | [git-repo-creator](https://github.com/primelogiclabio/claude-git-repo-creator) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, public or private, license, CI workflow, and a lockdown against outside contributors for public repos |
 | [project-progress](https://github.com/primelogiclabio/claude-project-progress) | skill + mod | Tracks long project work in `PROGRESS.md` so context holds only the current task: one item at a time with a plan, side ideas parked instead of chased, a checkpoint before each `/clear`; a **Progress** pane shows where you are, with `/progress` |
 
@@ -68,15 +69,15 @@ three modes, and each behaves differently:
 - **Desktop Code tab**: Claude Code with a graphical interface. Behaves like the
   CLI.
 
-| Where you use Claude | Skills: generate-docs, daily-organizer, git-repo-creator, project-progress | Mods: context-bar, resource-monitor, project-progress's pane |
+| Where you use Claude | Skills: generate-docs, daily-organizer, jira-dashboard, git-repo-creator, project-progress | Mods: context-bar, resource-monitor, project-progress's pane |
 | --- | --- | --- |
-| **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ (daily-organizer: needs the Artifact tools, see below; git-repo-creator: needs `git` and `gh`) | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
-| **Desktop app, Code tab** (local or SSH session) | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
-| **VS Code extension** chat panel | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ⚠ partly. Hooks run, so the commands (`/context-bar`, `/resources text`, `/progress text`) and the tools work, but **panes and the bar aren't drawn**. |
-| **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below), except git-repo-creator and project-progress | ✘ mods are Claude Code only |
-| **Desktop app, Chat** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ |
-| **claude.ai on the web** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ claude.ai doesn't run mods |
-| **Claude mobile apps** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ |
+| **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ (daily-organizer and jira-dashboard: need the Artifact tools, see below; jira-dashboard also the Atlassian connector; git-repo-creator: needs `git` and `gh`) | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
+| **Desktop app, Code tab** (local or SSH session) | ✔ (daily-organizer and jira-dashboard: need the Artifact tools; jira-dashboard also the Atlassian connector; git-repo-creator: needs `git` and `gh`) | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
+| **VS Code extension** chat panel | ✔ (daily-organizer and jira-dashboard: need the Artifact tools; jira-dashboard also the Atlassian connector; git-repo-creator: needs `git` and `gh`) | ⚠ partly. Hooks run, so the commands (`/context-bar`, `/resources text`, `/progress text`) and the tools work, but **panes and the bar aren't drawn**. |
+| **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below), except git-repo-creator, project-progress and jira-dashboard | ✘ mods are Claude Code only |
+| **Desktop app, Chat** | ✔ from your claude.ai account (path 2), except git-repo-creator, project-progress and jira-dashboard | ✘ |
+| **claude.ai on the web** | ✔ from your claude.ai account (path 2), except git-repo-creator, project-progress and jira-dashboard | ✘ claude.ai doesn't run mods |
+| **Claude mobile apps** | ✔ from your claude.ai account (path 2), except git-repo-creator, project-progress and jira-dashboard | ✘ |
 | **Claude Code cloud sessions** (claude.ai/code, routines) | ✔ only if it's on your claude.ai account. Locally installed plugins don't reach the cloud. git-repo-creator also needs `gh` signed in there. | ✘ nothing a mod draws appears in a cloud session |
 
 Skills on claude.ai, the desktop app's Chat and Cowork, and mobile need a
@@ -109,6 +110,16 @@ the skill keeps an older-style tracker whose tasks sit in the artifact's code,
 with the same task rules. It holds no artifact link or data, so everyone who
 installs it works on their own organizer.
 
+**What jira-dashboard needs.** The dashboard is a claude.ai artifact whose
+tickets live in the artifact's own database, read from your Jira through
+Atlassian's own connector, which must be added to your claude.ai account under
+**Settings › Connectors**. Claude creates the dashboard and refreshes it with
+the `Artifact` and `ArtifactData` tools, which only Claude Code sessions have,
+so don't add it to your claude.ai account. The page itself works wherever you
+open it, and its **Refresh** button queries Jira through your own connector.
+It holds no artifact link, Jira site or data, so everyone who installs it
+works on their own dashboard.
+
 **What git-repo-creator needs.** It runs `git` and the GitHub CLI `gh`,
 signed in with `gh auth login`, so it works only in Claude Code (or a cloud
 session that has `gh` signed in). Chat, Cowork, the web and mobile have no
@@ -131,7 +142,7 @@ There are **two separate install paths**, and they reach different places:
 | Where you install | `claude plugin …` in a terminal, `/plugin` in a session, or **+ › Plugins** in the desktop Code tab | **Customize › Plugins** (or **Customize › Skills**) on claude.ai or in the desktop app |
 | Install is tied to | this computer | your account |
 | Reaches | the CLI, the desktop Code tab and VS Code on this computer | Chat (web, desktop, mobile) and Cowork. It also syncs into Claude Code terminal sessions where you're signed in with that account (CLI 2.1.273+). |
-| Use it for | the mods, and the skills inside Claude Code | generate-docs and daily-organizer everywhere (git-repo-creator and project-progress are Claude Code only) |
+| Use it for | the mods, and the skills inside Claude Code | generate-docs and daily-organizer everywhere (git-repo-creator, project-progress and jira-dashboard are Claude Code only) |
 
 Installs don't travel the other way. A plugin you install from the Claude Code
 command line stays on that computer and is never added to your account
@@ -238,6 +249,7 @@ clones' paths instead. In PowerShell:
 claude plugin marketplace add C:\src\claude-tools
 claude plugin install generate-docs@claude-tools
 claude plugin install daily-organizer@claude-tools
+claude plugin install jira-dashboard@claude-tools
 claude plugin install git-repo-creator@claude-tools
 claude plugin install project-progress@claude-tools
 claude plugin install context-bar@claude-tools
@@ -366,11 +378,15 @@ Nothing is installed. Repeat the flag to load more than one plugin.
    follow-up to check the DNS change" or "plan my day", or type
    `/daily-organizer` and pick it. Claude publishes the organizer and gives
    you its link. It needs the Artifact tools, which Claude Code sessions have.
-6. **git-repo-creator:** ask to "put this project on GitHub" or "check this
+6. **jira-dashboard:** ask to "start my Jira dashboard", or type
+   `/jira-dashboard` and pick it. Claude asks which Jira site and projects to
+   track, publishes the dashboard and gives you its link. It needs the
+   Artifact tools and the Atlassian connector on your claude.ai account.
+7. **git-repo-creator:** ask to "put this project on GitHub" or "check this
    repo's setup", or type `/git-repo-creator` and pick it. `gh auth status`
    must show a signed-in account. It asks before it creates a repository,
    pushes or changes a setting.
-7. **project-progress:** in a repo you want to track, type
+8. **project-progress:** in a repo you want to track, type
    `/project-progress init` and pick it. It asks for your current goal and
    first few items, and whether to commit `PROGRESS.md` or keep it personal.
    Then use `/project-progress next` to start an item. The **Progress** pane
@@ -399,7 +415,7 @@ Start a new session after any change. The other skills have no options.
 
 | Symptom | Fix |
 | --- | --- |
-| A command (`/context-bar`, `/resources`, `/generate-docs`, `/daily-organizer`, `/git-repo-creator`, `/project-progress`, `/progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
+| A command (`/context-bar`, `/resources`, `/generate-docs`, `/daily-organizer`, `/jira-dashboard`, `/git-repo-creator`, `/project-progress`, `/progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
 | `Plugin "…" not found in marketplace "claude-tools"` | Use the name from the table above, with `@claude-tools`. Run `claude plugin marketplace update claude-tools` to refresh the catalog. |
 | An install fails to clone the plugin | Each plugin installs from its own GitHub repo over HTTPS. Check that `git` works and the machine can reach github.com. |
 | A duplicate command or skill, or changes that seem to come from an old copy | Two install methods are active, or the plugin and an account skill are both on. Keep only one, and check `~/.claude/skills/` for an old copy. |
