@@ -10,9 +10,9 @@ repo's marketplace on its own.
 | [context-bar](context-bar/README.md) | mod | Context card above the prompt: the window as one bar split by `/context` category, plus session tokens, cost and rate limits |
 | [resource-monitor](resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: pane, status line, warning colours and a `resources` tool |
 | [generate-docs](generate-docs/README.md) | skill | Generates project or research documentation as self-contained HTML + Markdown |
-| [workday-tracker](workday-tracker/README.md) | skill | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai |
+| [daily-organizer](daily-organizer/README.md) | skill | A personal daily organizer artifact on claude.ai: Today, Up Next, Waiting On and Done in the artifact's database, with a morning plan and an end-of-day summary |
 | [git-repo-creator](git-repo-creator/README.md) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, visibility, license, workflow, lockdown for public repos |
-| [project-progress](project-progress/README.md) | skill | Tracks long project work in `PROGRESS.md`: one item at a time with a plan, side ideas parked, a checkpoint before each `/clear` |
+| [project-progress](project-progress/README.md) | skill + mod | Tracks long project work in `PROGRESS.md`: one item at a time with a plan, side ideas parked, a checkpoint before each `/clear`; a **Progress** pane shows where you are |
 
 - **Mods** are plugins with code that change Claude Code's interface or
   behaviour. They run only inside Claude Code: the CLI and the desktop app's
@@ -51,6 +51,11 @@ plugins/
     └── README.md
 ```
 
+A plugin can be both. project-progress keeps its `SKILL.md` at the folder's
+root, as a skill does, with `hooks/`, `tests/` and `types/` beside it for its
+pane; its `plugin.json` has `"skills": ["./"]` as well as the pane's
+`userConfig`.
+
 Every plugin also has a `README.md` for people browsing the repo. To add one,
 follow the steps in the [repo README](../README.md#working-on-this-repo), then
 check it:
@@ -60,7 +65,7 @@ claude plugin validate .\plugins\my-plugin
 claude plugin test .\plugins\my-mod
 ```
 
-Skills have no code, so there are no tests to run.
+Skills have no code, so there are no tests to run, except for a plugin that is both.
 
 ## Using a skill without the marketplace
 
