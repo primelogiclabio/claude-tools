@@ -67,10 +67,10 @@ The step-by-step instructions are in the
 [repo README](../../README.md#installing). Notes specific to this skill:
 
 - **As a plain skill, without the plugin wrapper.** Link the folder into your
-  skills directory:
+  skills directory. Put your clone's path in place of `C:\src\claude-tools`:
 
   ```powershell
-  New-Item -ItemType Junction -Path "$HOME\.claude\skills\git-repo-creator" -Target "F:\development\claude-tools\plugins\git-repo-creator"
+  New-Item -ItemType Junction -Path "$HOME\.claude\skills\git-repo-creator" -Target "C:\src\claude-tools\plugins\git-repo-creator"
   ```
 
   Remove the link only with `cmd /c rmdir "$HOME\.claude\skills\git-repo-creator"`.

@@ -234,10 +234,12 @@ update one and nothing changes
 
 #### M. From the marketplace (recommended)
 
-**From this folder** (the machine where you edit the repo). In PowerShell:
+**From this folder** (the machine where you edit the repo). The examples here
+and in methods B and C use `C:\src\claude-tools`; put your clone's path
+instead. In PowerShell:
 
 ```powershell
-claude plugin marketplace add F:\development\claude-tools
+claude plugin marketplace add C:\src\claude-tools
 claude plugin install generate-docs@claude-tools
 claude plugin install daily-organizer@claude-tools
 claude plugin install git-repo-creator@claude-tools
@@ -313,7 +315,7 @@ or update.
    ```json
    {
      "env": {
-       "CLAUDE_CODE_PLUGIN_DIRS": "F:\\development\\claude-tools\\plugins\\project-tracker;F:\\development\\claude-tools\\plugins\\generate-docs"
+       "CLAUDE_CODE_PLUGIN_DIRS": "C:\\src\\claude-tools\\plugins\\project-tracker;C:\\src\\claude-tools\\plugins\\generate-docs"
      }
    }
    ```
@@ -346,7 +348,7 @@ session.
 #### C. `--plugin-dir` (CLI, one session)
 
 ```powershell
-claude --plugin-dir F:\development\claude-tools\plugins\project-tracker
+claude --plugin-dir C:\src\claude-tools\plugins\project-tracker
 ```
 
 The plugin is loaded for that session only, and edits reload while it runs.
@@ -469,7 +471,7 @@ force-pushed, and a change reaches it only through a pull request. To release a
 change:
 
 ```powershell
-cd F:\development\claude-tools
+cd C:\src\claude-tools
 claude plugin validate .
 git switch -c <branch>
 git push -u origin <branch>
