@@ -7,7 +7,7 @@ description: Track long project work in PROGRESS.md so the context window only h
 
 Keeps long-running project work organized in `PROGRESS.md` at the project's root (see Where PROGRESS.md lives), so the context window only has to hold the current task. The core rules: one item at a time, and side ideas get parked, not chased.
 
-The commands below are written as `/project-progress <mode>`. When the skill is installed as a plugin its full name is `/project-progress:project-progress`. When you tell the user what to type, use the form they typed, or whichever name the session lists if they haven't typed one.
+The commands below are written as `/project-progress <mode>`. When the skill is installed as a plugin its full name is `/project-progress:project-progress`. Whenever you tell the user what to type, including the closing suggestions in `init`, `done` and `status`, write the command in the form they typed, or by whichever name the session lists if they haven't typed one: after `/project-progress:project-progress init`, suggest `/project-progress:project-progress next`, not `/project-progress next`.
 
 ## Modes
 
@@ -106,7 +106,7 @@ Trimming: Done is trimmed automatically, but the other sections only grow. When 
    The `@PROGRESS.md` import is what makes the file load in every session and come back after `/compact`, and the Workflow rules are what let the user speak plainly instead of naming modes.
 
    Workflow-block check: if `CLAUDE.md` or `CLAUDE.local.md` already has the `@PROGRESS.md` import, don't add the block again. Compare its `## Workflow` section with the one above. If they differ, show the difference and offer to replace it. On a yes, replace only that section, keep everything else in the file, and say the new rules apply from the next session or after `/clear`. Repos set up with an older version of this skill get the current rules this way.
-5. Confirm in one line and suggest `/project-progress next`.
+5. Confirm in one line and suggest the `next` command, in the form the user typed (see the top).
 
 ## add
 
@@ -145,13 +145,13 @@ Also do this unprompted during any work: when you notice an unrelated bug, refac
    - Trim Done to 10 entries.
    - If the file is still over about 60 lines, propose cuts (see Trimming).
 4. If Parking lot has entries, list them briefly and ask which, if any, to promote to Next, leaving out any you just proposed cutting. Move only what the user picks.
-5. Once any questions from steps 3 and 4 are answered, suggest committing in a git repo, and in each Related repo the item changed (don't commit unless asked). Then tell the user to run `/clear` and `/project-progress next` to start the next item with a fresh context. You can't run `/clear` yourself.
+5. Once any questions from steps 3 and 4 are answered, suggest committing in a git repo, and in each Related repo the item changed (don't commit unless asked). Then tell the user to run `/clear` and then the `next` command, in the form they typed (see the top), to start the next item with a fresh context. You can't run `/clear` yourself.
 
 Also offer this unprompted: when the current item's work looks finished, such as its plan's steps being done and its checks passing, say so in one line and offer to checkpoint it. Don't checkpoint without a yes.
 
 ## status
 
-Read PROGRESS.md and report in a few lines: the current focus, the next three items, and how many items are parked. If the file is over about 60 lines, say so and offer to trim it (see Trimming). If the session has covered a lot of ground, suggest `/context` to check usage, and `/project-progress done` then `/clear` if the current item is finished.
+Read PROGRESS.md and report in a few lines: the current focus, the next three items, and how many items are parked. If the file is over about 60 lines, say so and offer to trim it (see Trimming). If the session has covered a lot of ground, suggest `/context` to check usage, and the `done` command (in the form the user typed, see the top) then `/clear` if the current item is finished.
 
 ## Guardrails
 

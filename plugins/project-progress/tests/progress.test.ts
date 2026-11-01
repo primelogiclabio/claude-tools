@@ -87,7 +87,7 @@ describe('summary', () => {
     )
   })
 
-  test('points at init when there is no file', () => {
-    expect(summary(parse(''), false)).toMatch(/No PROGRESS\.md .* init/)
+  test('points at init, by the plugin name, when there is no file', () => {
+    expect(summary(parse(''), false)).toBe('No PROGRESS.md in this project yet. /project-progress:project-progress init sets one up.')
   })
 })

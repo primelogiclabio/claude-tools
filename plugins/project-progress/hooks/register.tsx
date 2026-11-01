@@ -1,12 +1,10 @@
 import type { EngineInterface, Register, UiPressArgument } from 'claude-code'
 
 import type { ProgressView, SectionKey } from '../types'
-import { SECTION_TITLE, empty, openNext, parse, summary } from './progress'
+import { SECTION_TITLE, SKILL, empty, openNext, parse, summary } from './progress'
 
 const PANE = 'progress'
 const FILE = 'PROGRESS.md'
-// The skill in this same plugin, by the name a plugin install gives it.
-const SKILL = '/project-progress:project-progress'
 
 const FOLDS: readonly Exclude<SectionKey, 'focus' | 'next'>[] = ['parked', 'done', 'decisions', 'gotchas', 'related']
 
@@ -205,7 +203,7 @@ export const register: Register = (on, options) => {
     return {
       text: v?.exists
         ? `Progress pane shown for ${v.project}.`
-        : `Progress pane shown. No ${FILE} here yet: /project-progress init sets one up.`,
+        : `Progress pane shown. No ${FILE} here yet: ${SKILL} init sets one up.`,
     }
   }).catch(($, e, next) => ({
     text: `project-progress: /progress failed${next.error ? `: ${next.error.message}` : ''}.`,

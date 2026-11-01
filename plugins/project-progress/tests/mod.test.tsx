@@ -166,12 +166,14 @@ describe('project-progress pane', () => {
     expect(w.opened).toEqual(['progress'])
   })
 
-  test('stays hidden in a project without PROGRESS.md', async ($, on) => {
+  test('stays hidden in a project without PROGRESS.md, and /progress points at init', async ($, on) => {
     const w = world(on)
     freshClock(on)
     await $.session.start(START)
     expect(w.opened).toEqual([])
     expect(w.status[w.status.length - 1]).toBeUndefined()
+    const shown = await $.command.run({ ...RUN, command: 'progress', args: '' })
+    expect(shown.text).toBe(`Progress pane shown. No PROGRESS.md here yet: ${SKILL} init sets one up.`)
   })
 
   test('showPane: false keeps it hidden until /progress', { options: { showPane: false } }, async ($, on) => {
