@@ -1,13 +1,14 @@
 # project-progress
 
 A skill that keeps long project work on track in a `PROGRESS.md` file at the
-repo root, so the context window only has to hold the current task. It's built
+repo root (or a package's folder in a monorepo), so the context window only has to hold the current task. It's built
 for one habit: working on one item at a time, and writing side ideas down
 instead of chasing them. The same plugin adds a **Progress** pane that shows
 where you are without asking Claude.
 
-`PROGRESS.md` has a one-line goal and six short sections: **Current focus**, **Next**, **Done**
-(last 10), **Decisions**, **Parking lot** and **Gotchas**. It's current state,
+`PROGRESS.md` has a one-line goal and seven short sections: **Current focus**, **Next**, **Done**
+(last 10), **Decisions**, **Parking lot**, **Gotchas** and **Related** (other
+folders or repos the work also changes). It's current state,
 not a log, and stays under about 60 lines: when it grows past that, Claude
 proposes cuts and makes only the ones you approve. `init` imports it from
 `CLAUDE.md` (or `CLAUDE.local.md`), so it loads in every session and comes back
@@ -17,11 +18,11 @@ The skill has six modes:
 
 | Command | What it does |
 | --- | --- |
-| `/project-progress init` | Creates `PROGRESS.md` and adds the import and workflow rules to `CLAUDE.md`. Asks whether to commit the file or keep it personal (through `CLAUDE.local.md`, with both files listed in the repo's local `.git/info/exclude` so your `.gitignore` stays untouched). Never overwrites an existing `PROGRESS.md`. In a repo set up with an older version, it offers to update the workflow rules. |
+| `/project-progress init` | Creates `PROGRESS.md` and adds the import and workflow rules to `CLAUDE.md`. Asks whether to commit the file or keep it personal (through `CLAUDE.local.md`, with both files listed in the repo's local `.git/info/exclude` so your `.gitignore` stays untouched). Started in a subfolder of a repo, it also asks whether to track the whole repo or just that folder. In a folder without git it uses `CLAUDE.md` and doesn't ask about committing. Also asks whether the work changes other folders or repos, such as a docs site. Never overwrites an existing `PROGRESS.md`. In a repo set up with an older version, it offers to update the workflow rules. |
 | `/project-progress add <item>` | Adds an item to Next, at the bottom unless you say where. Also reorders or drops Next items when you ask. |
-| `/project-progress next` | Moves the next item into Current focus and starts a plan for just that item. Nothing is built until you approve the plan. If Next is empty, offers the parked ideas or asks what to work on. |
+| `/project-progress next` | Moves the next item into Current focus and starts a plan for just that item, with steps in any Related place it affects. Nothing is built until you approve the plan. If Next is empty, offers the parked ideas or asks what to work on. |
 | `/project-progress park <idea>` | Writes a side idea to the Parking lot and goes back to the current item. Claude also parks unrelated bugs or refactors it notices on its own. |
-| `/project-progress done` | Records the item in Done, adds decisions and gotchas, proposes cuts if the file is too long, asks which parked items to promote, then tells you to `/clear` and start the next one. When an item's work looks finished, Claude offers this on its own. |
+| `/project-progress done` | Offers to run the project's tests first, when it finds a test command and they haven't passed since the last change. Flags a Related place the item should have changed but didn't. Then records the item in Done, adds decisions and gotchas, proposes cuts if the file is too long, asks which parked items to promote, suggests committing here and in each Related repo that changed, then tells you to `/clear` and start the next one. When an item's work looks finished, Claude offers this on its own. |
 | `/project-progress` | Shows the current focus, the next three items and how many are parked, and flags a file that's grown too long. |
 
 The loop it supports: **add** work as you plan it, **next** (plan) → build →
@@ -54,6 +55,39 @@ from the list. When it's installed as a plugin, its full name is
 `/project-progress init` again: it leaves `PROGRESS.md` alone, shows how the
 rules changed, and replaces them if you say yes.
 
+## Monorepos and folders without git
+
+The `PROGRESS.md` in use is the nearest one from the folder the session started
+in, looking upward and stopping at the git root. The skill and the pane both
+follow that rule.
+
+- **Monorepo.** Track the whole repo with one file at the root, or a package
+  with its own file in its folder: `init` asks when it runs in a subfolder. It
+  won't nest one inside another without asking, since a session started below
+  both would load both. In a monorepo, `done` offers the tests of the
+  packages the item changed rather than the whole repo's.
+- **No git.** `init` puts the file in the session's folder and imports it from
+  `CLAUDE.md`, with nothing to commit or exclude. `done` doesn't suggest a
+  commit.
+
+## Related folders and repos
+
+Some work changes more than one place: a library and the docs site that
+describes it, say. List those places under **Related** in `PROGRESS.md`, one
+line each, with the path and what to update there:
+
+```markdown
+## Related
+- `../docs-site`: the plugins page; update it when a plugin is added or renamed
+```
+
+A path relative to `PROGRESS.md`'s folder keeps working on another machine
+with the same layout. `init` asks about these places, or ask Claude to add one
+later. Then `next` puts the changes there into the plan, `done` points out a
+place that should have changed but didn't and suggests committing there too.
+If the session can't reach a folder, Claude asks you to add it (`/add-dir` in
+the CLI).
+
 ## The Progress pane
 
 In a repo that has `PROGRESS.md`, a **Progress** pane opens when the session
@@ -61,8 +95,8 @@ starts. It docks beside the transcript in the fullscreen terminal layout on a
 wide enough terminal, and shows as a panel in the desktop Code tab. It shows:
 
 - the goal, the **Now** item (Current focus) and the numbered **Next** list;
-- **Parked**, **Done**, **Decisions** and **Gotchas** as folded lines with a
-  count; select one to unfold it.
+- **Parked**, **Done**, **Decisions**, **Gotchas** and **Related** as folded
+  lines with a count; select one to unfold it.
 
 The pane only reads the file. It picks up changes within about 2 seconds,
 whoever makes them. Its buttons put a request in the prompt for you to send, so
@@ -151,7 +185,8 @@ The step-by-step instructions are in the
   (`project-progress:project-progress` and `project-progress`), so more than one
   would load and compete. Keep one.
 - **Per project.** Run `/project-progress init` once in each repo you want to
-  track. Each repo gets its own `PROGRESS.md`.
+  track, or in each package you track separately. Each gets its own
+  `PROGRESS.md`.
 
 ## Developing
 

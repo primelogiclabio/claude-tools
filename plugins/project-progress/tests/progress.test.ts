@@ -27,6 +27,9 @@ const FILE = [
   '## Gotchas',
   '- The parser must not write',
   '',
+  '## Related',
+  '- `../site`: the plugins page; update it when a plugin is added',
+  '',
 ].join('\n')
 
 describe('parse', () => {
@@ -43,6 +46,7 @@ describe('parse', () => {
     expect(doc.decisions).toEqual(['Pane ships in the plugin because one install gets both'])
     expect(doc.parked).toEqual([])
     expect(doc.gotchas).toEqual(['The parser must not write'])
+    expect(doc.related).toEqual(['`../site`: the plugins page; update it when a plugin is added'])
     expect(openNext(doc).map(item => item.text)).toEqual(['Write the README', 'Re-test in a real session'])
   })
 
@@ -53,6 +57,7 @@ describe('parse', () => {
     expect(doc.next).toEqual([{ text: 'plain item', isDone: false }])
     expect(doc.done).toEqual([])
     expect(doc.parked).toEqual([])
+    expect(doc.related).toEqual([])
   })
 
   test('an indented line joins the entry above it', () => {
@@ -82,7 +87,7 @@ describe('summary', () => {
     )
   })
 
-  test('points at init when there is no file', () => {
-    expect(summary(parse(''), false)).toMatch(/No PROGRESS\.md .* init/)
+  test('points at init, by the plugin name, when there is no file', () => {
+    expect(summary(parse(''), false)).toBe('No PROGRESS.md in this project yet. /project-progress:project-progress init sets one up.')
   })
 })

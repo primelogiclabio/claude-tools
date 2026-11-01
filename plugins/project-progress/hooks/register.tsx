@@ -1,14 +1,12 @@
 import type { EngineInterface, Register, UiPressArgument } from 'claude-code'
 
 import type { ProgressView, SectionKey } from '../types'
-import { SECTION_TITLE, empty, openNext, parse, summary } from './progress'
+import { SECTION_TITLE, SKILL, empty, openNext, parse, summary } from './progress'
 
 const PANE = 'progress'
 const FILE = 'PROGRESS.md'
-// The skill in this same plugin, by the name a plugin install gives it.
-const SKILL = '/project-progress:project-progress'
 
-const FOLDS: readonly Exclude<SectionKey, 'focus' | 'next'>[] = ['parked', 'done', 'decisions', 'gotchas']
+const FOLDS: readonly Exclude<SectionKey, 'focus' | 'next'>[] = ['parked', 'done', 'decisions', 'gotchas', 'related']
 
 const HELP = [
   '/progress          show or hide the Progress pane',
@@ -56,11 +54,12 @@ let unfolded = new Set<SectionKey>()
 let isStatusShown = false
 let isShowPane = true
 let isShown = false
+let sessionCwd = ''
 let root = ''
 let file = ''
 let mtime = -1
 
-// PROGRESS.md sits at the repo root: the nearest folder up from the
+// The skill's "Where PROGRESS.md lives": the nearest folder up from the
 // session's that holds one, else the nearest git root, else the session's own.
 async function findRoot($: EngineInterface, cwd: string): Promise<string> {
   for (let dir: string | null = cwd; dir !== null; dir = parent(dir)) {
@@ -115,7 +114,17 @@ async function openPane($: EngineInterface) {
 
 async function refreshIfChanged($: EngineInterface): Promise<void> {
   if (file === '') return
-  const exists = await $.fs.exists(file)
+  let exists = await $.fs.exists(file)
+  // Until there is a file, look again: init may set one up in a subfolder
+  // (a monorepo package) below the git root found at session start.
+  if (!exists) {
+    const found = await findRoot($, sessionCwd)
+    if (found !== root) {
+      root = found
+      file = join(root, FILE)
+      exists = await $.fs.exists(file)
+    }
+  }
   const now = exists ? (await $.fs.stat(file)).mtimeMs : 0
   if (now === mtime) return
   const wasThere = view?.exists === true
@@ -146,7 +155,8 @@ export const register: Register = (on, options) => {
   isShowPane = options.showPane !== false
 
   on('session.start', async ($, e, next) => {
-    root = await findRoot($, e.cwd)
+    sessionCwd = e.cwd
+    root = await findRoot($, sessionCwd)
     file = join(root, FILE)
     const v = await load($)
 
@@ -193,7 +203,7 @@ export const register: Register = (on, options) => {
     return {
       text: v?.exists
         ? `Progress pane shown for ${v.project}.`
-        : `Progress pane shown. No ${FILE} here yet: /project-progress init sets one up.`,
+        : `Progress pane shown. No ${FILE} here yet: ${SKILL} init sets one up.`,
     }
   }).catch(($, e, next) => ({
     text: `project-progress: /progress failed${next.error ? `: ${next.error.message}` : ''}.`,

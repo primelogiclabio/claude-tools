@@ -7,13 +7,16 @@
 //   - (none)
 //   ## Next
 //   - [ ] ...
-//   ## Done (last 10) / ## Decisions / ## Parking lot / ## Gotchas
+//   ## Done (last 10) / ## Decisions / ## Parking lot / ## Gotchas / ## Related
 //   - ...
 //
 // Unknown headings and the lines under them are skipped, not dropped from
 // anywhere, since nothing is written back.
 
 import type { NextItem, ProgressDoc, SectionKey } from '../types'
+
+// The skill in this same plugin, by the name a plugin install gives it.
+export const SKILL = '/project-progress:project-progress'
 
 export const SECTION_TITLE: Record<SectionKey, string> = {
   focus: 'Now',
@@ -22,6 +25,7 @@ export const SECTION_TITLE: Record<SectionKey, string> = {
   decisions: 'Decisions',
   parked: 'Parked',
   gotchas: 'Gotchas',
+  related: 'Related',
 }
 
 const HEADING = /^#{2,}\s+(.*)$/
@@ -38,12 +42,13 @@ function sectionOf(heading: string): SectionKey | null {
   if (name.startsWith('decisions')) return 'decisions'
   if (name.startsWith('parking lot') || name.startsWith('parked')) return 'parked'
   if (name.startsWith('gotchas')) return 'gotchas'
+  if (name.startsWith('related')) return 'related'
 
   return null
 }
 
 export function empty(): ProgressDoc {
-  return { goal: '', focus: [], next: [], done: [], decisions: [], parked: [], gotchas: [] }
+  return { goal: '', focus: [], next: [], done: [], decisions: [], parked: [], gotchas: [], related: [] }
 }
 
 export function parse(source: string): ProgressDoc {
@@ -115,7 +120,7 @@ export function openNext(doc: ProgressDoc): NextItem[] {
 
 /** The plain-text form `/progress text` prints, and where no pane is drawn. */
 export function summary(doc: ProgressDoc, exists: boolean, fileName = 'PROGRESS.md'): string {
-  if (!exists) return `No ${fileName} in this project yet. /project-progress init sets one up.`
+  if (!exists) return `No ${fileName} in this project yet. ${SKILL} init sets one up.`
   const lines: string[] = []
   if (doc.goal !== '') lines.push(`Goal: ${doc.goal}`)
   lines.push(doc.focus.length === 0 ? 'Now: nothing in progress' : `Now: ${doc.focus.join('; ')}`)
