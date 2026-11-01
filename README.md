@@ -2,25 +2,16 @@
 
 Home-made extensions for Claude Code, listed in one **plugin marketplace**:
 Claude Code can add this repo as a source and install anything listed in it.
-Some plugins live here under `plugins/`; others have moved to repos of their
-own, and the marketplace installs them from there.
+Each plugin lives in a repo of its own, named `claude-<name>`; this repo holds
+only the catalog, and the marketplace installs each plugin from its repo.
 
 ```
 claude-tools/
 ├── .claude-plugin/
 │   └── marketplace.json      the marketplace catalog (lists every installable item)
-└── plugins/                  the items that still live here, mods and skills alike
-    ├── README.md             index of the plugins and their layouts
-    ├── project-tracker/      mod
-    ├── context-bar/          mod
-    ├── resource-monitor/     mod
-    ├── generate-docs/        skill
-    ├── git-repo-creator/     skill
-    └── project-progress/     skill + mod
+├── CLAUDE.md                 conventions for the catalog and the plugin repos
+└── README.md                 this file
 ```
-
-daily-organizer lives in its own repo,
-[claude-daily-organizer](https://github.com/primelogiclabio/claude-daily-organizer).
 
 **Mods vs skills.**
 
@@ -28,7 +19,7 @@ daily-organizer lives in its own repo,
   hooks or status-line text. Each one has its own `.claude-plugin/plugin.json`
   and `hooks/`.
 - A **skill** is a `SKILL.md`: a description that tells Claude when to use it,
-  followed by instructions. It has no code. Each skill here also carries a small
+  followed by instructions. It has no code. Each skill also carries a small
   `plugin.json`, so it installs through the marketplace the same way a mod does.
 - A plugin can be **both**: project-progress is a skill that also ships a pane,
   so one install gets the two.
@@ -37,22 +28,21 @@ daily-organizer lives in its own repo,
 
 | Name | Kind | What it does |
 | --- | --- | --- |
-| [project-tracker](plugins/project-tracker/README.md) | mod | **Deprecated**, use project-progress. Per-project task list in a docked **Tasks** pane, with `/tasks` and a `tasks` tool, saved in `<project>/.claude/tasks.md` |
-| [context-bar](plugins/context-bar/README.md) | mod | Context card above the prompt, off until `/context-bar show` or the `showBand` option: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
-| [resource-monitor](plugins/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
-| [generate-docs](plugins/generate-docs/README.md) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
-| [daily-organizer](https://github.com/primelogiclabio/claude-daily-organizer) | skill | A personal daily organizer on claude.ai: Today, Up Next, Waiting On and Done lists that you and Claude both update, with a morning plan and an end-of-day summary. Was workday-tracker; in its own repo |
-| [git-repo-creator](plugins/git-repo-creator/README.md) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, public or private, license, CI workflow, and a lockdown against outside contributors for public repos |
-| [project-progress](plugins/project-progress/README.md) | skill + mod | Tracks long project work in `PROGRESS.md` so context holds only the current task: one item at a time with a plan, side ideas parked instead of chased, a checkpoint before each `/clear`; a **Progress** pane shows where you are, with `/progress` |
+| [context-bar](https://github.com/primelogiclabio/claude-context-bar) | mod | Context card above the prompt, off until `/context-bar show` or the `showBand` option: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
+| [resource-monitor](https://github.com/primelogiclabio/claude-resource-monitor) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
+| [generate-docs](https://github.com/primelogiclabio/claude-generate-docs) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
+| [daily-organizer](https://github.com/primelogiclabio/claude-daily-organizer) | skill | A personal daily organizer on claude.ai: Today, Up Next, Waiting On and Done lists that you and Claude both update, with a morning plan and an end-of-day summary. Was workday-tracker |
+| [git-repo-creator](https://github.com/primelogiclabio/claude-git-repo-creator) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, public or private, license, CI workflow, and a lockdown against outside contributors for public repos |
+| [project-progress](https://github.com/primelogiclabio/claude-project-progress) | skill + mod | Tracks long project work in `PROGRESS.md` so context holds only the current task: one item at a time with a plan, side ideas parked instead of chased, a checkpoint before each `/clear`; a **Progress** pane shows where you are, with `/progress` |
 
 ---
 
 ## What the marketplace is for
 
 A marketplace is a catalog file, [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json),
-that lists plugins and where to fetch each one. Here an entry is either a
-folder in this repo or a GitHub repo of its own. Once someone adds the repo as
-a marketplace, they can:
+that lists plugins and where to fetch each one. Here each entry points at the
+plugin's own GitHub repo. Once someone adds this repo as a marketplace, they
+can:
 
 - browse its plugins in `/plugin`, or with **+ › Plugins** in the desktop app;
 - install one with a single command;
@@ -78,11 +68,11 @@ three modes, and each behaves differently:
 - **Desktop Code tab**: Claude Code with a graphical interface. Behaves like the
   CLI.
 
-| Where you use Claude | Skills: generate-docs, daily-organizer, git-repo-creator, project-progress | Mods: project-tracker, context-bar, resource-monitor, project-progress's pane |
+| Where you use Claude | Skills: generate-docs, daily-organizer, git-repo-creator, project-progress | Mods: context-bar, resource-monitor, project-progress's pane |
 | --- | --- | --- |
 | **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ (daily-organizer: needs the Artifact tools, see below; git-repo-creator: needs `git` and `gh`) | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
 | **Desktop app, Code tab** (local or SSH session) | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
-| **VS Code extension** chat panel | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ⚠ partly. Hooks run, so the commands (`/tasks`, `/context-bar`, `/resources text`, `/progress text`) and the tools work, but **panes and the bar aren't drawn**. |
+| **VS Code extension** chat panel | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ⚠ partly. Hooks run, so the commands (`/context-bar`, `/resources text`, `/progress text`) and the tools work, but **panes and the bar aren't drawn**. |
 | **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below), except git-repo-creator and project-progress | ✘ mods are Claude Code only |
 | **Desktop app, Chat** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ |
 | **claude.ai on the web** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ claude.ai doesn't run mods |
@@ -167,8 +157,9 @@ database-backed organizer. Choose one of:
   automatically** for the marketplace
   ([Plugins on claude.ai](https://claude.com/docs/plugins/overview)).
 - **Upload just the skill.**
-  1. Zip the skill's folder: `plugins/generate-docs`, or a clone of
-     [claude-daily-organizer](https://github.com/primelogiclabio/claude-daily-organizer)
+  1. Zip a clone of the skill's repo,
+     [claude-generate-docs](https://github.com/primelogiclabio/claude-generate-docs)
+     or [claude-daily-organizer](https://github.com/primelogiclabio/claude-daily-organizer),
      without its `.git` folder. Each already contains
      `.claude-plugin/plugin.json`.
   2. Use **Customize › Plugins › Add › Upload plugin**.
@@ -239,9 +230,9 @@ update one and nothing changes
 
 #### M. From the marketplace (recommended)
 
-**From this folder** (the machine where you edit the repo). The examples here
-and in methods B and C use `C:\src\claude-tools`; put your clone's path
-instead. In PowerShell:
+**From a clone of this repo** (the machine where you edit the catalog). The
+examples here and in methods B and C use clones under `C:\src\`; put your
+clones' paths instead. In PowerShell:
 
 ```powershell
 claude plugin marketplace add C:\src\claude-tools
@@ -253,10 +244,9 @@ claude plugin install context-bar@claude-tools
 claude plugin install resource-monitor@claude-tools
 ```
 
-A marketplace added from a local folder is loaded in place. Edits here take
-effect in the next session, or after `/reload-plugins`, with no reinstall.
-A plugin in a repo of its own, such as daily-organizer, still installs from
-GitHub; to work on it, load a clone of its repo with method B or C.
+A marketplace added from a local folder reads its catalog in place, but every
+plugin in it still installs from its own repo on GitHub. To work on a plugin,
+load a clone of its repo with method B or C.
 
 **From GitHub** ([primelogiclabio/claude-tools](https://github.com/primelogiclabio/claude-tools)).
 Use this on any other machine. One line installs a plugin and adds the
@@ -297,18 +287,13 @@ To remove the whole marketplace, run
 `claude plugin marketplace remove claude-tools`. That also uninstalls every
 plugin you installed from it.
 
-> **Moving from the old install.** If you set project-tracker up earlier by
-> cloning or linking it into `~/.claude/skills/project-tracker`, remove that
-> first so it doesn't load twice:
-> - for a clone: `Remove-Item -Recurse -Force "$HOME\.claude\skills\project-tracker"`
-> - for a junction: `cmd /c rmdir "$HOME\.claude\skills\project-tracker"`
->
-> Never use `Remove-Item -Recurse` on a junction. In Windows PowerShell 5.1 it
-> can delete the files in the source folder the junction points to.
+> **project-tracker** is no longer in the marketplace; project-progress
+> replaces it. If you still have it installed, run
+> `claude plugin uninstall project-tracker@claude-tools`.
 
 ---
 
-#### B. `CLAUDE_CODE_PLUGIN_DIRS` (load from this folder, every session)
+#### B. `CLAUDE_CODE_PLUGIN_DIRS` (load from your clones, every session)
 
 This loads plugins straight from their folders, so there's nothing to install
 or update.
@@ -322,15 +307,14 @@ or update.
    ```json
    {
      "env": {
-       "CLAUDE_CODE_PLUGIN_DIRS": "C:\\src\\claude-tools\\plugins\\project-tracker;C:\\src\\claude-tools\\plugins\\generate-docs"
+       "CLAUDE_CODE_PLUGIN_DIRS": "C:\\src\\claude-project-progress;C:\\src\\claude-generate-docs"
      }
    }
    ```
 
-   List only the folders you want, from `plugins\project-tracker`,
-   `plugins\context-bar`, `plugins\resource-monitor`, `plugins\generate-docs`,
-   `plugins\git-repo-creator` and `plugins\project-progress`. For
-   daily-organizer, list the folder of your clone of its repo.
+   List only the clones you want: each plugin's repo is named after it, such
+   as `claude-context-bar` or `claude-daily-organizer`, and lists in the
+   [Contents](#contents) table.
 3. **CLI:** start a new `claude` session.
    **Desktop app:** quit it completely (right-click the tray icon and choose
    Quit), reopen it, and start a new session in the Code tab.
@@ -355,7 +339,7 @@ session.
 #### C. `--plugin-dir` (CLI, one session)
 
 ```powershell
-claude --plugin-dir C:\src\claude-tools\plugins\project-tracker
+claude --plugin-dir C:\src\claude-project-progress
 ```
 
 The plugin is loaded for that session only, and edits reload while it runs.
@@ -370,26 +354,23 @@ Nothing is installed. Repeat the flag to load more than one plugin.
    folder**. In the desktop app this is the access request when you pick the
    project folder for a Code session. Plugins don't run until the folder is
    trusted.
-2. **project-tracker** is deprecated; use project-progress (step 8). If you
-   still have it, `/tasks` opens its pane; see its
-   [README](plugins/project-tracker/README.md) for moving to project-progress.
-3. **context-bar:** nothing shows until you ask. `/context-bar show` draws
+2. **context-bar:** nothing shows until you ask. `/context-bar show` draws
    the card above the prompt for the session (the `showBand` option draws it
    in every session); the header and badge fill in after the first response.
    `/context-bar` prints the full breakdown.
-4. **resource-monitor:** the status line shows a readout such as
+3. **resource-monitor:** the status line shows a readout such as
    `⚙ CPU 12% · 2.1 GB`; CPU appears after the second sample (5 s apart); `/resources` opens the pane.
-5. **generate-docs:** ask for a write-up, for example "write up an overview
+4. **generate-docs:** ask for a write-up, for example "write up an overview
    of how this repo is laid out", or type `/generate-docs` and pick it.
-6. **daily-organizer:** ask to "start my daily organizer", then say "add a
+5. **daily-organizer:** ask to "start my daily organizer", then say "add a
    follow-up to check the DNS change" or "plan my day", or type
    `/daily-organizer` and pick it. Claude publishes the organizer and gives
    you its link. It needs the Artifact tools, which Claude Code sessions have.
-7. **git-repo-creator:** ask to "put this project on GitHub" or "check this
+6. **git-repo-creator:** ask to "put this project on GitHub" or "check this
    repo's setup", or type `/git-repo-creator` and pick it. `gh auth status`
    must show a signed-in account. It asks before it creates a repository,
    pushes or changes a setting.
-8. **project-progress:** in a repo you want to track, type
+7. **project-progress:** in a repo you want to track, type
    `/project-progress init` and pick it. It asks for your current goal and
    first few items, and whether to commit `PROGRESS.md` or keep it personal.
    Then use `/project-progress next` to start an item. The **Progress** pane
@@ -401,7 +382,6 @@ The mods have options, listed in each one's README:
 
 | Mod | Options |
 | --- | --- |
-| project-tracker | `autoOpen`, `statusLine`, `injectContext`, `taskFile`, `registerProject` |
 | context-bar | `showBand`, `showLegend`, `warnAt`, `dangerAt`, `showCost` |
 | resource-monitor | `cpuWarn`, `memWarn`, `intervalSeconds`, `statusLine`, `autoOpen`, `injectContext` |
 | project-progress (its pane) | `showPane`, `statusLine` |
@@ -419,37 +399,24 @@ Start a new session after any change. The other skills have no options.
 
 | Symptom | Fix |
 | --- | --- |
-| A command (`/tasks`, `/context-bar`, `/resources`, `/generate-docs`, `/daily-organizer`, `/git-repo-creator`, `/project-progress`, `/progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
+| A command (`/context-bar`, `/resources`, `/generate-docs`, `/daily-organizer`, `/git-repo-creator`, `/project-progress`, `/progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
 | `Plugin "…" not found in marketplace "claude-tools"` | Use the name from the table above, with `@claude-tools`. Run `claude plugin marketplace update claude-tools` to refresh the catalog. |
-| `Source path does not exist` on install | The catalog points at a folder that isn't in the copy you added. Make sure your clone or push includes `plugins/`. |
+| An install fails to clone the plugin | Each plugin installs from its own GitHub repo over HTTPS. Check that `git` works and the machine can reach github.com. |
 | A duplicate command or skill, or changes that seem to come from an old copy | Two install methods are active, or the plugin and an account skill are both on. Keep only one, and check `~/.claude/skills/` for an old copy. |
-| You need to see what went wrong | Run `claude --debug …`. Look for lines that start with the mod's name, such as `project-tracker:`; they say why a hook was skipped. |
+| You need to see what went wrong | Run `claude --debug …`. Look for lines that start with the mod's name, such as `context-bar:`; they say why a hook was skipped. |
 
 ---
 
 ## Working on this repo
 
-Run these from the repo root. Each item's README has the same commands, run
-from its own folder.
+This repo holds only the catalog. Check it from the repo root:
 
 ```powershell
-# Everything: marketplace.json and every plugin it lists
 claude plugin validate .
-
-# One item on its own
-claude plugin validate .\plugins\project-tracker
-claude plugin validate .\plugins\context-bar
-claude plugin validate .\plugins\resource-monitor
-claude plugin validate .\plugins\generate-docs
-claude plugin validate .\plugins\git-repo-creator
-claude plugin validate .\plugins\project-progress
-
-# Test suites (mods, and project-progress's pane; the other skills have no code to test)
-claude plugin test .\plugins\project-tracker
-claude plugin test .\plugins\context-bar
-claude plugin test .\plugins\resource-monitor
-claude plugin test .\plugins\project-progress
 ```
+
+Each plugin's own repo has its validate and test commands in its README's
+**Developing** section.
 
 To add a mod or skill:
 
@@ -466,11 +433,10 @@ To add a mod or skill:
 3. Add it to the Contents table above.
 4. Run `claude plugin validate .`.
 
-[`CLAUDE.md`](CLAUDE.md) has the steps for moving a plugin that still lives
-in `plugins/` out to its own repo.
+[`CLAUDE.md`](CLAUDE.md) has the conventions for the plugin repos.
 
-Bump `version` in an item's `plugin.json` when you release a change. Users who
-installed from GitHub stay on the version they have until it changes.
+Bump `version` in a plugin's `plugin.json`, in its own repo, when you release a
+change. Users stay on the version they have until it changes.
 
 ## Publishing
 
