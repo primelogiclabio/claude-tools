@@ -30,9 +30,9 @@
       "category": "skill"
     },
     {
-      "name": "workday-tracker",
-      "source": "./plugins/workday-tracker",
-      "description": "Skill: house rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai (task types, required completion comments, optional ticket refs and status notes)",
+      "name": "daily-organizer",
+      "source": "./plugins/daily-organizer",
+      "description": "Skill: a personal daily organizer artifact on claude.ai (Today, Up Next, Waiting On, Done) with tasks in the artifact's database, task types, required completion comments, a morning plan and an end-of-day summary",
       "category": "skill"
     },
     {

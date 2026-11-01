@@ -14,7 +14,7 @@ claude-tools/
     ├── context-bar/          mod
     ├── resource-monitor/     mod
     ├── generate-docs/        skill
-    ├── workday-tracker/      skill
+    ├── daily-organizer/      skill
     ├── git-repo-creator/     skill
     └── project-progress/     skill + mod
 ```
@@ -38,7 +38,7 @@ claude-tools/
 | [context-bar](plugins/context-bar/README.md) | mod | Context card above the prompt, off until `/context-bar show` or the `showBand` option: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
 | [resource-monitor](plugins/resource-monitor/README.md) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
 | [generate-docs](plugins/generate-docs/README.md) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
-| [workday-tracker](plugins/workday-tracker/README.md) | skill | House rules for a personal Up Next / Waiting On / Done task-tracker artifact on claude.ai: task types, required completion comments, optional ticket refs and status notes |
+| [daily-organizer](plugins/daily-organizer/README.md) | skill | A personal daily organizer artifact on claude.ai: Today, Up Next, Waiting On and Done with tasks in the artifact's database, task types, required completion comments, a morning plan and an end-of-day summary. Was workday-tracker |
 | [git-repo-creator](plugins/git-repo-creator/README.md) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, public or private, license, CI workflow, and a lockdown against outside contributors for public repos |
 | [project-progress](plugins/project-progress/README.md) | skill + mod | Tracks long project work in `PROGRESS.md` so context holds only the current task: one item at a time with a plan, side ideas parked instead of chased, a checkpoint before each `/clear`; a **Progress** pane shows where you are, with `/progress` |
 
@@ -74,11 +74,11 @@ three modes, and each behaves differently:
 - **Desktop Code tab**: Claude Code with a graphical interface. Behaves like the
   CLI.
 
-| Where you use Claude | Skills: generate-docs, workday-tracker, git-repo-creator, project-progress | Mods: project-tracker, context-bar, resource-monitor, project-progress's pane |
+| Where you use Claude | Skills: generate-docs, daily-organizer, git-repo-creator, project-progress | Mods: project-tracker, context-bar, resource-monitor, project-progress's pane |
 | --- | --- | --- |
-| **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ (workday-tracker: needs the Artifact tool, see below; git-repo-creator: needs `git` and `gh`) | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
-| **Desktop app, Code tab** (local or SSH session) | ✔ (workday-tracker: needs the Artifact tool; git-repo-creator: needs `git` and `gh`) | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
-| **VS Code extension** chat panel | ✔ (workday-tracker: needs the Artifact tool; git-repo-creator: needs `git` and `gh`) | ⚠ partly. Hooks run, so the commands (`/tasks`, `/context-bar`, `/resources text`, `/progress text`) and the tools work, but **panes and the bar aren't drawn**. |
+| **Claude Code CLI** (terminal, including IDE terminals and JetBrains) | ✔ (daily-organizer: needs the Artifact tools, see below; git-repo-creator: needs `git` and `gh`) | ✔ everything: panes, the bar above the prompt, commands, tools, status line |
+| **Desktop app, Code tab** (local or SSH session) | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ✔ panes show as panels. Not in a **WSL** session, where plugins aren't available. |
+| **VS Code extension** chat panel | ✔ (daily-organizer: needs the Artifact tools; git-repo-creator: needs `git` and `gh`) | ⚠ partly. Hooks run, so the commands (`/tasks`, `/context-bar`, `/resources text`, `/progress text`) and the tools work, but **panes and the bar aren't drawn**. |
 | **Desktop app, Cowork** | ✔ from your claude.ai account (path 2 below), except git-repo-creator and project-progress | ✘ mods are Claude Code only |
 | **Desktop app, Chat** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ |
 | **claude.ai on the web** | ✔ from your claude.ai account (path 2), except git-repo-creator and project-progress | ✘ claude.ai doesn't run mods |
@@ -105,14 +105,15 @@ Claude still writes both files and offers them as downloads. It can't open
 them in a browser pane to check them, and it can't save them into a
 project's `docs/` folder, so those steps of the skill are skipped.
 
-**What workday-tracker needs.** It works on a task-tracker artifact on
-claude.ai, and it edits the artifact's own code, so it runs only where Claude
-can create and update artifacts. That's the usual case on claude.ai, desktop
-Chat, Cowork and mobile, where it fits best. In Claude Code (CLI, desktop Code
-tab, VS Code, cloud sessions) it needs a session that has the Artifact tool;
-without it, Claude can't change the tracker, so use the skill from claude.ai
-instead. It holds no artifact link or data, so everyone who installs it works
-on their own tracker.
+**What daily-organizer needs.** The organizer is a claude.ai artifact whose
+tasks live in the artifact's own database. Claude creates it and changes its
+tasks with the `Artifact` and `ArtifactData` tools, which Claude Code sessions
+have (CLI, desktop Code tab, VS Code). The page itself works wherever you open
+it, so you can add, finish and plan tasks there from any device. Chat
+artifacts on claude.ai, desktop Chat, Cowork and mobile have no database: there
+the skill keeps an older-style tracker whose tasks sit in the artifact's code,
+with the same task rules. It holds no artifact link or data, so everyone who
+installs it works on their own organizer.
 
 **What git-repo-creator needs.** It runs `git` and the GitHub CLI `gh`,
 signed in with `gh auth login`, so it works only in Claude Code (or a cloud
@@ -136,7 +137,7 @@ There are **two separate install paths**, and they reach different places:
 | Where you install | `claude plugin …` in a terminal, `/plugin` in a session, or **+ › Plugins** in the desktop Code tab | **Customize › Plugins** (or **Customize › Skills**) on claude.ai or in the desktop app |
 | Install is tied to | this computer | your account |
 | Reaches | the CLI, the desktop Code tab and VS Code on this computer | Chat (web, desktop, mobile) and Cowork. It also syncs into Claude Code terminal sessions where you're signed in with that account (CLI 2.1.273+). |
-| Use it for | the mods, and the skills inside Claude Code | generate-docs and workday-tracker everywhere (git-repo-creator and project-progress are Claude Code only) |
+| Use it for | the mods, and the skills inside Claude Code | generate-docs and daily-organizer everywhere (git-repo-creator and project-progress are Claude Code only) |
 
 Installs don't travel the other way. A plugin you install from the Claude Code
 command line stays on that computer and is never added to your account
@@ -148,14 +149,14 @@ details.
 ### Path 2: on your claude.ai account (web, desktop Chat and Cowork, mobile)
 
 This is the only way to get the skills, **generate-docs** and
-**workday-tracker**, outside Claude Code. workday-tracker belongs here most of
-all, since the task-tracker artifact it works on lives on claude.ai. Choose
-one of:
+**daily-organizer**, outside Claude Code. For daily-organizer, add it on
+path 1 as well if you use Claude Code: that's where it builds and writes the
+database-backed organizer. Choose one of:
 
 - **Add the whole marketplace (recommended).**
   1. Open [Customize › Plugins](https://claude.ai/customize/plugins).
   2. Choose **Add › Add marketplace** and enter `primelogiclabio/claude-tools`.
-  3. Find **generate-docs** or **workday-tracker** in the list and choose
+  3. Find **generate-docs** or **daily-organizer** in the list and choose
      **Add**. Add each one you want.
 
   Updates come from GitHub. Use **Check for updates**, or turn on **Sync
@@ -163,7 +164,7 @@ one of:
   ([Plugins on claude.ai](https://claude.com/docs/plugins/overview)).
 - **Upload just the skill.**
   1. Zip the skill's folder, `plugins/generate-docs` or
-     `plugins/workday-tracker`. Each already contains
+     `plugins/daily-organizer`. Each already contains
      `.claude-plugin/plugin.json`.
   2. Use **Customize › Plugins › Add › Upload plugin**.
 
@@ -171,13 +172,14 @@ one of:
 - **Account skill, without a plugin.** If you already saved the skill under
   **Customize › Skills**, it's already on your account and you don't need
   either of the above. Don't add it twice, or two copies will answer the
-  same requests. generate-docs used to be called `reference-doc`. If an old
-  `reference-doc` account skill is still listed there, turn it off or delete
-  it.
+  same requests. generate-docs used to be called `reference-doc`, and
+  daily-organizer used to be called `workday-tracker`. If an old
+  `reference-doc` or `workday-tracker` skill or plugin is still listed there,
+  turn it off or delete it.
 
 Then use it in a chat by typing `/` and choosing it, or just by asking: a
-write-up for generate-docs; adding, finishing or reviewing tasks in your
-tracker for workday-tracker. It shows up in **Customize › Skills**, labeled
+write-up for generate-docs; adding, finishing or reviewing tasks, or
+planning or wrapping up your day, for daily-organizer. It shows up in **Customize › Skills**, labeled
 with the plugin's name.
 
 **How it reaches Claude Code.** Anything on your account also shows up in
@@ -189,8 +191,8 @@ Claude Code terminal sessions signed in with that account:
 
 If the same plugin is also installed from path 1, Claude Code loads the
 path-1 copy and skips the synced one. A standalone account skill and the
-plugin version have different names (for example `workday-tracker` and
-`workday-tracker:workday-tracker`), so **both** load. Pick one.
+plugin version have different names (for example `daily-organizer` and
+`daily-organizer:daily-organizer`), so **both** load. Pick one.
 
 **The mods on path 2:** don't bother. Chat, Cowork, the web and mobile
 skip a mod, so it would only reach Claude Code through sync, which path 1
@@ -238,7 +240,7 @@ update one and nothing changes
 claude plugin marketplace add F:\development\claude-tools
 claude plugin install project-tracker@claude-tools
 claude plugin install generate-docs@claude-tools
-claude plugin install workday-tracker@claude-tools
+claude plugin install daily-organizer@claude-tools
 claude plugin install git-repo-creator@claude-tools
 claude plugin install project-progress@claude-tools
 claude plugin install context-bar@claude-tools
@@ -319,7 +321,7 @@ or update.
 
    List only the folders you want, from `plugins\project-tracker`,
    `plugins\context-bar`, `plugins\resource-monitor`, `plugins\generate-docs`,
-   `plugins\workday-tracker`, `plugins\git-repo-creator` and
+   `plugins\daily-organizer`, `plugins\git-repo-creator` and
    `plugins\project-progress`.
 3. **CLI:** start a new `claude` session.
    **Desktop app:** quit it completely (right-click the tray icon and choose
@@ -371,11 +373,10 @@ Nothing is installed. Repeat the flag to load more than one plugin.
    `⚙ CPU 12% · 2.1 GB`; CPU appears after the second sample (5 s apart); `/resources` opens the pane.
 5. **generate-docs:** ask for a write-up, for example "write up an overview
    of how this repo is laid out", or type `/generate-docs` and pick it.
-6. **workday-tracker:** share the link to your task-tracker artifact (or ask
-   to start one) and say "add a follow-up to check the DNS change", or type
-   `/workday-tracker` and pick it. It edits the artifact itself, so the
-   session needs the Artifact tool; without it, use the skill on claude.ai
-   (path 2).
+6. **daily-organizer:** ask to "start my daily organizer", then say "add a
+   follow-up to check the DNS change" or "plan my day", or type
+   `/daily-organizer` and pick it. Claude publishes the organizer and gives
+   you its link. It needs the Artifact tools, which Claude Code sessions have.
 7. **git-repo-creator:** ask to "put this project on GitHub" or "check this
    repo's setup", or type `/git-repo-creator` and pick it. `gh auth status`
    must show a signed-in account. It asks before it creates a repository,
@@ -410,7 +411,7 @@ Start a new session after any change. The other skills have no options.
 
 | Symptom | Fix |
 | --- | --- |
-| A command (`/tasks`, `/context-bar`, `/resources`, `/generate-docs`, `/workday-tracker`, `/git-repo-creator`, `/project-progress`, `/progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
+| A command (`/tasks`, `/context-bar`, `/resources`, `/generate-docs`, `/daily-organizer`, `/git-repo-creator`, `/project-progress`, `/progress`) isn't in the list | The folder isn't trusted, or the session started before you installed. Start a new session (the desktop app needs a full quit and reopen). Run `claude plugin list` (M) or `claude plugin validate <folder>` (B, C). |
 | `Plugin "…" not found in marketplace "claude-tools"` | Use the name from the table above, with `@claude-tools`. Run `claude plugin marketplace update claude-tools` to refresh the catalog. |
 | `Source path does not exist` on install | The catalog points at a folder that isn't in the copy you added. Make sure your clone or push includes `plugins/`. |
 | A duplicate command or skill, or changes that seem to come from an old copy | Two install methods are active, or the plugin and an account skill are both on. Keep only one, and check `~/.claude/skills/` for an old copy. |
@@ -432,7 +433,7 @@ claude plugin validate .\plugins\project-tracker
 claude plugin validate .\plugins\context-bar
 claude plugin validate .\plugins\resource-monitor
 claude plugin validate .\plugins\generate-docs
-claude plugin validate .\plugins\workday-tracker
+claude plugin validate .\plugins\daily-organizer
 claude plugin validate .\plugins\git-repo-creator
 claude plugin validate .\plugins\project-progress
 
