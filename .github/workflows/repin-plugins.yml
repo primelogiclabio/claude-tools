@@ -1,0 +1,69 @@
+name: Re-pin plugins
+
+# Each marketplace entry pins its plugin repo to a commit ("sha"). When a
+# plugin's plugin.json version changes, move its pin to that repo's HEAD and
+# open (or update) a pull request, since main only takes changes through PRs.
+
+on:
+  schedule:
+    - cron: "41 9 * * *" # daily, 09:41 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: repin-plugins
+  cancel-in-progress: false
+
+jobs:
+  repin:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: auto/repin-plugins
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Re-pin plugins whose version changed
+        id: repin
+        run: |
+          python3 .github/scripts/repin_plugins.py > "$RUNNER_TEMP/changes.md"
+          if [ -s "$RUNNER_TEMP/changes.md" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            cat "$RUNNER_TEMP/changes.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "All pins are current." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Open or update the pull request
+        if: steps.repin.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Skip if the open PR's branch already has exactly these pins.
+          if git fetch -q --depth 1 origin "$BRANCH" 2>/dev/null &&
+             git diff --quiet FETCH_HEAD -- .claude-plugin/marketplace.json; then
+            echo "The pull request already has these pins."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$BRANCH"
+          git commit -am "Re-pin plugins to their new versions" -m "$(cat "$RUNNER_TEMP/changes.md")"
+          git push --force origin "$BRANCH"
+
+          {
+            echo "These plugins released a new version, so their marketplace pins move to the new commit:"
+            echo
+            cat "$RUNNER_TEMP/changes.md"
+          } > "$RUNNER_TEMP/body.md"
+
+          if [ "$(gh pr view "$BRANCH" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+            gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh pr create --base main --head "$BRANCH" \
+              --title "Re-pin plugins to their new versions" \
+              --body-file "$RUNNER_TEMP/body.md"
+          fi

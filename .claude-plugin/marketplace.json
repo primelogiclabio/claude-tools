@@ -7,43 +7,43 @@
   "plugins": [
     {
       "name": "context-bar",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-context-bar.git" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-context-bar.git", "sha": "22d3b955a6753477cfd04f2364e5534d4af6d407" },
       "description": "Context card above the prompt, off until /context-bar show or the showBand option: the window as one bar segmented by /context category (system prompt, tools, MCP, agents, memory, skills, messages, free), a legend, a fill badge coloured by threshold, plus session tokens, cost and rate limits; /context-bar for the breakdown",
       "category": "mod"
     },
     {
       "name": "resource-monitor",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-resource-monitor.git" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-resource-monitor.git", "sha": "bc16ee823829142b90b6fb27d5358ed1ffbc7588" },
       "description": "CPU and memory of Claude Code and the processes it starts: a Resources pane with sparklines, a status-line readout, warning colours, and a tool so Claude can answer about it",
       "category": "mod"
     },
     {
       "name": "generate-docs",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-generate-docs.git" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-generate-docs.git", "sha": "26905fdea495c66e0bbd1c1a8fda937606bc8f3b" },
       "description": "Skill: generate project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, no network calls)",
       "category": "skill"
     },
     {
       "name": "daily-organizer",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-daily-organizer.git" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-daily-organizer.git", "sha": "6673f6003870bbee61487096c475085c6367726f" },
       "description": "A Claude skill that keeps your personal daily organizer on claude.ai: Today, Up Next, Waiting On and Done lists that you and Claude both update, with a morning plan and an end-of-day summary.",
       "category": "skill"
     },
     {
       "name": "jira-dashboard",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-jira-dashboard.git" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-jira-dashboard.git", "sha": "64119b5a4858decc8ae654b1da24f36613c1c7d3" },
       "description": "A Claude skill that keeps a Jira dashboard on claude.ai: new, recently updated and your own tickets from your Jira site, refreshed each morning through the Atlassian connector, with a review mark that keeps unreviewed tickets as a backlog.",
       "category": "skill"
     },
     {
       "name": "git-repo-creator",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-git-repo-creator.git" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-git-repo-creator.git", "sha": "f9e828fa56d5ba51280f06ba852a7551be1136c5" },
       "description": "Skill: put a project on git and GitHub, or audit and fix an existing repo: name, description, visibility, license, .gitignore, README, CI workflow, and lockdown for public repos",
       "category": "skill"
     },
     {
       "name": "project-progress",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-project-progress.git" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-project-progress.git", "sha": "5e4e099841a182aa87af1fcf074a721c0ec5de27" },
       "description": "Skill and pane: track long project work in PROGRESS.md: one item at a time with a plan, park side ideas instead of chasing them, checkpoint before /clear; a Progress pane shows where you are",
       "category": "skill"
     }
