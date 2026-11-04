@@ -446,9 +446,11 @@ To add a mod or skill:
 2. Here, in one pull request:
    - Add an entry to `.claude-plugin/marketplace.json`. Keep the entry `name`
      the same as the `name` in the item's own `plugin.json`, write `source` as
-     `{"source": "url", "url": "https://github.com/primelogiclabio/claude-<name>.git"}`,
+     `{"source": "url", "url": "https://github.com/primelogiclabio/claude-<name>.git", "sha": "<commit>"}`,
      and use the same description. A `"github"` source clones over SSH and
-     fails for anyone without a GitHub SSH key, so use the HTTPS URL.
+     fails for anyone without a GitHub SSH key, so use the HTTPS URL. Set
+     `sha` to the repo's current HEAD
+     (`git ls-remote https://github.com/primelogiclabio/claude-<name>.git HEAD`).
    - Add a row to the Contents table above, and name it wherever this README
      lists plugins by kind: **Where each item works**, the install commands,
      **First run**, **Changing plugin options** (mods) and
@@ -462,6 +464,14 @@ To add a mod or skill:
 
 Bump `version` in a plugin's `plugin.json`, in its own repo, when you release a
 change. Users stay on the version they have until it changes.
+
+Each marketplace entry pins its plugin to a commit with `sha`, so unreleased
+commits never reach users. The **Re-pin plugins** workflow
+(`.github/workflows/repin-plugins.yml`) checks daily, or when run from the
+Actions tab: when a plugin's version has changed, it moves that pin to the
+repo's HEAD and opens or updates a pull request from `auto/repin-plugins`.
+Squash-merge it to release the new versions. It needs **Settings › Actions ›
+General › Allow GitHub Actions to create and approve pull requests** turned on.
 
 ## Publishing
 
