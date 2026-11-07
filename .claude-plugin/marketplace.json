@@ -20,7 +20,7 @@
     {
       "name": "generate-docs",
       "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-generate-docs.git", "sha": "7e1db8387a9cd498600e5e46c563adf63954966c" },
-      "description": "Skill: generate project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, no network calls)",
+      "description": "Skill: generate project or research documentation, or step-by-step guides with fill-in fields, as self-contained HTML, Markdown, PDF or a Claude artifact (system/light/dark theme, jump-to-section menu, shareable filled-in guides, no network calls)",
       "category": "skill"
     },
     {
