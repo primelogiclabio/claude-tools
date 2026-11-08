@@ -30,7 +30,7 @@ claude-tools/
 | --- | --- | --- |
 | [context-bar](https://github.com/primelogiclabio/claude-context-bar) | mod | Context card above the prompt, off until `/context-bar show` or the `showBand` option: the window as one bar split by `/context` category, a legend with exact figures, a fill badge coloured by threshold, plus session tokens, cost and plan rate limits; `/context-bar` for the text breakdown |
 | [resource-monitor](https://github.com/primelogiclabio/claude-resource-monitor) | mod | CPU and memory of Claude Code and the processes it started: **Resources** pane with sparklines, status-line readout, warning colours, and a `resources` tool for Claude |
-| [generate-docs](https://github.com/primelogiclabio/claude-generate-docs) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, works offline) |
+| [generate-docs](https://github.com/primelogiclabio/claude-generate-docs) | skill | Generates project or research documentation, or step-by-step guides with fill-in fields, as self-contained HTML, Markdown, PDF or a Claude artifact (system/light/dark theme, jump-to-section menu, shareable filled-in guides, works offline) |
 | [daily-organizer](https://github.com/primelogiclabio/claude-daily-organizer) | skill | A personal daily organizer on claude.ai: Today, Up Next, Waiting On and Done lists that you and Claude both update, with a morning plan and an end-of-day summary. Was workday-tracker |
 | [jira-dashboard](https://github.com/primelogiclabio/claude-jira-dashboard) | skill | A Jira dashboard on claude.ai: new, recently updated and your own tickets from your Jira site, refreshed through the Atlassian connector, with a review backlog and discussion flags with notes |
 | [git-repo-creator](https://github.com/primelogiclabio/claude-git-repo-creator) | skill | Puts a project on git and GitHub, or audits and fixes an existing repo: name, description, public or private, license, CI workflow, and a lockdown against outside contributors for public repos |
@@ -96,9 +96,12 @@ Chat, Cowork, the web or mobile. That's a platform limit, not something to
 fix here.
 
 **What generate-docs can't do outside Claude Code.** In Chat or on the web,
-Claude still writes both files and offers them as downloads. It can't open
-them in a browser pane to check them, and it can't save them into a
-project's `docs/` folder, so those steps of the skill are skipped.
+Claude still writes the HTML and Markdown files and offers them as downloads.
+It can't open them in a browser pane to check them, and it can't save them
+into a project's `docs/` folder, so those steps of the skill are skipped. A
+PDF needs Edge or Chrome to print with, so it usually works only in Claude
+Code, and the Claude artifact format needs a session with the claude.ai
+artifacts connector.
 
 **What daily-organizer needs.** The organizer is a claude.ai artifact whose
 tasks live in the artifact's own database. Claude creates it and changes its
