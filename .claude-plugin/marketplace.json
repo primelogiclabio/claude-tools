@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "context-bar",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-context-bar.git", "sha": "22d3b955a6753477cfd04f2364e5534d4af6d407" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-context-bar.git", "sha": "452407bd344a1b553d1cd91e13437cd0d34b062d" },
       "description": "Context card above the prompt, off until /context-bar show or the showBand option: the window as one bar segmented by /context category (system prompt, tools, MCP, agents, memory, skills, messages, free), a legend, a fill badge coloured by threshold, plus session tokens, cost and rate limits; /context-bar for the breakdown",
       "category": "mod"
     },
@@ -19,7 +19,7 @@
     },
     {
       "name": "generate-docs",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-generate-docs.git", "sha": "26905fdea495c66e0bbd1c1a8fda937606bc8f3b" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-generate-docs.git", "sha": "7e1db8387a9cd498600e5e46c563adf63954966c" },
       "description": "Skill: generate project or research documentation, or step-by-step guides with fill-in fields, as a self-contained HTML file plus matching Markdown (light/dark toggle, jump-to-section menu, no network calls)",
       "category": "skill"
     },
