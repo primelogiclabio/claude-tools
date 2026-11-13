@@ -128,11 +128,12 @@ signed in with `gh auth login`, so it works only in Claude Code (or a cloud
 session that has `gh` signed in). Chat, Cowork, the web and mobile have no
 shell for it, so don't add it to your claude.ai account.
 
-**What project-progress needs.** It writes `PROGRESS.md` in your repo, imports
-it from `CLAUDE.md`, and works with plan mode and `/clear`. Those are Claude
-Code features, so it works only in Claude Code. Chat, Cowork, the web and
-mobile have no repo or `CLAUDE.md` for it, so don't add it to your claude.ai
-account. Run `/project-progress init` once in each repo you want to track.
+**What project-progress needs.** It writes `PROGRESS.md` in your repo, or in
+any folder outside git such as a topic folder, imports it from `CLAUDE.md`, and
+works with plan mode and `/clear`. Those are Claude Code features, so it works
+only in Claude Code. Chat, Cowork, the web and mobile have no folder or
+`CLAUDE.md` for it, so don't add it to your claude.ai account. Run
+`/project-progress init` once in each repo or folder you want to track.
 Its **Progress** pane is the mod part of the same plugin: it reads
 `PROGRESS.md` and draws beside the chat in the CLI and the desktop Code tab.
 
@@ -389,11 +390,12 @@ Nothing is installed. Repeat the flag to load more than one plugin.
    repo's setup", or type `/git-repo-creator` and pick it. `gh auth status`
    must show a signed-in account. It asks before it creates a repository,
    pushes or changes a setting.
-8. **project-progress:** in a repo you want to track, type
+8. **project-progress:** in a repo or folder you want to track, type
    `/project-progress init` and pick it. It asks for your current goal and
-   first few items, and whether to commit `PROGRESS.md` or keep it personal.
-   Then use `/project-progress next` to start an item. The **Progress** pane
-   opens in repos that have `PROGRESS.md`; `/progress` shows or hides it.
+   first few items, and in a git repo whether to commit `PROGRESS.md` or keep
+   it personal. Then use `/project-progress next` to start an item. The
+   **Progress** pane opens where there's a `PROGRESS.md`; `/progress` shows or
+   hides it.
 
 #### Changing plugin options
 
