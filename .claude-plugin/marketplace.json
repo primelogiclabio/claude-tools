@@ -43,7 +43,7 @@
     },
     {
       "name": "project-progress",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-project-progress.git", "sha": "56ed600a20f856dcfe529f334e6d7d707d3ab368" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-project-progress.git", "sha": "aec8b49eb9e890c5e9ac2e40a93a528089b8c9a4" },
       "description": "Skill and pane: track long project work in PROGRESS.md: one item at a time with a plan, park side ideas instead of chasing them, checkpoint before /clear; a Progress pane shows where you are",
       "category": "skill"
     }
