@@ -25,13 +25,13 @@
     },
     {
       "name": "daily-organizer",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-daily-organizer.git", "sha": "e2468b5002928254f474521ab4c3227d4608a261" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-daily-organizer.git", "sha": "4b33fe443cf37f837f0d3a1139077c7b617560a0" },
       "description": "A Claude skill that keeps your personal daily organizer on claude.ai: Today, Up Next, Waiting On and Done lists that you and Claude both update, with a morning plan and an end-of-day summary.",
       "category": "skill"
     },
     {
       "name": "jira-dashboard",
-      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-jira-dashboard.git", "sha": "68e13b6a99a2bc72379c42aa303ac458ed2ba11e" },
+      "source": { "source": "url", "url": "https://github.com/primelogiclabio/claude-jira-dashboard.git", "sha": "8b30818445c03a4ee4213d6b9fbe0446e5f7cfb1" },
       "description": "A Claude skill that keeps a Jira dashboard on claude.ai: new, recently updated and your own tickets from your Jira site, refreshed each morning through the Atlassian connector, with a review mark that keeps unreviewed tickets as a backlog.",
       "category": "skill"
     },
